@@ -963,8 +963,10 @@ function RatingModal({ project, currentUserId, onClose, onRated }) {
 
   if (!project) return null;
 
-  const feePct = Number(project.platform_fee_pct ?? 8);
-  const earnings = Math.round(Number(project.budget) * (1 - feePct / 100));
+  // The Business always sees the amount they funded, never the Worker's
+  // fee-reduced net — that split only exists on the Worker's own side of
+  // the ledger.
+  const paidAmount = Number(project.budget);
 
   // Portaled to document.body — see WorkerDetailDrawer's comment above for why.
   return createPortal(
@@ -990,7 +992,7 @@ function RatingModal({ project, currentUserId, onClose, onRated }) {
           <ProjectCompletionHub
             perspective="business"
             counterpartName={project.worker_name}
-            amount={earnings}
+            amount={paidAmount}
             review={existingReview}
             onSubmit={async (rating, feedback) => {
               const saved = existingReview

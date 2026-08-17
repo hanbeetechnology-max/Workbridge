@@ -579,7 +579,7 @@ export default function WorkerWorkspace() {
                 // (Job Feed, the task list here) — this one spot is
                 // specifically claiming what was deposited, so it has to
                 // match the real deposit.
-                amount={Math.round(Number(selectedTask.budget) * (1 - Number(selectedTask.platform_fee_pct ?? 8) / 100))}
+                amount={Math.round(Number(selectedTask.budget) * (1 - Number(selectedTask.platform_fee_pct ?? 15) / 100))}
                 review={existingReview}
                 onSubmit={async (rating, feedback) => {
                   setReviewError("");

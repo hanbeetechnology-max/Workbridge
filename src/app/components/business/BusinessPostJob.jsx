@@ -139,8 +139,6 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
   // Budget used to be two fields — a tier dropdown that silently overwrote
   // this one, plus this real number. One fixed, real budget field now.
   const summaryBudget = rawBudget;
-  const platformFee = Math.round(summaryBudget * 0.08);
-  const totalDeposit = summaryBudget + platformFee;
 
   const watchedTitle = watch("title");
   const watchedCategory = watch("category");
@@ -737,25 +735,12 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                     style={{ fontFamily: "'DM Mono', monospace" }}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Project Budget</span>
-                      <span className="font-semibold text-[#0F172A] dark:text-white">
-                        {formatINR(summaryBudget)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Platform Fee</span>
-                      <span className="font-semibold text-[#0F172A] dark:text-white">
-                        {formatINR(platformFee)}
-                      </span>
-                    </div>
-                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0F172A] dark:text-white">Total to Deposit</span>
+                      <span className="font-bold text-[#0F172A] dark:text-white">You'll Deposit</span>
                       <span
                         className="font-extrabold text-[#FF6B35] text-base"
                         style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                       >
-                        {formatINR(totalDeposit)}
+                        {formatINR(summaryBudget)}
                       </span>
                     </div>
                   </div>

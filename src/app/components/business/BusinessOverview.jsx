@@ -40,10 +40,6 @@ function SpendingTooltip({ active, payload, label }) {
   );
 }
 
-function round2(n) {
-  return Math.round(n * 100) / 100;
-}
-
 // Was missing INVITED and PENDING_RELEASE — a business with several
 // invites out (Rehire, or a direct invite from Find Workers) saw "0 Active
 // Projects" here while the Active Projects page's own "Ongoing" tab
@@ -164,15 +160,15 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
 
   const securedTotal = heldProjects.reduce((s, p) => s + Number(p.budget), 0);
 
-  // Every completed project's ledger split, computed the same way
-  // completeProject does server-side (budget - platform fee).
+  // "Delivered" always reflects the full project budget, matching what the
+  // Business funded/secured for the same project — the Business never sees
+  // a fee-reduced figure (that split only exists on the Worker's side of
+  // the ledger).
   const completedSplits = useMemo(
     () =>
       completedProjects.map((p) => {
         const budget = Number(p.budget);
-        const feePct = Number(p.platform_fee_pct ?? 8);
-        const fee = round2(budget * (feePct / 100));
-        return { project: p, budget, fee, delivered: round2(budget - fee) };
+        return { project: p, budget, delivered: budget };
       }),
     [completedProjects]
   );
@@ -188,7 +184,6 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
     const rows = [];
     for (const p of projects) {
       const budget = Number(p.budget);
-      const feePct = Number(p.platform_fee_pct ?? 8);
       for (const event of p.timeline ?? []) {
         if (event.status === "FUNDS_SECURED") {
           rows.push({
@@ -201,16 +196,15 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
           });
         }
         if (event.status === "COMPLETED") {
-          // Platform Fee is only ever shown upfront, at the moment a job is
-          // posted (BusinessPostJob.jsx's cost breakdown) — not tracked as
-          // its own ongoing line item here once it's already been deducted.
-          const fee = round2(budget * (feePct / 100));
+          // Same amount as the "Funds Secured" row above — the Business
+          // never sees a fee-reduced figure, that split only exists on the
+          // Worker's side of the ledger.
           rows.push({
             id: `${p.id}-delivered`,
             type: "delivered",
             desc: `Payment Released – ${p.title}`,
             worker: p.worker_name,
-            amount: round2(budget - fee),
+            amount: budget,
             at: event.at,
           });
         }

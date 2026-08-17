@@ -77,7 +77,7 @@ export default function InvoicePage() {
   // show a fee/net that didn't quite match the real ledger amount.
   const round2 = (n) => Math.round(n * 100) / 100;
   const budget = Number(project.budget);
-  const feePct = Number(project.platform_fee_pct ?? 8);
+  const feePct = Number(project.platform_fee_pct ?? 15);
   const platformFee = round2(budget * (feePct / 100));
   const workerReceives = round2(budget - platformFee);
 
@@ -187,31 +187,42 @@ export default function InvoicePage() {
           </div>
 
           {/* ── Breakdown ──────────────────────────────────────────────── */}
+          {/* Deliberately role-gated: a viewer only ever sees the one
+              number that applies to them (what they pay, or what they
+              receive), never both side by side — showing both would reveal
+              the platform fee by subtraction. Admin/other viewers see the
+              full picture. */}
           <div className="p-6 sm:p-10">
             <div className="overflow-hidden rounded-xl border border-slate-100">
-              <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
-                <span className="text-sm text-slate-600">Project Budget</span>
-                <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
-                  {formatINR(budget)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
-                <span className="text-sm text-slate-600">Worker Receives</span>
-                <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
-                  {formatINR(workerReceives)}
-                </span>
-              </div>
+              {(!isWorkerViewer || isBusinessViewer) && (
+                <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
+                  <span className="text-sm text-slate-600">Amount Paid</span>
+                  <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
+                    {formatINR(budget)}
+                  </span>
+                </div>
+              )}
+              {(!isBusinessViewer || isWorkerViewer) && (
+                <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
+                  <span className="text-sm text-slate-600">You'll Receive</span>
+                  <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
+                    {formatINR(workerReceives)}
+                  </span>
+                </div>
+              )}
             </div>
             {/* mt-10 (not mt-2) — the PAID stamp below needs real clearance
                 from the breakdown rows above it. It previously sat close
                 enough (mt-2 + a small negative top offset) that print
                 rendering — which computes font metrics/DPI slightly
-                differently than screen — could push it into "Worker
-                Receives" above. More gap here is a real fix, not a tweak. */}
+                differently than screen — could push it into the breakdown
+                above. More gap here is a real fix, not a tweak. */}
             <div className="relative mt-10 flex items-center justify-between gap-4 border-t-2 border-slate-900 pt-5">
-              <span className="font-serif text-base font-bold tracking-tight text-[#0F172A]">Total Secured by Business</span>
+              <span className="font-serif text-base font-bold tracking-tight text-[#0F172A]">
+                {isWorkerViewer ? "Total Payout" : "Total Secured by Business"}
+              </span>
               <span className="whitespace-nowrap font-mono text-2xl font-black tracking-tight text-[#0F172A] sm:text-3xl">
-                {formatINR(budget)}
+                {formatINR(isWorkerViewer ? workerReceives : budget)}
               </span>
 
               {isPaid && (

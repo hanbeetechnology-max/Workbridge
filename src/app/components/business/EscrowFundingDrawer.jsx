@@ -130,8 +130,6 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
   if (!project) return null;
 
   const budget = Number(project.budget) || 0;
-  const feePct = Number(project.platform_fee_pct ?? 8);
-  const feeOnWorkerPayout = Math.round(budget * (feePct / 100) * 100) / 100;
 
   return (
     <Drawer
@@ -173,19 +171,8 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
             ) : (
               <>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Project Bid</span>
-                    <span className="font-semibold text-slate-800">₹{budget.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between text-sm">
-                    <span className="text-slate-500">WorkBridge Platform Fee</span>
-                    <span className="font-semibold text-slate-500">−₹{feeOnWorkerPayout.toLocaleString("en-IN")}</span>
-                  </div>
-                  <p className="mt-1 text-[11px] leading-4 text-slate-400">
-                    Deducted from the worker's payout at completion — not added to what you transfer.
-                  </p>
-                  <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
-                    <span className="text-sm font-bold text-slate-800">Total to Fund</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-800">Amount to Fund</span>
                     <span className="text-lg font-extrabold text-slate-900">₹{budget.toLocaleString("en-IN")}</span>
                   </div>
                 </div>

@@ -16,10 +16,6 @@ function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 }
 
-function round2(n) {
-  return Math.round(n * 100) / 100;
-}
-
 const SUB_TABS = [
   { id: "invoices", label: "Invoices & Escrow" },
   { id: "subscription", label: "Subscription Plans" },
@@ -55,7 +51,6 @@ function InvoicesTab({ projects, loading, loadError }) {
     const out = [];
     for (const p of projects) {
       const budget = Number(p.budget);
-      const feePct = Number(p.platform_fee_pct ?? 8);
       const timeline = p.timeline ?? [];
       const hadFundsSecured = timeline.some((e) => e.status === "FUNDS_SECURED");
       for (const event of timeline) {
@@ -63,8 +58,10 @@ function InvoicesTab({ projects, loading, loadError }) {
           out.push({ id: `${p.id}-secured`, projectId: p.id, type: "secured", project: p.title, worker: p.worker_name, amount: budget, at: event.at });
         }
         if (event.status === "COMPLETED") {
-          const fee = round2(budget * (feePct / 100));
-          out.push({ id: `${p.id}-delivered`, projectId: p.id, type: "delivered", project: p.title, worker: p.worker_name, amount: round2(budget - fee), at: event.at });
+          // Same amount as the "Funds in Escrow" row above — the Business
+          // never sees a fee-reduced figure; that split only exists on the
+          // Worker's side of the ledger.
+          out.push({ id: `${p.id}-delivered`, projectId: p.id, type: "delivered", project: p.title, worker: p.worker_name, amount: budget, at: event.at });
         }
         if (event.status === "CANCELLED" && hadFundsSecured) {
           out.push({ id: `${p.id}-refunded`, projectId: p.id, type: "refunded", project: p.title, worker: p.worker_name, amount: budget, at: event.at });

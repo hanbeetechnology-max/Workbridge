@@ -32,7 +32,7 @@ export default function RefundCancellationPage() {
           held in Escrow. From this point, a project can end one of three ways:
         </p>
         <ul>
-          <li><strong>Approved on completion</strong> — funds release to the Worker, minus our platform fee (see the <a href="/pricing">Pricing &amp; Commission</a> page).</li>
+          <li><strong>Approved on completion</strong> — funds release to the Worker, minus our platform fee (see our <a href="/terms">Terms &amp; Conditions</a>).</li>
           <li><strong>The Ghosting Failsafe</strong> — if the Worker never delivers by the real project deadline, the Business can cancel and receive a full refund of the held Escrow, instantly and without an admin review.</li>
           <li><strong>A raised dispute</strong> — see Section 5 below.</li>
         </ul>

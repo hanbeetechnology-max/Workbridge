@@ -646,8 +646,7 @@ export default function WorkerWallet() {
               <div className="space-y-2.5">
                 {invoices.map((project) => {
                   const budget = Number(project.budget);
-                  const feePct = Number(project.platform_fee_pct ?? 8);
-                  const fee = round2(budget * (feePct / 100));
+                  const fee = round2(budget * (Number(project.platform_fee_pct ?? 15) / 100));
                   const net = round2(budget - fee);
                   return (
                     <div
@@ -663,21 +662,9 @@ export default function WorkerWallet() {
                         </p>
                       </div>
                       <div className="flex flex-shrink-0 items-center gap-4">
-                        {/* Full gross → fee → net breakdown — this is the one
-                            place that spells out where the platform fee
-                            went; Job Feed and the task list only ever show
-                            the gross project value, never a fee-reduced
-                            figure, so a worker sizing up a job isn't second-
-                            -guessing a smaller number there. */}
                         <div className="text-right">
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                            Gross Earnings: <span className="font-mono font-semibold text-slate-600 dark:text-slate-300">{formatINR(budget)}</span>
-                          </p>
-                          <p className="text-[11px] text-red-500 dark:text-red-400">
-                            Platform Fee ({feePct}%): <span className="font-mono font-semibold">-{formatINR(fee)}</span>
-                          </p>
-                          <p className="mt-0.5 text-sm font-bold text-[#0A1128] dark:text-white">
-                            Net Added to Wallet: <span className="font-mono">{formatINR(net)}</span>
+                          <p className="text-sm font-bold text-[#0A1128] dark:text-white">
+                            Added to Wallet: <span className="font-mono">{formatINR(net)}</span>
                           </p>
                         </div>
                         <button

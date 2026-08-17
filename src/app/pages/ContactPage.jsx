@@ -37,7 +37,7 @@ export default function ContactPage() {
       <LegalSection id="other-pages" title="3. Related Pages">
         <p>
           For how refunds and cancellations work, see our <a href="/refund-policy">Refund &amp; Cancellation
-          Policy</a>. For how our fees work, see <a href="/pricing">Pricing &amp; Commission</a>. For our full
+          Policy</a>. For our fee and payment policy, see <a href="/terms">Terms &amp; Conditions</a>. For our full
           terms, see <a href="/terms">Terms &amp; Conditions</a> and <a href="/privacy">Privacy Policy</a>.
         </p>
       </LegalSection>

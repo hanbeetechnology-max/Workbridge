@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalPageLayout
       title="Privacy Policy"
-      lastUpdated="August 6, 2026"
+      lastUpdated="August 14, 2026"
       intro="This page explains what WorkBridge Technologies Pvt. Ltd. collects, why, and who can see it — written to match what the product actually does, not a generic template."
     >
       <LegalSection id="introduction" title="1. Introduction">
@@ -62,7 +62,7 @@ export default function PrivacyPolicyPage() {
         <p>In production, we use PostHog to record page views and key product events (e.g. a job being posted). This is fully disabled in development and only active where explicitly configured.</p>
 
         <h3>3.8 Sign-In Token</h3>
-        <p>When you log in, we store a session token in your browser's local storage so you stay signed in. This is not a third-party tracking cookie.</p>
+        <p>When you log in, we store a secure session token (JWT) in your browser's local storage so you stay signed in. This is not a third-party tracking cookie.</p>
       </LegalSection>
 
       <LegalSection id="how-we-use" title="4. How We Use This Information">
@@ -94,8 +94,9 @@ export default function PrivacyPolicyPage() {
           </li>
           <li>
             If you attempt to share contact details (phone number, email) inside a Project chat, the attempt is
-            blocked before the message is stored — a record that a blocked attempt occurred is kept for trust &amp;
-            safety purposes, but the message content you tried to send is not saved.
+            automatically blocked by our systems before the message is stored. A record that a blocked attempt
+            occurred is kept for Trust &amp; Safety purposes, but the prohibited message content you tried to send is
+            not saved.
           </li>
         </ul>
       </LegalSection>
@@ -117,11 +118,11 @@ export default function PrivacyPolicyPage() {
       </LegalSection>
 
       <LegalSection id="retention" title="8. Data Retention & Account Deactivation">
-        <p>You can deactivate your own account from Settings → Danger Zone. This immediately signs you out and blocks future logins. Because Escrow, transaction, and review records reference other Users' history, we don't offer full data erasure today — deactivating is reversible by contacting Support if you change your mind. Your Personal Information is otherwise retained only as long as necessary for the purposes described in this Policy.</p>
+        <p>You can deactivate your own account from Settings → Danger Zone. This immediately signs you out and blocks future logins. Because Escrow, transaction, and review records reference other Users' history, we do not offer full data erasure today to preserve platform integrity — deactivating is reversible by contacting Support if you change your mind. Your Personal Information is otherwise retained only as long as necessary for the purposes described in this Policy.</p>
       </LegalSection>
 
       <LegalSection id="security" title="9. Security">
-        <p>Passwords are hashed and never stored in plain text. Access to the Platform is controlled by role-based permissions enforced on every request, not just hidden in the interface. Admin actions on accounts, disputes, and verifications are logged in an internal audit trail.</p>
+        <p>Passwords are cryptographically hashed and never stored in plain text. Access to the Platform is controlled by strict role-based permissions enforced on every backend request, not just hidden in the interface. Admin actions on accounts, disputes, and verifications are logged in an internal audit trail.</p>
       </LegalSection>
 
       <LegalSection id="rights" title="10. Your Rights">
@@ -137,7 +138,7 @@ export default function PrivacyPolicyPage() {
       </LegalSection>
 
       <LegalSection id="contact" title="13. Contact & Grievance Officer">
-        <p>The fastest way to reach us about privacy questions or requests is the Support tab in your WorkBridge dashboard once you're signed in — it's a real, staff-monitored conversation, not a form that disappears into nowhere. For formal grievances regarding this Policy, you may also write to our team via the same Support channel.</p>
+        <p>The fastest way to reach us about privacy questions or requests is the Support tab in your WorkBridge dashboard once you're signed in — it's a real, staff-monitored conversation, not a form that disappears into nowhere. For formal grievances regarding this Policy, you may also write to our team via the same Support channel or email us directly at <a href="mailto:support@workbridge.in">support@workbridge.in</a>.</p>
       </LegalSection>
     </LegalPageLayout>
   );

@@ -102,7 +102,7 @@ function SubscriptionBanner({ onUpgrade }) {
           <Sparkles className="h-5 w-5 text-[#FF6B35]" />
         </div>
         <p className="text-sm font-semibold leading-6 text-white">
-          Unlock Premium Matches and zero commission on your first ₹10,000 earned. Upgrade to Elite today! ⚡
+          Unlock Premium Matches and priority job visibility. Upgrade to Elite today! ⚡
         </p>
       </div>
       <button

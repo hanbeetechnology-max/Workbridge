@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, Loader2, Lock, X, Zap } from "lucide-react";
-import { calculateEarnings } from "../../utils/projectStatus";
+import { parseAmount } from "../../utils/projectStatus";
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
@@ -15,8 +15,7 @@ function formatINR(amount) {
  */
 export default function SecureVaultModal({ jobTitle, workerName, amount, onClose, onSuccess }) {
   const [status, setStatus] = useState("idle"); // idle | verifying | success
-  const { budgetNum, fee } = calculateEarnings(amount);
-  const payTotal = budgetNum + fee;
+  const budgetNum = parseAmount(amount);
 
   const handlePay = () => {
     if (status !== "idle") return;
@@ -90,17 +89,6 @@ export default function SecureVaultModal({ jobTitle, workerName, amount, onClose
                 </div>
               </div>
 
-              {/* The ledger */}
-              <div className="mt-4 space-y-1.5 text-sm">
-                <div className="flex items-center justify-between text-slate-500">
-                  <span>Service Fee</span>
-                  <span className="font-mono">+{formatINR(fee)}</span>
-                </div>
-                <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-1.5 font-bold text-slate-900">
-                  <span>Funds Secured Total</span>
-                  <span className="font-mono">{formatINR(payTotal)}</span>
-                </div>
-              </div>
 
               <button
                 onClick={handlePay}
@@ -144,7 +132,7 @@ export default function SecureVaultModal({ jobTitle, workerName, amount, onClose
                 Funds Secured
               </h2>
               <p className="mt-1.5 text-sm text-slate-500">
-                {formatINR(payTotal)} is held securely. {workerName} has been notified — the job is now active.
+                {formatINR(budgetNum)} is held securely. {workerName} has been notified — the job is now active.
               </p>
               <button
                 onClick={handleContinue}

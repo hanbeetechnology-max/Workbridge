@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <LegalPageLayout
       title="Terms & Conditions"
-      lastUpdated="August 6, 2026"
+      lastUpdated="August 17, 2026"
       intro="These terms cover how WorkBridge actually works today — including what's still early access — not just boilerplate language."
     >
       <LegalSection id="acceptance" title="1. Acceptance & Eligibility">
@@ -47,24 +47,36 @@ export default function TermsPage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="payments-escrow" title="5. Payments & Escrow">
+      <LegalSection id="payments-escrow" title="5. Payments & Escrow (Early Access)">
         <p>
-          WorkBridge is in early access. Escrow status, wallet balances, platform fees, and transaction history are
-          all tracked as real records in our system, and funds must be deposited and verified before work on a
-          Project begins. However, <strong>we do not yet have a live payment gateway connecting to a bank or card
-          network</strong> — no money moves automatically through WorkBridge today.
+          WorkBridge is currently in early access. Escrow status, wallet balances, platform fees, and transaction
+          history are all tracked as real records in our system, and funds must be deposited and verified before
+          work on a Project begins. However, <strong>we do not yet have a live automated payment gateway connecting
+          to a bank or card network</strong> — no money moves automatically through WorkBridge today.
         </p>
         <p>
           When a Business funds Escrow, our team verifies the transfer before the Project is marked secured. When a
           Worker requests a withdrawal, our team reviews the request and pays it out directly to the UPI ID or bank
           account provided. Payouts are processed promptly once approved, but remain subject to that manual
-          verification step — not an automated, instant transfer. We will update this section the moment a live,
-          automated payment processor is integrated.
+          verification step. We will update this section the moment a live, automated payment processor is
+          integrated.
         </p>
       </LegalSection>
 
+      {/* Product/eng-drafted disclosure, not legal advice — get real lawyer
+          review on this section's wording before it ships to production. */}
       <LegalSection id="platform-fees" title="6. Platform Fees">
-        <p>WorkBridge deducts a platform fee from the Project budget when funds are released to a Worker. Your exact fee percentage depends on your account tier, which rises with real activity on the Platform — your current rate is always shown in your dashboard before you accept a payout.</p>
+        <p>
+          WorkBridge retains a flat 15% platform fee on every completed Project, deducted automatically from the
+          Worker's payout at the moment funds are released. This fee is not added on top of the budget a Business
+          funds — a Business is never charged more than the Project budget they deposit into Escrow. The fee
+          supports platform operations, trust &amp; safety review, dispute resolution, and payment verification.
+        </p>
+        <p>
+          This fee is not itemized as a separate line in the app's invoices, wallet, or payment screens — the
+          amount a Business pays and the amount a Worker receives are each shown as a single, final figure. This
+          section is WorkBridge's disclosure of record for how that figure is calculated.
+        </p>
       </LegalSection>
 
       <LegalSection id="dispute-resolution" title="7. Dispute Resolution">

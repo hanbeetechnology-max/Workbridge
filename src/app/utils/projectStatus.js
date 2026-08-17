@@ -133,17 +133,6 @@ export function makeTimelineEvent(status) {
   return { status, timestamp: new Date().toISOString() };
 }
 
-// Platform's cut on every completed project — deducted before funds hit
-// the worker's wallet. Kept in one place so the Invoice page, the
-// completeProject payout, and any celebration UI agree on the number.
-export const PLATFORM_FEE_PCT = 8;
-
 export function parseAmount(value) {
   return Number(String(value ?? "").replace(/[^0-9.]/g, "")) || 0;
-}
-
-export function calculateEarnings(budget) {
-  const budgetNum = parseAmount(budget);
-  const fee = Math.round(budgetNum * (PLATFORM_FEE_PCT / 100));
-  return { budgetNum, fee, earnings: budgetNum - fee };
 }

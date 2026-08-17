@@ -11,7 +11,7 @@ function formatINR(amount) {
 
 // round2 matches the exact payout math projects.controller.js's
 // completeProject uses — InvoicePage.jsx (linked from here) uses the same
-// formula, so the fee/net shown in this list always matches what's on the
+// formula, so the net shown in this list always matches what's on the
 // actual invoice, to the paisa.
 function round2(n) {
   return Math.round(n * 100) / 100;
@@ -73,8 +73,7 @@ export default function WorkerInvoices() {
         <div className="space-y-3">
           {invoices.map((project) => {
             const budget = Number(project.budget);
-            const feePct = Number(project.platform_fee_pct ?? 8);
-            const fee = round2(budget * (feePct / 100));
+            const fee = round2(budget * (Number(project.platform_fee_pct ?? 15) / 100));
             const net = round2(budget - fee);
             return (
               <button
@@ -93,7 +92,6 @@ export default function WorkerInvoices() {
                 <div className="flex flex-shrink-0 items-center gap-4">
                   <div className="text-right">
                     <p className="font-mono text-sm font-bold text-[#0A1128]">{formatINR(net)}</p>
-                    <p className="text-[11px] text-slate-400">of {formatINR(budget)}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 flex-shrink-0 text-slate-300" />
                 </div>
