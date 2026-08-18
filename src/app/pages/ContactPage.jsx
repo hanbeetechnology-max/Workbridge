@@ -1,14 +1,13 @@
 import LegalPageLayout, { LegalSection } from "../components/common/LegalPageLayout";
 
-// Address/email/phone below are placeholders only, called out explicitly in-page —
-// swap them for real business details before using this page in any compliance
-// or payment-gateway submission.
+// Support email and hours are still placeholders pending rollout — legal
+// entity, registered address, and phone are real, confirmed details.
 export default function ContactPage() {
   return (
     <LegalPageLayout
       title="Contact Us"
-      lastUpdated="August 14, 2026"
-      intro="How to reach WorkBridge Technologies Pvt. Ltd."
+      lastUpdated="August 18, 2026"
+      intro="How to reach Hanbee Technologies Private Limited."
     >
       <LegalSection id="support" title="1. In-App Support (Fastest)">
         <p>
@@ -20,17 +19,16 @@ export default function ContactPage() {
       <LegalSection id="details" title="2. Business & Contact Details">
         <p>
           <em>
-            The details below are placeholders pending our registered office and support contact rollout — they
-            will be replaced with real, verified details before this page is used for any official or
-            compliance-facing purpose.
+            Support email and hours below are still placeholders pending rollout — everything else on this list
+            is real and confirmed.
           </em>
         </p>
         <ul>
-          <li><strong>Legal entity:</strong> Hanbee Technologies Pvt. Ltd.</li>
-          <li><strong>Registered address:</strong> [PLACEHOLDER — registered office address, India]</li>
-          <li><strong>Support email:</strong> [PLACEHOLDER — e.g. support@hanbee.in]</li>
-          <li><strong>Phone:</strong> [PLACEHOLDER — support phone number]</li>
-          <li><strong>Support hours:</strong> [PLACEHOLDER — e.g. Mon–Sat, 10:00–18:00 IST]</li>
+          <li><strong>Legal entity:</strong> Hanbee Technologies Private Limited</li>
+          <li><strong>Registered address:</strong> Plot No. 28, 2nd Cross Street, Thiurpur Kumaran Nagar, Thirukkalukundram, Tamil Nadu 603109, India</li>
+          <li><strong>Support email:</strong> support@hanbee.in</li>
+          <li><strong>Phone:</strong> <a href="tel:+919344477512">+91 93444 77512</a></li>
+          <li><strong>Support hours:</strong> Mon–Fri, 10:00–19:00 IST</li>
         </ul>
       </LegalSection>
 

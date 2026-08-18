@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Briefcase, Building2, X } from "lucide-react";
+import { ArrowRight, Briefcase, Building2, Facebook, Instagram, Linkedin, Twitter, X } from "lucide-react";
 import logoSrc from "../../assets/logo.png";
 import { Button } from "./Button";
 
@@ -9,6 +9,16 @@ const navItems = [
   { label: "Find Work",  to: "/find-work"  },
   { label: "Post Job", to: "/hire-talent" },
   { label: "About Us", to: "/enterprise" },
+];
+
+// Real URLs where we have them, a disabled placeholder (no href, visually
+// muted, not clickable) for anything not live yet — add a real `href` the
+// moment that platform's page exists, nothing else needs to change.
+const SOCIAL_LINKS = [
+  { label: "LinkedIn", Icon: Linkedin, href: "https://www.linkedin.com/company/work-bridge-global/" },
+  { label: "Instagram", Icon: Instagram, href: "https://www.instagram.com/__workbridge__?utm_source=qr&igsh=MThiaGtuMW1mcXFjMw==" },
+  { label: "Facebook", Icon: Facebook, href: "https://www.facebook.com/share/1Ki2VAvta1/" },
+  // { label: "X (Twitter)", Icon: Twitter, href: null },
 ];
 
 // ── Role-picker modal — shown when nav "Log In" / "Sign Up" is clicked ──────
@@ -154,14 +164,39 @@ export function PageShell({ children, onSelect }) {
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
                 More than a freelance marketplace—WorkBridge helps businesses hire with confidence through open jobs, protected payments, and trust built from real project outcomes
               </p>
+              <div className="mt-5 flex items-center gap-3">
+                {SOCIAL_LINKS.map(({ label, Icon, href }) =>
+                  href ? (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`WorkBridge on ${label}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-slate-400 transition-colors hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <span
+                      key={label}
+                      title={`${label} — coming soon`}
+                      aria-label={`WorkBridge on ${label} — coming soon`}
+                      className="flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-full border border-dashed border-white/10 text-slate-600"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                  )
+                )}
+              </div>
             </div>
 
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Platform</p>
               <ul className="mt-4 space-y-3 text-sm">
                 <li><Link to="/find-work" className="transition-colors hover:text-white">Find Work</Link></li>
-                <li><Link to="/hire-talent" className="transition-colors hover:text-white">Hire Talent</Link></li>
-                <li><Link to="/enterprise" className="transition-colors hover:text-white">Enterprise</Link></li>
+                <li><Link to="/hire-talent" className="transition-colors hover:text-white">Post Your Jobs</Link></li>
+                <li><Link to="/enterprise" className="transition-colors hover:text-white">About us</Link></li>
                 {/* <li><Link to="/jobs" className="transition-colors hover:text-white">Browse Open Jobs</Link></li> */}
               </ul>
             </div>
