@@ -693,7 +693,7 @@ export default function WorkerJobFeed() {
                         )}
                         <span
                           title={`Completing this job pays out +${COMPLETION_XP_REWARD} XP and +${COMPLETION_TOKEN_REWARD} Tokens, on top of the ₹${Number(job.budget).toLocaleString("en-IN")} budget`}
-                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700"
+                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                         >
                           <Coins className="h-3 w-3" />
                           +{COMPLETION_TOKEN_REWARD} on completion
@@ -734,14 +734,14 @@ export default function WorkerJobFeed() {
                             </span>
                           ))}
                           {job.required_skills.length > 4 && (
-                            <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                            <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
                               +{job.required_skills.length - 4}
                             </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                       <ShieldCheck className="h-4 w-4" />
                     </span>
                   </div>

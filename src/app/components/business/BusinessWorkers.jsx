@@ -210,8 +210,7 @@ export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjec
         <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1
-              className="text-2xl font-extrabold text-[#0F172A] dark:text-white"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              className="font-display text-2xl font-extrabold text-[#0F172A] dark:text-white"
             >
               Talent Directory
             </h1>
@@ -272,7 +271,7 @@ export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjec
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                          <h3 className="font-extrabold tracking-tight text-slate-900 dark:text-white text-sm leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                          <h3 className="font-display font-extrabold tracking-tight text-slate-900 dark:text-white text-sm leading-tight">
                             {w.name}
                           </h3>
                           {w.verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 flex-shrink-0" />}
@@ -373,7 +372,7 @@ export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjec
             <X className="w-5 h-5" />
           </button>
           <div
-            className="wb-scroll-clean relative w-[95vw] h-[90vh] max-w-6xl bg-slate-50 rounded-2xl overflow-y-auto shadow-2xl wb-panel-enter"
+            className="wb-scroll-clean relative w-[95vw] h-[90vh] max-w-6xl bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-y-auto shadow-2xl wb-panel-enter"
             onClick={(event) => event.stopPropagation()}
           >
             <WorkerShareableProfile worker={selectedWorker} />

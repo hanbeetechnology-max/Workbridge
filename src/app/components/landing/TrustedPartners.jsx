@@ -5,7 +5,7 @@
 // this platform actually does, not a number we'd have to make up.
 const TRUST_SIGNALS = [
   "ID-Verified Pros",
-  "Secure Escrow Payments",
+  "Protected Payments",
   "Real Dispute Resolution",
   "Behavior-Score Trust System",
   "Instant Payouts",

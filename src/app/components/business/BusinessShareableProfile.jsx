@@ -35,12 +35,12 @@ export default function BusinessShareableProfile({ business }) {
   const displayName = profile.companyName || business.name;
 
   return (
-    <main className="min-h-full bg-[#F8FAFC] font-sans text-[#0F172A]">
+    <main className="min-h-full bg-[#F8FAFC] dark:bg-[#070B18] font-sans text-[#0F172A] dark:text-white">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-xl bg-white shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+        <section className="rounded-xl bg-white dark:bg-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
           <EditableCoverPhoto coverUrl={profile.coverUrl} editable={false} heightClass="h-52 rounded-t-xl sm:h-60" />
           <div className="px-5 pb-7 sm:px-8">
-            <div className="relative z-10 -mt-12 grid gap-6 rounded-xl border border-slate-200 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)] lg:grid-cols-[1fr_auto] lg:items-start">
+            <div className="relative z-10 -mt-12 grid gap-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)] lg:grid-cols-[1fr_auto] lg:items-start">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
                 <div className="relative h-32 w-32 flex-none">
                   {business.avatar_url ? (
@@ -56,19 +56,19 @@ export default function BusinessShareableProfile({ business }) {
                   )}
                 </div>
                 <div className="pb-1">
-                  <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] sm:text-4xl">{displayName}</h1>
-                  <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                  <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white sm:text-4xl">{displayName}</h1>
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                     Business on WorkBridge
                   </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600">
+                  <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
                     {business.verified && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 font-bold text-emerald-700 ring-1 ring-emerald-100">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 font-bold text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
                         <ShieldCheck className="h-4 w-4" />
                         Verified Business
                       </span>
                     )}
                   </div>
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
                     {profile.bio || `${displayName} hasn't added a company bio yet.`}
                   </p>
                 </div>
@@ -86,31 +86,31 @@ export default function BusinessShareableProfile({ business }) {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
           <div className="space-y-8">
-            <section className="rounded-lg bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <h2 className="text-xl font-bold text-[#0F172A]">Reviews from Freelancers</h2>
+            <section className="rounded-lg bg-white dark:bg-slate-900 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">Reviews from Freelancers</h2>
               <div className="mt-5">
                 {reviewsLoading ? (
                   <div className="flex justify-center py-6">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-[#1B3FAB]" />
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 dark:border-slate-700 border-t-[#1B3FAB]" />
                   </div>
                 ) : reviews.length === 0 ? (
-                  <p className="text-sm text-slate-400">No reviews yet.</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">No reviews yet.</p>
                 ) : (
                   <div className="grid gap-5 md:grid-cols-2">
                     {reviews.map((review) => (
-                      <article key={review.id} className="rounded-lg bg-slate-50 p-5 ring-1 ring-slate-100">
+                      <article key={review.id} className="rounded-lg bg-slate-50 dark:bg-slate-800 p-5 ring-1 ring-slate-100 dark:ring-slate-700">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-bold text-slate-700 shadow-sm">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-300 shadow-sm">
                             {getInitials(review.reviewer_name)}
                           </div>
-                          <h3 className="text-sm font-bold text-[#0F172A]">{review.reviewer_name}</h3>
+                          <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">{review.reviewer_name}</h3>
                         </div>
                         <div className="mt-4 flex items-center gap-0.5 text-amber-400">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-current" : "text-slate-200"}`} />
+                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-current" : "text-slate-200 dark:text-slate-600"}`} />
                           ))}
                         </div>
-                        {review.feedback && <p className="mt-4 text-sm italic leading-6 text-slate-500">"{review.feedback}"</p>}
+                        {review.feedback && <p className="mt-4 text-sm italic leading-6 text-slate-500 dark:text-slate-400">"{review.feedback}"</p>}
                       </article>
                     ))}
                   </div>
@@ -120,26 +120,26 @@ export default function BusinessShareableProfile({ business }) {
           </div>
 
           <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-            <section className="rounded-lg bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <h2 className="text-lg font-bold text-[#0F172A]">Quick Stats</h2>
-              <div className="mt-5 divide-y divide-slate-100">
+            <section className="rounded-lg bg-white dark:bg-slate-900 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+              <h2 className="text-lg font-bold text-[#0F172A] dark:text-white">Quick Stats</h2>
+              <div className="mt-5 divide-y divide-slate-100 dark:divide-slate-800">
                 <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                  <span className="text-sm font-medium text-slate-500">Rating</span>
-                  <span className="text-sm font-bold text-[#0F172A]">{business.rating ?? "—"}</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Rating</span>
+                  <span className="text-sm font-bold text-[#0F172A] dark:text-white">{business.rating ?? "—"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                  <span className="text-sm font-medium text-slate-500">Reviews</span>
-                  <span className="text-sm font-bold text-[#0F172A]">{business.reviews_count ?? 0}</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Reviews</span>
+                  <span className="text-sm font-bold text-[#0F172A] dark:text-white">{business.reviews_count ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                  <span className="text-sm font-medium text-slate-500">On WorkBridge since</span>
-                  <span className="text-sm font-bold text-[#0F172A]">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">On WorkBridge since</span>
+                  <span className="text-sm font-bold text-[#0F172A] dark:text-white">
                     {business.created_at ? new Date(business.created_at).getFullYear() : "—"}
                   </span>
                 </div>
               </div>
               {business.verified && (
-                <div className="mt-5 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700">
+                <div className="mt-5 flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 px-3 py-2 text-sm font-bold text-emerald-700 dark:text-emerald-400">
                   <CheckCircle2 className="h-4 w-4" />
                   Identity verified
                 </div>

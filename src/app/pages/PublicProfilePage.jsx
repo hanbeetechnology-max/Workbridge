@@ -44,18 +44,18 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1B3FAB]" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#070B18]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#1B3FAB] dark:text-[#6B8AF0]" />
       </div>
     );
   }
 
   if (loadError || !profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h1 className="text-lg font-bold text-slate-900">Profile not found</h1>
-          <p className="mt-1 text-sm text-slate-500">This link may be broken, or the account no longer exists.</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#070B18] p-6">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center shadow-sm">
+          <h1 className="font-display text-lg font-bold text-slate-900 dark:text-white">Profile not found</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">This link may be broken, or the account no longer exists.</p>
         </div>
       </div>
     );

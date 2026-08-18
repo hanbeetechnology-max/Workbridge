@@ -13,6 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useAuth } from "../../context/AuthContext";
 import brandLogo from "../../assets/logo.png";
 import { getInitials } from "../../utils/formValidation";
@@ -65,10 +66,7 @@ export default function BusinessSidebar({
             <img src={brandLogo} alt="" className="h-6 w-6 object-contain" />
           </div>
           {!isCollapsed && (
-            <span
-              className="truncate font-extrabold text-white"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
+            <span className="font-display truncate font-extrabold text-white">
               WorkBridge
             </span>
           )}
@@ -111,26 +109,32 @@ export default function BusinessSidebar({
         title="Click empty space to collapse/expand"
         className={`flex-1 cursor-pointer space-y-1 py-4 ${isCollapsed ? "px-2" : "px-4"}`}
       >
-        {NAV.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => (id === "post" ? onPostJob() : onTabChange(id))}
-            title={isCollapsed ? label : undefined}
-            className={`flex w-full items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${
-              isCollapsed ? "justify-center px-0" : "px-4"
-            } ${
-              tab === id
-                ? "bg-[#1B3FAB] text-white shadow-md shadow-[#1B3FAB]/30"
-                : "text-slate-400 hover:bg-white/5 hover:text-white"
-            }`}
-          >
-            <Icon className="h-4 w-4 flex-shrink-0" />
-            {!isCollapsed && label}
-            {!isCollapsed && id === "post" && !isVerified && (
-              <Lock className="ml-auto h-3 w-3 flex-shrink-0 text-slate-600" />
-            )}
-          </button>
-        ))}
+        {NAV.map(({ id, label, icon: Icon }) => {
+          const active = tab === id;
+          return (
+            <button
+              key={id}
+              onClick={() => (id === "post" ? onPostJob() : onTabChange(id))}
+              title={isCollapsed ? label : undefined}
+              className={`relative flex w-full items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-colors duration-200 ${
+                isCollapsed ? "justify-center px-0" : "px-4"
+              } ${active ? "text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
+            >
+              {active && (
+                <motion.span
+                  layoutId="business-nav-active"
+                  className="absolute inset-0 rounded-lg bg-[#1B3FAB] shadow-md shadow-[#1B3FAB]/30"
+                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                />
+              )}
+              <Icon className="relative h-4 w-4 flex-shrink-0" />
+              {!isCollapsed && <span className="relative">{label}</span>}
+              {!isCollapsed && id === "post" && !isVerified && (
+                <Lock className="relative ml-auto h-3 w-3 flex-shrink-0 text-slate-600" />
+              )}
+            </button>
+          );
+        })}
       </nav>
 
       <div className={`py-4 ${isCollapsed ? "px-2" : "px-4"}`}>

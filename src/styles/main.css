@@ -8,10 +8,26 @@
   --wb-border: rgba(15, 23, 42, 0.12);
   --wb-navy: #0f172a;
   --wb-muted: #64748b;
-  --wb-orange: #ff6b35;
-  --wb-orange-dark: #e95c25;
-  --wb-blue: #2563eb;
+  /* Reference the same brand tokens theme.css defines, rather than a
+     second set of hardcoded hex values that can drift out of sync. */
+  --wb-orange: var(--accent);
+  --wb-orange-dark: var(--accent-600);
+  --wb-blue: var(--primary);
   --wb-shadow: 0 24px 70px rgba(15, 23, 42, 0.09);
+}
+
+/* Marketing/landing surfaces had no dark-mode styling at all — every
+   .wb-* class below was forced light regardless of the theme toggle.
+   Same variable names, dark-appropriate values, so every rule built on
+   top of them (nav, hero, cards, buttons, footer) inherits it for free. */
+html.dark {
+  --wb-bg: #070B18;
+  --wb-surface: rgba(15, 23, 42, 0.55);
+  --wb-surface-strong: rgba(15, 23, 42, 0.85);
+  --wb-border: rgba(255, 255, 255, 0.10);
+  --wb-navy: #F1F5F9;
+  --wb-muted: #94A3B8;
+  --wb-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
 }
 
 html {
@@ -55,6 +71,31 @@ body {
   background: linear-gradient(145deg, #f8fafc 0%, #ffffff 46%, #eef6ff 100%);
   color: var(--wb-navy);
   font-family: "DM Sans", sans-serif;
+  transition: background var(--duration-slow, 300ms) ease, color var(--duration-base, 300ms) ease;
+}
+
+html.dark .wb-shell {
+  background: linear-gradient(160deg, #070B18 0%, #0A1128 55%, #0B1430 100%);
+}
+
+/* Aurora background — a fixed, animated backdrop layered under every page
+   (both themes). Five blobs spread across the full viewport (not just the
+   corners — a top/bottom-only pair reads as two dim corner glows with a
+   dead, flat middle, not a light show) drift on individually-offset paths,
+   breathe in opacity, and blend additively in dark mode so overlapping
+   colors actually brighten/mix like real aurora curtains instead of just
+   stacking as flat translucent circles. The base .wb-shell gradient pans
+   underneath, and the whole layer's hue sweeps through a wide enough
+   range to visibly shift color over the course of a page visit. */
+.wb-shell {
+  background-size: 200% 200%;
+  animation: wb-shell-drift 26s ease-in-out infinite;
+}
+
+@keyframes wb-shell-drift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
 
 .wb-aurora {
@@ -63,41 +104,89 @@ body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  animation: wb-aurora-hue 34s linear infinite;
+}
+
+@keyframes wb-aurora-hue {
+  0%   { filter: hue-rotate(0deg) saturate(1); }
+  50%  { filter: hue-rotate(45deg) saturate(1.15); }
+  100% { filter: hue-rotate(0deg) saturate(1); }
 }
 
 .wb-blob {
   position: absolute;
   display: block;
   border-radius: 999px;
-  filter: blur(120px);
-  opacity: 0.36;
-  animation: wb-blob-drift 18s ease-in-out infinite;
+  filter: blur(105px);
+  /* Read by the keyframe below via calc() so the opacity-breathing
+     animation scales relative to each theme's own tuned base instead of
+     the keyframe's literal values overriding it with an absolute number. */
+  --wb-blob-opacity: 0.42;
+  opacity: var(--wb-blob-opacity);
+  animation: wb-blob-drift 16s ease-in-out infinite;
+}
+
+/* Dark backgrounds swallow color faster than light ones do at the same
+   blur/opacity — boosted here so the aurora reads with equal presence in
+   both themes instead of going faint against near-black. screen blend
+   mode is the actual "light show" technique: overlapping blobs add light
+   together and brighten toward white at their intersections the way real
+   aurora curtains do, instead of just occluding each other. It's dark-
+   mode-only on purpose — screen-blending onto this page's near-white
+   light background would wash the color out to nearly nothing. */
+html.dark .wb-blob {
+  --wb-blob-opacity: 0.65;
+  mix-blend-mode: screen;
 }
 
 .wb-blob--one {
-  width: 680px;
-  height: 680px;
-  top: -20%;
-  left: -16%;
+  width: 820px;
+  height: 820px;
+  top: -22%;
+  left: -14%;
   background: #ff6b35;
 }
 
 .wb-blob--two {
-  width: 620px;
-  height: 620px;
-  top: -10%;
-  right: -8%;
+  width: 760px;
+  height: 760px;
+  top: -14%;
+  right: -10%;
   background: #38bdf8;
-  animation-delay: -5s;
+  animation-delay: -4s;
 }
 
 .wb-blob--three {
-  width: 520px;
-  height: 520px;
-  bottom: -18%;
-  left: 38%;
+  width: 700px;
+  height: 700px;
+  bottom: -20%;
+  left: 30%;
   background: #fdba74;
   animation-delay: -9s;
+}
+
+/* Center-weighted — this is what actually fills the "dead middle" the
+   original 3-corner layout left flat and dark. */
+/* Centered via a calc()'d `left` (half its own width short of 50%) rather
+   than the usual left:50% + translateX(-50%) — the drift keyframes below
+   already own `transform` for this element, and would silently overwrite
+   a translateX baked into the base rule the moment the animation starts. */
+.wb-blob--four {
+  width: 640px;
+  height: 640px;
+  top: 28%;
+  left: calc(50% - 320px);
+  background: #7c9bff;
+  animation-delay: -12s;
+}
+
+.wb-blob--five {
+  width: 600px;
+  height: 600px;
+  bottom: -12%;
+  right: -6%;
+  background: #22d3ee;
+  animation-delay: -6s;
 }
 
 .wb-nav,
@@ -121,6 +210,13 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(28px);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+
+html.dark .wb-nav {
+  background: rgba(10, 17, 40, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
 .wb-brand {
@@ -143,6 +239,11 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 10px 24px rgba(255, 107, 53, 0.18);
   overflow: hidden;
+}
+
+html.dark .wb-brand-mark {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .wb-brand-mark img {
@@ -220,6 +321,7 @@ body {
 
 .wb-button--primary:hover {
   background: var(--wb-orange-dark);
+  box-shadow: var(--shadow-glow-accent);
 }
 
 .wb-button--ghost {
@@ -241,6 +343,16 @@ body {
 .wb-button--outline:hover {
   background: var(--wb-orange);
   color: white;
+  box-shadow: var(--shadow-glow-accent);
+}
+
+/* Solid-ish dark backing, not a faint white tint — the aurora behind this
+   button is vivid and multi-hued (deliberately, see .wb-blob above) and a
+   near-transparent fill let the busy background collapse the orange
+   text's contrast to near-unreadable. A real backing color fixes that
+   regardless of what's drifting behind it at any given moment. */
+html.dark .wb-button--outline {
+  background: rgba(10, 17, 40, 0.75);
 }
 
 /* Specular sweep — a single glossy highlight travels across primary/
@@ -275,6 +387,28 @@ body {
   border-radius: 24px;
   backdrop-filter: blur(36px);
   box-shadow: var(--wb-shadow);
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease, transform 300ms var(--ease-out-quart, ease);
+}
+
+/* Elevated variant — deliberately reserved for hero overlays and modal
+   chrome, never dense dashboard tables (GlassCard.jsx documents the
+   full variant contract). */
+.wb-glass-card--elevated {
+  box-shadow: var(--shadow-xl);
+}
+
+.wb-glass-card--elevated:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-2xl);
+}
+
+.wb-glass-card--subtle {
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: var(--shadow-sm);
+}
+
+html.dark .wb-glass-card--subtle {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* Dashboard glass card — true dark glassmorphism.
@@ -345,6 +479,10 @@ body {
   font-weight: 900;
 }
 
+html.dark .wb-pill {
+  background: rgba(15, 23, 42, 0.7);
+}
+
 .wb-pill svg {
   color: var(--wb-blue);
 }
@@ -353,12 +491,27 @@ body {
   max-width: 540px;
   margin: 0 0 24px;
   color: var(--wb-navy);
-  font-size: clamp(44px, 7vw, 78px);
-  line-height: 1.02;
+  /* Capped at 66px (was 78px) — at the copy column's real width (~458px
+     at desktop, narrower than this max-width since the grid column
+     itself is the binding constraint, not this property) 78px pushed
+     "Talent Meets" onto two lines despite being about the same length as
+     "Opportunity." on the line below, reading as an awkward 3-line
+     wrap with room to spare. 66px lets both words share a line. */
+  font-size: clamp(40px, 6vw, 66px);
+  line-height: 1.05;
   font-weight: 1000;
   letter-spacing: 0;
   opacity: 0;
   animation: wb-fade-up 900ms cubic-bezier(0.22, 1, 0.36, 1) 140ms both;
+}
+
+/* Reveal is now word-by-word via motion (HeroSection.jsx) instead of the
+   whole heading fading as one block — same reasoning as
+   .wb-section-header--js: a running CSS animation on opacity would
+   otherwise outrank motion's own inline opacity control. */
+.wb-hero h1.wb-hero-h1--js {
+  opacity: 1;
+  animation: none;
 }
 
 .wb-hero h1 span {
@@ -368,7 +521,7 @@ body {
 .wb-hero p {
   max-width: 480px;
   margin: 0 0 32px;
-  color: #475569;
+  color: var(--wb-muted);
   font-size: clamp(18px, 2vw, 22px);
   line-height: 1.45;
   font-weight: 600;
@@ -433,6 +586,10 @@ body {
   opacity: 0.92;
 }
 
+/* Fixed light chrome over the hero video — like .wb-dashboard-preview,
+   deliberately theme-independent, so color is a literal value rather
+   than --wb-navy (which flips to near-white in dark mode and would
+   otherwise render white text on this always-light pill). */
 .wb-video-badge {
   position: absolute;
   top: 18px;
@@ -441,7 +598,7 @@ body {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.6);
-  color: var(--wb-navy);
+  color: #0F172A;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.22em;
@@ -454,7 +611,13 @@ body {
   left: 50%;
   bottom: -34px;
   transform: translateX(-50%);
-  width: min(760px, calc(100% - 48px));
+  /* Capped well short of .wb-expert-pill's guaranteed clearance (it's
+     anchored to the hero card's right edge, independently of this bar's
+     centered width) — 760px measured only ~25-35px short of actually
+     overlapping the pill at every desktop width tested; this cap makes
+     that gap a real, viewport-independent margin instead of something
+     that happens to survive on the current pill copy's exact width. */
+  width: min(640px, calc(100% - 48px));
   display: flex;
   align-items: center;
   gap: 14px;
@@ -466,6 +629,10 @@ body {
   backdrop-filter: blur(28px);
   opacity: 0;
   animation: wb-search-enter 700ms cubic-bezier(0.4, 0, 0.2, 1) 650ms both;
+}
+
+html.dark .wb-search {
+  background: rgba(15, 23, 42, 0.9);
 }
 
 /* Fluid glass bubbles — ambient, not interactive (aria-hidden in JSX).
@@ -506,6 +673,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .wb-bubble { animation: none; }
+  .wb-shell,
+  .wb-aurora,
+  .wb-blob { animation: none; }
 }
 
 /* Preserves the horizontal-centering transform throughout the animation */
@@ -542,7 +712,7 @@ body {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--wb-border);
-  color: #475569;
+  color: var(--wb-muted);
   font-size: 14px;
   font-weight: 900;
   box-shadow: 0 20px 44px rgba(15, 23, 42, 0.12);
@@ -552,6 +722,10 @@ body {
   animation:
     wb-fade-up 700ms ease-out 820ms both,
     wb-pillar-float 5s ease-in-out 1.6s infinite;
+}
+
+html.dark .wb-expert-pill {
+  background: rgba(15, 23, 42, 0.9);
 }
 
 .wb-section {
@@ -565,6 +739,17 @@ body {
   margin-bottom: 48px;
   opacity: 0;
   animation: wb-fade-up 700ms ease-out 0ms both;
+}
+
+/* Below-the-fold section headers are scroll-triggered by ScrollReveal.jsx
+   (motion, actual viewport-position-aware) instead of this CSS keyframe
+   (fixed delay from page load — already "played" by the time you scroll
+   to it). A running CSS animation targeting opacity outranks an inline
+   style in the cascade, so this modifier turns the keyframe off entirely
+   rather than fighting motion's own opacity for control of the element. */
+.wb-section-header--js {
+  opacity: 1;
+  animation: none;
 }
 
 .wb-section-header p,
@@ -662,6 +847,10 @@ body {
   color: var(--wb-orange);
 }
 
+html.dark .wb-icon-tile {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 .wb-feature-card h3 {
   margin: 0 0 12px;
   color: var(--wb-navy);
@@ -691,6 +880,12 @@ body {
   font-weight: 1000;
 }
 
+html.dark .wb-status-badge {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #34D399;
+}
+
 .wb-trust-matrix {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -718,6 +913,11 @@ body {
   animation: wb-fade-up 700ms ease-out forwards;
 }
 
+html.dark .wb-check-row {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .wb-check-row:nth-child(2) {
   animation-delay: 140ms;
 }
@@ -734,11 +934,15 @@ body {
   background: #10b981;
 }
 
+/* Fixed dark "app preview" card — deliberately always dark regardless of
+   the page theme (a device-mockup convention), so it uses its own
+   literal navy rather than the --wb-navy token (which flips light/dark
+   with the page). */
 .wb-dashboard-preview {
   border-radius: 24px;
   padding: 20px;
-  background: var(--wb-navy);
-  border: 1px solid rgb(240, 62, 62);
+  background: #0F172A;
+  border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
   opacity: 0;
   animation: wb-fade-up 800ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both;
@@ -845,6 +1049,17 @@ body {
   box-shadow: 0 24px 60px rgba(255, 163, 26, 0.22);
 }
 
+/* The light-mode hover brightens the glass toward white, which is the
+   opposite of what a dark-mode card should do — brightening a dark
+   surface toward white washes out the white/light-slate text sitting on
+   top of it instead of making the card read as "lifted." Darkens and
+   adds a subtle warm tint instead, keeping the existing light-text
+   contrast intact. */
+html.dark .wb-enterprise-card:hover {
+  background: rgba(255, 180, 90, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
 .wb-footer {
   max-width: 1180px;
   margin: 0 auto;
@@ -856,7 +1071,11 @@ body {
   color: #94a3b8;
   font-size: 14px;
   font-weight: 700;
-  border-top: 1px solid rgba(255, 255, 255, 0.42);
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+html.dark .wb-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .wb-footer a {
@@ -869,13 +1088,31 @@ body {
   color: var(--wb-navy);
 }
 
+/* Four waypoints instead of two (a there-and-back tween) — an actual
+   loop through different positions/scales so the motion reads as
+   organic drift, not a single object oscillating on one axis. Opacity
+   breathes gently alongside the movement, the other half of what makes
+   this look like aurora rather than a blurred circle sliding around. */
 @keyframes wb-blob-drift {
-  0%,
-  100% {
+  0% {
     transform: translate3d(0, 0, 0) scale(1);
+    opacity: var(--wb-blob-opacity);
+  }
+  25% {
+    transform: translate3d(80px, -100px, 0) scale(1.16);
+    opacity: calc(var(--wb-blob-opacity) * 0.78);
   }
   50% {
-    transform: translate3d(34px, -58px, 0) scale(1.08);
+    transform: translate3d(-56px, 64px, 0) scale(0.9);
+    opacity: var(--wb-blob-opacity);
+  }
+  75% {
+    transform: translate3d(-90px, -46px, 0) scale(1.1);
+    opacity: calc(var(--wb-blob-opacity) * 0.82);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: var(--wb-blob-opacity);
   }
 }
 
@@ -963,6 +1200,15 @@ body {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
 }
 
+html.dark .wb-partner-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .wb-partner-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* ─── Dashboard Animations ──────────────────────────────────────────────── */
 
 /* Tab content entrance — applied to each tab's root div */
@@ -1046,10 +1292,6 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .wb-expert-pill {
-    display: none;
-  }
-
   .wb-card-grid--three {
     grid-template-columns: 1fr;
   }
@@ -1057,6 +1299,22 @@ body {
   .wb-section-split-head {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+/* .wb-expert-pill is anchored to .wb-hero-card's right edge while
+   .wb-search is independently centered — the two only have a
+   guaranteed, viewport-stable clearance gap once .wb-hero-card has
+   reached its own 1180px max-width cap (confirmed: 35px gap at every
+   width from there up). Below that, .wb-hero-card's width still tracks
+   the viewport, and the two elements' independent width formulas drift
+   into a real 20-90px overlap somewhere in the 960-1150px band — not
+   something a text-length tweak reliably fixes, so the pill simply
+   doesn't render there instead of risking it again on every future copy
+   change. */
+@media (max-width: 1199px) {
+  .wb-expert-pill {
+    display: none;
   }
 }
 

@@ -20,11 +20,14 @@ export default function PrivacyPolicyPage() {
     >
       <LegalSection id="introduction" title="1. Introduction">
         <p>
-          WorkBridge Technologies Pvt. Ltd. ("<strong>WorkBridge</strong>", "<strong>we</strong>", "<strong>us</strong>",
-          "<strong>our</strong>") operates a two-sided project marketplace connecting freelancers with businesses
-          (the "<strong>Platform</strong>"). We are committed to protecting the personal information of everyone who
-          uses it. This Privacy Policy describes what we collect through the Platform, how we use it, and the real
-          controls in place to protect it.
+          WorkBridge is a two-sided project marketplace connecting freelancers with businesses (the
+          "<strong>Platform</strong>"), engineered, operated, and maintained by <strong>Hanbee Technologies</strong>
+          ("<strong>Company</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>"). As the
+          Platform's data controller and technology provider, Hanbee Technologies is responsible for collecting,
+          processing, storing, and securing the personal data described in this Policy — including account
+          information, verification details, and communication audit trails. We are committed to protecting the
+          personal information of everyone who uses the Platform. This Privacy Policy describes what we collect
+          through the Platform, how we use it, and the real controls in place to protect it.
         </p>
         <p>This Policy applies to every person who registers for or otherwise uses the Platform (each, a "<strong>User</strong>").</p>
       </LegalSection>
@@ -34,7 +37,7 @@ export default function PrivacyPolicyPage() {
           <li><strong>Worker</strong> — a User registered to find and deliver freelance work.</li>
           <li><strong>Business</strong> — a User registered to post projects and hire Workers.</li>
           <li><strong>Project</strong> — a unit of work posted by a Business, tracked through its own real status lifecycle from open, to assigned, to funded, to completed.</li>
-          <li><strong>Escrow</strong> — the held state of a Project's budget from the point a Business's funding transfer is verified until the work is approved and released.</li>
+          <li><strong>Secured Funds</strong> — the held state of a Project's budget from the point a Business's funding transfer is verified until the work is approved and released.</li>
           <li><strong>Behavior Score</strong> — a 0–1000 trust metric derived from a User's real conduct on the Platform (delivery history, dispute outcomes, and communication conduct).</li>
         </ul>
       </LegalSection>
@@ -47,10 +50,10 @@ export default function PrivacyPolicyPage() {
         <p>For Workers: title, bio, skills, location, and hourly rate. For Businesses: company name and related company details. An avatar photo and cover image, if you upload one. If you request a withdrawal, the UPI ID or bank account and IFSC details you provide so we can process the payout.</p>
 
         <h3>3.3 Verification Status</h3>
-        <p>Businesses go through a verification flow before posting jobs. Today, verification is a status our admin team reviews and approves based on the account and company information you provide — the document-upload step in that flow (GST certificate, PAN, incorporation documents) is <strong>not yet required or stored</strong>; we will update this section the moment that changes.</p>
+        <p>Businesses go through a verification flow before posting jobs. Today, verification is a status our admin team reviews and approves based on the account and company information you provide — the document-upload step in that flow (GST certificate, PAN, incorporation documents) is <strong>not yet required or stored</strong>. Once document upload is enabled, any verification or KYC documents you submit (identity documents, PAN, GST, or bank/UPI payout details) are designed to be securely stored, managed, and reviewed directly by Hanbee Technologies and its authorized compliance administrators — we will update this section to reflect the real, live process the moment that changes.</p>
 
         <h3>3.4 Project & Payment Activity</h3>
-        <p>Jobs you post or apply to, Project status history, Escrow amounts, platform fees, wallet balance, and transaction records.</p>
+        <p>Jobs you post or apply to, Project status history, Secured Funds amounts, platform fees, wallet balance, and transaction records.</p>
 
         <h3>3.5 Communications</h3>
         <p>See Section 5 (Platform Communications & Messaging Controls) for exactly what is and isn't collected here — it's specific enough to warrant its own section.</p>
@@ -67,7 +70,7 @@ export default function PrivacyPolicyPage() {
 
       <LegalSection id="how-we-use" title="4. How We Use This Information">
         <ul>
-          <li>To operate the core service: matching Workers and Businesses, running Escrow-protected Projects, and releasing funds when work is approved.</li>
+          <li>To operate the core service: matching Workers and Businesses, running Secured-Funds-protected Projects, and releasing funds when work is approved.</li>
           <li>To review business verification requests and maintain trust &amp; safety, including Behavior Scores, admin moderation, dispute resolution, and the chat contact-info filter described below.</li>
           <li>To process withdrawal requests using the payout details you provide.</li>
           <li>To send you one-time verification codes and password-reset codes by email, via our email provider.</li>
@@ -108,17 +111,18 @@ export default function PrivacyPolicyPage() {
       </LegalSection>
 
       <LegalSection id="sharing" title="7. Information Sharing & Disclosure">
-        <p>We do not sell your data. We restrict internal access to Personal Information to the WorkBridge staff who reasonably need it to do their jobs. We share information with the following categories of service providers, each bound to use it only to provide their specific service to us:</p>
+        <p>We do not sell your data. We restrict internal access to Personal Information to the Hanbee Technologies staff who reasonably need it to do their jobs. We share information with the following categories of service providers, each bound to use it only to provide their specific service to us:</p>
         <ul>
-          <li><strong>Render</strong> — hosts our application servers and database.</li>
-          <li><strong>Resend</strong> — delivers OTP and password-reset emails on our behalf.</li>
+          <li><strong>Payment Partners</strong> — once live payment processing is integrated, data necessary to complete a transaction or payout (such as amount, UPI ID, or bank account details) will be securely transmitted to licensed, RBI-authorized third-party Payment Gateway and Banking Partners. We do not have a payment processor integrated yet — see our Terms &amp; Conditions §5 for what that means for how payments currently move.</li>
+          <li><strong>Render</strong> (Infrastructure Provider) — hosts our application servers and database.</li>
+          <li><strong>Resend</strong> (Infrastructure Provider) — delivers OTP and password-reset emails on our behalf.</li>
           <li><strong>PostHog</strong> — production-only product analytics, described in Section 3.7.</li>
         </ul>
-        <p>We may also disclose information where required to comply with a legal obligation, such as a court order, or to investigate a suspected violation of our Terms & Conditions. We do not have a payment processor integrated yet — see our Terms & Conditions for what that means for how payments currently move.</p>
+        <p>We may also disclose information where required to comply with a legal obligation, such as a court order, or to investigate a suspected violation of our Terms & Conditions.</p>
       </LegalSection>
 
       <LegalSection id="retention" title="8. Data Retention & Account Deactivation">
-        <p>You can deactivate your own account from Settings → Danger Zone. This immediately signs you out and blocks future logins. Because Escrow, transaction, and review records reference other Users' history, we do not offer full data erasure today to preserve platform integrity — deactivating is reversible by contacting Support if you change your mind. Your Personal Information is otherwise retained only as long as necessary for the purposes described in this Policy.</p>
+        <p>You can deactivate your own account from Settings → Danger Zone. This immediately signs you out and blocks future logins. Because Secured Funds, transaction, and review records reference other Users' history, we do not offer full data erasure today to preserve platform integrity — deactivating is reversible by contacting Support if you change your mind. Your Personal Information is otherwise retained only as long as necessary for the purposes described in this Policy.</p>
       </LegalSection>
 
       <LegalSection id="security" title="9. Security">

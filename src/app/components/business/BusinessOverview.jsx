@@ -493,8 +493,18 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
         {/* items-start — same fix as the bottom grid: without it, the
             shorter Funds in Process / Financial Summary column stretched to
             match the Active Projects table's height (or vice versa),
-            instead of each card sizing to its own real content. */}
-        <div className="grid grid-cols-1 items-start gap-5 mt-6 mb-5 lg:grid-cols-3">
+            instead of each card sizing to its own real content.
+            lg:pr-24 — SupportFab.jsx is fixed at bottom-24 right-6
+            (viewport-relative, ~80px footprint from the right edge). On a
+            short/empty-state Overview this grid's own natural height fits
+            within the viewport with no scroll possible, so the right
+            column's last card can land with its numbers genuinely
+            unreadable underneath the button (confirmed via bounding-box
+            overlap) — margin/padding *after* the card doesn't help, since
+            its position is set by content above it, not below. Reserving
+            horizontal clearance on the whole row is the fix that actually
+            works regardless of content height or scroll position. */}
+        <div className="grid grid-cols-1 items-start gap-5 mt-6 mb-5 lg:grid-cols-3 lg:pr-24">
 
           {/* Active Projects table */}
           <div

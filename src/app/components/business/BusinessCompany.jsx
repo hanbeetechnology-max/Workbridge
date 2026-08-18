@@ -86,9 +86,9 @@ const VERIFICATIONS = [
 
 const STATS = [
   { label: "Jobs Posted",    value: "42",   Icon: Briefcase,  color: "text-[#1B3FAB] dark:text-blue-400",   bg: "bg-[#F4F6FF] dark:bg-[#1B3FAB]/10"  },
-  { label: "Workers Hired",  value: "28",   Icon: Users,      color: "text-emerald-600", bg: "bg-emerald-50" },
-  { label: "Avg. Rating",    value: "4.7",  Icon: Star,       color: "text-amber-600",   bg: "bg-amber-50"   },
-  { label: "Success Rate",   value: "94%",  Icon: TrendingUp, color: "text-[#FF6B35]",   bg: "bg-orange-50"  },
+  { label: "Workers Hired",  value: "28",   Icon: Users,      color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+  { label: "Avg. Rating",    value: "4.7",  Icon: Star,       color: "text-amber-600 dark:text-amber-400",   bg: "bg-amber-50 dark:bg-amber-500/10"   },
+  { label: "Success Rate",   value: "94%",  Icon: TrendingUp, color: "text-[#FF6B35]",   bg: "bg-orange-50 dark:bg-orange-500/10"  },
 ];
 
 const CULTURE_TAGS = ["Remote-First", "Async-Friendly", "Outcome-Driven", "Fast-Paced", "Collaborative"];
@@ -100,7 +100,7 @@ function RatingBar({ label, value, total = 28 }) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-slate-500 dark:text-slate-400 w-10 text-right flex-shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
       <span className="text-xs text-slate-400 dark:text-slate-500 w-5 flex-shrink-0">{value}</span>
@@ -151,8 +151,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
               {/* Company logo */}
               <div className="w-[84px] h-[84px] rounded-2xl bg-white p-[4px] shadow-xl ring-1 ring-slate-200 flex-shrink-0 dark:bg-slate-900 dark:ring-slate-700">
                 <div
-                  className="w-full h-full bg-[#1B3FAB] rounded-xl flex items-center justify-center text-white font-extrabold text-xl"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  className="w-full h-full bg-[#1B3FAB] rounded-xl flex items-center justify-center text-white font-extrabold text-xl font-display"
                 >
                   {profile.initials}
                 </div>
@@ -162,15 +161,14 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h1
-                    className="font-extrabold text-[#0F172A] dark:text-white text-xl leading-tight"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    className="font-extrabold text-[#0F172A] dark:text-white text-xl leading-tight font-display"
                   >
                     {profile.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-full border border-amber-200 flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-full border border-amber-200 flex-shrink-0 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40">
                     <Award className="w-3 h-3" /> Premium (Preview)
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-200 flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-200 flex-shrink-0 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40">
                     <ShieldCheck className="w-3 h-3" /> GST Verified (Preview)
                   </span>
                 </div>
@@ -263,7 +261,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
               <div>
-                <div className={`text-2xl font-extrabold ${color} leading-none`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <div className={`text-2xl font-extrabold ${color} leading-none font-display`}>
                   {label === "Avg. Rating"
                     ? <span className="flex items-center gap-1">{value}<Star className="w-4 h-4 fill-amber-400 text-amber-400" /></span>
                     : value
@@ -283,8 +281,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
 
             {/* Culture */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
-              <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Culture &amp; Work Style</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 font-display">Culture &amp; Work Style</h2>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">{profile.culture}</p>
               <div className="flex flex-wrap gap-2">
                 {CULTURE_TAGS.map((tag) => (
@@ -298,8 +295,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
             {/* Current Openings */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Current Openings (Preview)</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-display">Current Openings (Preview)</h2>
                 <span className="text-xs font-bold text-[#1B3FAB] dark:text-blue-400 bg-[#F4F6FF] dark:bg-[#1B3FAB]/10 px-2.5 py-1 rounded-full border border-[#1B3FAB]/10">
                   {COMPANY_JOBS.length} Open
                 </span>
@@ -310,8 +306,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
                     key={job.id}
                     className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-[#F4F6FF] hover:border-[#1B3FAB]/20 transition-all group cursor-pointer dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-[#1B3FAB]/10"
                   >
-                    <div className="w-10 h-10 bg-[#1B3FAB] rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <div className="w-10 h-10 bg-[#1B3FAB] rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 font-display">
                       {profile.initials}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -319,7 +314,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{job.tier} · {job.workload} · Posted {job.posted}</p>
                     </div>
                     {job.urgent && (
-                      <span className="flex-shrink-0 text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
+                      <span className="flex-shrink-0 text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full dark:text-red-400 dark:bg-red-500/10 dark:border-red-900/40">
                         Urgent
                       </span>
                     )}
@@ -331,8 +326,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
             {/* Worker Reviews */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Worker Reviews (Preview)</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-display">Worker Reviews (Preview)</h2>
                 <div className="flex items-center gap-2">
                   <div className="flex gap-0.5">
                     {[1,2,3,4,5].map((n) => (
@@ -385,8 +379,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
 
             {/* Company Details */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-5">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Company Details</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 font-display">Company Details</h3>
               <div className="space-y-4">
                 {[
                   { Icon: Building2, label: "Industry",  val: profile.industry },
@@ -435,19 +428,18 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
 
             {/* Trust & Verification */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-5">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Trust &amp; Verification (Preview)</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 font-display">Trust &amp; Verification (Preview)</h3>
               <div className="space-y-3">
                 {VERIFICATIONS.map(({ label, ok }) => (
                   <div key={label} className="flex items-center gap-2.5">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${ok ? "bg-emerald-50 border border-emerald-200" : "bg-slate-100 border border-slate-200"}`}>
-                      <CheckCircle2 className={`w-3 h-3 ${ok ? "text-emerald-500" : "text-slate-300"}`} />
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${ok ? "bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-900/40" : "bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:border-slate-700"}`}>
+                      <CheckCircle2 className={`w-3 h-3 ${ok ? "text-emerald-500" : "text-slate-300 dark:text-slate-600"}`} />
                     </div>
                     <span className={`text-sm flex-1 ${ok ? "font-semibold text-[#0F172A] dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
                       {label}
                     </span>
                     {!ok && (
-                      <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-900/40">
                         Pending
                       </span>
                     )}
@@ -456,19 +448,19 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
               </div>
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                <span className="text-xs font-bold text-emerald-700">Verified &amp; trusted employer</span>
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Verified &amp; trusted employer</span>
               </div>
             </div>
 
             {/* Premium benefits */}
-            <div className="rounded-2xl overflow-hidden border border-amber-200">
+            <div className="rounded-2xl overflow-hidden border border-amber-200 dark:border-amber-900/40">
               <div className="bg-gradient-to-r from-amber-500 to-[#FF6B35] px-5 py-3.5 flex items-center gap-2">
                 <Award className="w-4 h-4 text-white flex-shrink-0" />
-                <span className="font-extrabold text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <span className="font-extrabold text-white text-sm font-display">
                   Premium Employer
                 </span>
               </div>
-              <div className="bg-amber-50 px-5 py-4">
+              <div className="bg-amber-50 dark:bg-amber-950/20 px-5 py-4">
                 <ul className="space-y-2.5">
                   {[
                     "Priority listing on worker job feed",
@@ -478,7 +470,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
                   ].map((b) => (
                     <li key={b} className="flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-xs text-amber-800">{b}</span>
+                      <span className="text-xs text-amber-800 dark:text-amber-400">{b}</span>
                     </li>
                   ))}
                 </ul>
@@ -511,8 +503,7 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-[#0F172A] dark:text-white"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h1 className="text-2xl font-extrabold text-[#0F172A] dark:text-white font-display">
               Edit Company Profile
             </h1>
             <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Changes visible to workers on your public profile</p>
@@ -555,7 +546,7 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
             </Field>
 
             <Field label="Header Image">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <EditableCoverPhoto
                   coverUrl={draft.coverImage}
                   onUpload={(dataUrl) => onChange("coverImage", dataUrl)}

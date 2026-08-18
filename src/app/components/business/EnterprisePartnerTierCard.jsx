@@ -13,7 +13,7 @@ function formatINR(amount) {
 // get recognized for the volume they've actually put through the platform.
 const TIER_STYLES = {
   Bronze: { card: "bg-gradient-to-br from-orange-50 to-white border-orange-200 dark:from-orange-950/20 dark:to-slate-900 dark:border-orange-900/40", badge: "bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400", icon: "text-orange-500" },
-  Silver: { card: "bg-gradient-to-br from-slate-50 to-white border-slate-300 dark:from-slate-800/40 dark:to-slate-900 dark:border-slate-700", badge: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300", icon: "text-slate-500" },
+  Silver: { card: "bg-gradient-to-br from-slate-50 to-white border-slate-300 dark:from-slate-800/40 dark:to-slate-900 dark:border-slate-700", badge: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300", icon: "text-slate-500 dark:text-slate-400" },
   Gold: { card: "bg-gradient-to-br from-amber-50 to-white border-amber-300 dark:from-amber-950/20 dark:to-slate-900 dark:border-amber-900/40", badge: "bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400", icon: "text-amber-500" },
 };
 
@@ -42,7 +42,7 @@ export default function EnterprisePartnerTierCard() {
   if (loading) {
     return (
       <div className="mb-5 flex items-center justify-center rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-        <Loader2 className="h-5 w-5 animate-spin text-slate-300" />
+        <Loader2 className="h-5 w-5 animate-spin text-slate-300 dark:text-slate-600" />
       </div>
     );
   }
@@ -62,7 +62,7 @@ export default function EnterprisePartnerTierCard() {
             <Award className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Enterprise Partner Tier</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Enterprise Partner Tier</p>
             <div className="mt-0.5 flex items-center gap-2">
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wide ${style.badge}`}>
                 {status.tier}

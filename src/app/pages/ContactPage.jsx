@@ -26,9 +26,9 @@ export default function ContactPage() {
           </em>
         </p>
         <ul>
-          <li><strong>Legal entity:</strong> WorkBridge Technologies Pvt. Ltd.</li>
+          <li><strong>Legal entity:</strong> Hanbee Technologies Pvt. Ltd.</li>
           <li><strong>Registered address:</strong> [PLACEHOLDER — registered office address, India]</li>
-          <li><strong>Support email:</strong> [PLACEHOLDER — e.g. support@workbridge.in]</li>
+          <li><strong>Support email:</strong> [PLACEHOLDER — e.g. support@hanbee.in]</li>
           <li><strong>Phone:</strong> [PLACEHOLDER — support phone number]</li>
           <li><strong>Support hours:</strong> [PLACEHOLDER — e.g. Mon–Sat, 10:00–18:00 IST]</li>
         </ul>
@@ -37,8 +37,8 @@ export default function ContactPage() {
       <LegalSection id="other-pages" title="3. Related Pages">
         <p>
           For how refunds and cancellations work, see our <a href="/refund-policy">Refund &amp; Cancellation
-          Policy</a>. For our fee and payment policy, see <a href="/terms">Terms &amp; Conditions</a>. For our full
-          terms, see <a href="/terms">Terms &amp; Conditions</a> and <a href="/privacy">Privacy Policy</a>.
+          Policy</a>. For our fee and payment policy and full terms, see our <a href="/terms">Terms &amp;
+          Conditions</a>, and for how we handle your data, see our <a href="/privacy">Privacy Policy</a>.
         </p>
       </LegalSection>
     </LegalPageLayout>

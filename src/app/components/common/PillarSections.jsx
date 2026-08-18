@@ -6,7 +6,6 @@ import {
   FileCheck2,
   Headphones,
   PlugZap,
-  Timer,
   Wallet,
   Zap,
 } from "lucide-react";
@@ -15,6 +14,9 @@ import { motion } from "motion/react";
 import { Button } from "./Button";
 import { GlassCard } from "./GlassCard";
 import { ChromaGrid } from "./ChromaGrid";
+import ScrollReveal from "./ScrollReveal";
+import TextReveal from "./TextReveal";
+import MagneticButton from "./MagneticButton";
 
 const workFeatures = [
   {
@@ -30,12 +32,36 @@ const workFeatures = [
   },
   {
     title: "Work Your Way",
-    text: "Choose projects that match your skills, schedule and Growth Speak it-self",
+    text: "Choose projects that match your skills, your schedule, and where you want your career to grow.",
     Icon: CalendarClock,
   },
 ];
 
 const trustMatrix = ["Verified Talent", "Secure Earnings", "Quick Connection"];
+
+// A previous version rotated the entire Timer icon (face and all) like a
+// spinning wheel — realistically only the hand should move. A static
+// circle face plus one isolated hand rotating around the center reads as
+// an actual ticking clock instead.
+function TickingClock({ size = 22 }) {
+  return (
+    <span className="relative inline-flex flex-shrink-0" style={{ width: size, height: size }} aria-hidden="true">
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+      </svg>
+      <motion.span
+        className="absolute rounded-full bg-current"
+        style={{ left: "50%", top: "50%", width: 1.5, height: size * 0.28, transformOrigin: "50% 100%", x: "-50%", y: "-100%" }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+      />
+      <span
+        className="absolute rounded-full bg-current"
+        style={{ left: "50%", top: "50%", width: 3, height: 3, transform: "translate(-50%, -50%)" }}
+      />
+    </span>
+  );
+}
 
 const enterpriseHighlights = [
   {
@@ -61,8 +87,13 @@ export function FindWorkSection({ showLink = true, onSelect }) {
       <SectionHeader eyebrow="Earn For Your Work" title="Where Hard Work Meets Opportunity" />
 
       <ChromaGrid gridClassName="wb-card-grid wb-card-grid--three">
-        {workFeatures.map(({ title, text, Icon, badge }) => (
-          <GlassCard key={title} className="wb-feature-card wb-feature-card--float">
+        {workFeatures.map(({ title, text, Icon, badge }, i) => (
+          <ScrollReveal
+            key={title}
+            delay={i * 0.08}
+            distance={20}
+            className="wb-glass-card wb-feature-card wb-feature-card--float"
+          >
             <span className="wb-icon-tile">
               <Icon size={26} />
             </span>
@@ -73,7 +104,7 @@ export function FindWorkSection({ showLink = true, onSelect }) {
                 <Zap size={14} /> {badge}
               </span>
             )}
-          </GlassCard>
+          </ScrollReveal>
         ))}
       </ChromaGrid>
 
@@ -131,13 +162,7 @@ export function HireTalentSection({ showLink = true, onSelect }) {
               </p>
               <h3>Ready-to-Hire</h3>
             </div>
-            <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              className="inline-flex"
-            >
-              <Timer size={22} />
-            </motion.span>
+            <TickingClock size={22} />
           </div>
 
           <div className="wb-metric-row">
@@ -201,14 +226,19 @@ export function EnterpriseSection({ showLink = true, onSelect }) {
       </div>
 
       <div className="wb-card-grid wb-card-grid--three">
-        {enterpriseHighlights.map(({ title, text, Icon }) => (
-          <GlassCard key={title} className="wb-feature-card wb-enterprise-card">
+        {enterpriseHighlights.map(({ title, text, Icon }, i) => (
+          <ScrollReveal
+            key={title}
+            delay={i * 0.08}
+            distance={20}
+            className="wb-glass-card wb-feature-card wb-enterprise-card"
+          >
             <span className="wb-icon-tile">
               <Icon size={26} />
             </span>
             <h3>{title}</h3>
             <p>{text}</p>
-          </GlassCard>
+          </ScrollReveal>
         ))}
       </div>
     </section>
@@ -227,26 +257,30 @@ export function PillarSections({ onSelect, showLink = true }) {
 
 function SectionHeader({ eyebrow, title }) {
   return (
-    <div className="wb-section-header">
+    <ScrollReveal className="wb-section-header wb-section-header--js">
       <p>{eyebrow}</p>
-      <h2>{title}</h2>
-    </div>
+      <TextReveal as="h2" text={title} />
+    </ScrollReveal>
   );
 }
 
 function SectionAction({ children, showLink, to, variant = "primary", onClick }) {
   if (showLink) {
     return (
-      <Link to={to} className={`wb-button wb-button--${variant}`}>
-        {children} <ArrowRight size={16} />
-      </Link>
+      <MagneticButton strength={0.25}>
+        <Link to={to} className={`wb-button wb-button--${variant}`}>
+          {children} <ArrowRight size={16} />
+        </Link>
+      </MagneticButton>
     );
   }
 
   return (
-    <Button variant={variant} onClick={onClick}>
-      {children} <ArrowRight size={16} />
-    </Button>
+    <MagneticButton strength={0.25}>
+      <Button variant={variant} onClick={onClick}>
+        {children} <ArrowRight size={16} />
+      </Button>
+    </MagneticButton>
   );
 }
 

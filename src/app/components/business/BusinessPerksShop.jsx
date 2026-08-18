@@ -264,7 +264,7 @@ export default function BusinessPerksShop() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-slate-300 dark:text-slate-600" />
       </div>
     );
   }
@@ -308,7 +308,7 @@ export default function BusinessPerksShop() {
       <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/60">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-extrabold text-[#0A1128] dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <h1 className="font-display text-xl font-extrabold text-[#0A1128] dark:text-white">
             Business Perks Shop
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Spend Corporate Credits on visibility boosts for your hiring.</p>

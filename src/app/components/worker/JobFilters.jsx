@@ -122,7 +122,7 @@ export default function JobFilters({
                 className={`${INPUT_CLASSES} py-2 pl-6 pr-2`}
               />
             </div>
-            <span className="flex-shrink-0 text-slate-300">–</span>
+            <span className="flex-shrink-0 text-slate-300 dark:text-slate-600">–</span>
             <div className="relative flex-1">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500">₹</span>
               <input

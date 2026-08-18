@@ -93,7 +93,7 @@ function ReviewCard({ review }) {
             className="h-11 w-11 flex-shrink-0 rounded-full object-cover shadow-sm"
           />
         ) : (
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-slate-700 dark:text-slate-200 shadow-sm">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-slate-700 dark:text-slate-200 shadow-sm dark:bg-slate-700">
             {getInitials(review.reviewer_name)}
           </div>
         )}
@@ -156,7 +156,7 @@ function BehaviorLevelBento({ behaviorScore, verified }) {
       {verified ? (
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-1.5 text-sm leading-6 text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+            <ShieldCheck className="h-4 w-4 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
             Identity verified
           </p>
           {/* Stealth Mode — only reachable at all once verified is real and
@@ -490,7 +490,7 @@ export default function WorkerProfile() {
                         </span>
                       )}
                       {currentUser?.rating != null && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 font-bold text-amber-700 ring-1 ring-amber-100">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 font-bold text-amber-700 ring-1 ring-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-900/40">
                           <Star className="h-3.5 w-3.5 fill-current" />
                           {currentUser.rating} ({currentUser.reviews_count} reviews)
                         </span>
@@ -512,7 +512,7 @@ export default function WorkerProfile() {
                       </div>
                       <p className="mt-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
                         Current Tier: <span className="text-slate-700 dark:text-slate-200">{tier}</span>
-                        {nextTier && ` · Progress to ${nextTier.tier}-Tier Fee Discount`}
+                        {nextTier && ` · Progress to ${nextTier.tier} Tier`}
                       </p>
                     </div>
                   </div>
@@ -535,7 +535,7 @@ export default function WorkerProfile() {
                 </div>
               </div>
               {(avatarError || coverError) && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-500">
+                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-500 dark:text-red-400">
                   <AlertCircle className="h-3.5 w-3.5" />
                   {avatarError || coverError}
                 </p>
@@ -793,7 +793,7 @@ export default function WorkerProfile() {
                           type="button"
                           onClick={() => removeDraftListItem("projects", index)}
                           aria-label="Remove this project"
-                          className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10"
+                          className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -844,7 +844,7 @@ export default function WorkerProfile() {
                         type="button"
                         onClick={() => removeDraftListItem("education", index)}
                         aria-label="Remove this education entry"
-                        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10"
+                        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -887,7 +887,7 @@ export default function WorkerProfile() {
                         type="button"
                         onClick={() => removeDraftListItem("certifications", index)}
                         aria-label="Remove this certification"
-                        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10"
+                        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>

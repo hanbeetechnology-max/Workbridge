@@ -73,7 +73,7 @@ function FieldLabel({ children }) {
 function FieldError({ message }) {
   if (!message) return null;
   return (
-    <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
+    <p className="mt-1.5 text-xs font-semibold text-red-500 dark:text-red-400 flex items-center gap-1">
       <AlertCircle className="w-3 h-3 flex-shrink-0" />
       {message}
     </p>
@@ -89,8 +89,7 @@ function SectionCard({ icon: Icon, title, sub, children }) {
         </div>
         <div>
           <h2
-            className="font-bold text-[#0F172A] dark:text-white text-sm"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            className="font-bold text-[#0F172A] dark:text-white text-sm font-display"
           >
             {title}
           </h2>
@@ -241,8 +240,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
         {/* Page Header */}
         <div className="mb-8">
           <h1
-            className="text-2xl font-extrabold text-[#0F172A] dark:text-white"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            className="text-2xl font-extrabold text-[#0F172A] dark:text-white font-display"
           >
             Post a New Job
           </h1>
@@ -486,7 +484,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                     aria-label="Urgent Matching"
                     onClick={() => setUrgent(!urgent)}
                     className={`relative ml-4 h-6 w-12 flex-shrink-0 rounded-full transition-colors duration-200 ${
-                      urgent ? "bg-[#FF6B35]" : "bg-slate-300"
+                      urgent ? "bg-[#FF6B35]" : "bg-slate-300 dark:bg-slate-700"
                     }`}
                   >
                     <div
@@ -586,8 +584,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                           {watchedCategory || "Category"}
                         </p>
                         <h2
-                          className="mt-1.5 text-sm font-black leading-snug text-slate-900 dark:text-white"
-                          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                          className="mt-1.5 text-sm font-black leading-snug text-slate-900 dark:text-white font-display"
                         >
                           {watchedTitle || (
                             <span className="text-slate-300 font-normal dark:text-slate-600">Your job title…</span>
@@ -723,8 +720,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                       <ShieldCheck className="w-4 h-4 text-[#1B3FAB] dark:text-blue-400" />
                     </div>
                     <h3
-                      className="text-sm font-bold text-[#0F172A] dark:text-white"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                      className="text-sm font-bold text-[#0F172A] dark:text-white font-display"
                     >
                       Payment Summary
                     </h3>
@@ -737,8 +733,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-[#0F172A] dark:text-white">You'll Deposit</span>
                       <span
-                        className="font-extrabold text-[#FF6B35] text-base"
-                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        className="font-extrabold text-[#FF6B35] text-base font-display"
                       >
                         {formatINR(summaryBudget)}
                       </span>
@@ -764,8 +759,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                   <button
                     type="submit"
                     disabled={posting}
-                    className="w-full py-4 bg-[#FF6B35] hover:bg-[#E55E1F] text-white rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/30 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    className="w-full py-4 bg-[#FF6B35] hover:bg-[#E55E1F] text-white rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/30 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 font-display"
                   >
                     {posting ? "Posting…" : "Post Job — Go Live"}
                     <ChevronRight className="w-4 h-4 opacity-70" />
@@ -797,8 +791,7 @@ function PostJobGate({ onVerify }) {
       </div>
 
       <h2
-        className="text-2xl font-extrabold text-[#0A1128] dark:text-white mb-3"
-        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        className="text-2xl font-extrabold text-[#0A1128] dark:text-white mb-3 font-display"
       >
         Verify your business first
       </h2>
@@ -828,8 +821,7 @@ function PostJobGate({ onVerify }) {
 
       <button
         onClick={onVerify}
-        className="flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-[#FF6B2C] to-rose-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-orange-200 hover:opacity-90 hover:-translate-y-1 transition-all duration-200 group"
-        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        className="flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-[#FF6B2C] to-rose-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-orange-200 hover:opacity-90 hover:-translate-y-1 transition-all duration-200 group font-display"
       >
         <CheckCircle2 className="w-5 h-5" />
         Verify My Business

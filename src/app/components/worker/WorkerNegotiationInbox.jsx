@@ -641,7 +641,7 @@ function ChatPanel({ thread, projects, onViewDetails, onProjectUpdated }) {
               ) : (
                 <div className="flex items-center gap-1.5">
                   <div className="relative">
-                    <IndianRupee className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
+                    <IndianRupee className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <input
                       type="number"
                       min="1"
@@ -666,7 +666,7 @@ function ChatPanel({ thread, projects, onViewDetails, onProjectUpdated }) {
                       setProposingBudget(false);
                       setBudgetError("");
                     }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>

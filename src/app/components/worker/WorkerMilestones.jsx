@@ -160,7 +160,7 @@ export default function WorkerMilestones({ embedded = false }) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-slate-300 dark:text-slate-600" />
       </div>
     );
   }
@@ -181,7 +181,7 @@ export default function WorkerMilestones({ embedded = false }) {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           {!embedded && (
-            <h1 className="text-xl font-extrabold text-[#0A1128] dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h1 className="font-display text-xl font-extrabold text-[#0A1128] dark:text-white">
               Badges
             </h1>
           )}
@@ -212,9 +212,9 @@ export default function WorkerMilestones({ embedded = false }) {
         <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
         <span>
           Your level is real. Most rewards below are still the platform's documented plan, not fully wired up
-          yet — only your Tier badge (Silver/Gold/Platinum/Diamond) and its backend fee tier are live today. Pin one
-          earned badge (top-right pin icon) to show it on your profile avatar — businesses can see it too, once
-          your profile has been revealed.
+          yet — only your Tier badge (Silver/Gold/Platinum/Diamond) is live today. Pin one earned badge (top-right
+          pin icon) to show it on your profile avatar — businesses can see it too, once your profile has been
+          revealed.
         </span>
       </div>
 

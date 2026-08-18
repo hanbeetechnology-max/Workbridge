@@ -45,16 +45,16 @@ export default function InvoicePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#1B3FAB]" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 dark:border-slate-700 border-t-[#1B3FAB]" />
       </div>
     );
   }
 
   if (loadError || !project) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-4">
-        <div className="flex max-w-md items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-slate-950 p-4">
+        <div className="flex max-w-md items-start gap-2 rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-600 dark:text-red-400">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{loadError || "Invoice not found."}</span>
         </div>
@@ -88,7 +88,7 @@ export default function InvoicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-10 px-4 sm:py-16 print:bg-white print:py-0">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 py-10 px-4 sm:py-16 print:bg-white print:py-0">
       <div className="mx-auto w-full max-w-4xl">
 
         <button
@@ -106,12 +106,17 @@ export default function InvoicePage() {
             else if (currentUser?.role === "business") navigate("/business");
             else navigate("/admin");
           }}
-          className="mb-4 flex min-h-[44px] items-center gap-1.5 text-xs font-bold text-slate-500 transition-colors hover:text-[#0F172A] print:hidden"
+          className="mb-4 flex min-h-[44px] items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 transition-colors hover:text-[#0F172A] dark:hover:text-white print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back
         </button>
 
+        {/* Deliberately a fixed light "paper" document regardless of app
+            theme — same always-light convention as a printed invoice, and
+            this card already carries full print: styling for exactly that
+            physical-document metaphor. Only the surrounding page chrome
+            (background, Back button) adapts to dark mode. */}
         <div className="relative overflow-hidden rounded-2xl border-4 border-double border-slate-200 bg-white shadow-[0_20px_60px_-15px_rgba(15,23,42,0.15)] print:border-0 print:shadow-none">
 
           {/* Official-document watermark — decorative only, sits behind
@@ -120,10 +125,7 @@ export default function InvoicePage() {
             className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
             aria-hidden="true"
           >
-            <span
-              className="-rotate-12 whitespace-nowrap text-8xl font-black text-slate-900 opacity-[0.03] sm:text-9xl"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
+            <span className="font-display -rotate-12 whitespace-nowrap text-8xl font-black text-slate-900 opacity-[0.03] sm:text-9xl">
               WorkBridge
             </span>
           </div>
@@ -134,10 +136,7 @@ export default function InvoicePage() {
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#FF6B35]">
                 <Zap className="h-4 w-4 text-white" />
               </div>
-              <span
-                className="text-lg font-extrabold text-[#0F172A]"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
+              <span className="font-display text-lg font-extrabold text-[#0F172A]">
                 WorkBridge
               </span>
             </div>
@@ -232,10 +231,7 @@ export default function InvoicePage() {
                 >
                   <div className="rounded-md border-[3px] border-emerald-600/80 px-2.5 py-1 sm:px-3 sm:py-1.5">
                     <div className="rounded border border-emerald-600/80 px-2 py-0.5">
-                      <span
-                        className="text-base font-black uppercase tracking-[0.3em] text-emerald-600/80 sm:text-xl"
-                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                      >
+                      <span className="font-display text-base font-black uppercase tracking-[0.3em] text-emerald-600/80 sm:text-xl">
                         Paid
                       </span>
                     </div>

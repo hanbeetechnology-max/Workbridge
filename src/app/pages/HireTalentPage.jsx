@@ -48,7 +48,7 @@ export default function HireTalentPage({ onSelect }) {
           {["Instant Matching", "Behavior Score Verification", "Quality Assurance"].map((pill) => (
             <span
               key={pill}
-              className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600"
+              className="rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300"
             >
               {pill}
             </span>

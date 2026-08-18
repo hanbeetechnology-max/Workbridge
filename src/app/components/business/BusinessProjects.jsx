@@ -302,8 +302,8 @@ function PaymentApprovalModal({ project, isSubmitting, submitError, onClose, onC
           >
             <div className="p-6">
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50">
-                  <Lock className="h-5 w-5 text-emerald-600" />
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-500/10">
+                  <Lock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-extrabold text-[#0F172A] dark:text-white" style={HEADING_FONT}>
@@ -336,7 +336,7 @@ function PaymentApprovalModal({ project, isSubmitting, submitError, onClose, onC
                 <div className="h-px bg-slate-200 dark:bg-slate-700" />
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Processing</span>
-                  <span className="font-bold text-amber-600">WorkBridge Review</span>
+                  <span className="font-bold text-amber-600 dark:text-amber-400">WorkBridge Review</span>
                 </div>
               </div>
 
@@ -414,8 +414,8 @@ function RequestRevisionModal({ project, note, onNoteChange, isSubmitting, submi
           >
             <div className="p-6">
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-amber-100 bg-amber-50">
-                  <RotateCcw className="h-5 w-5 text-amber-600" />
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-amber-100 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-500/10">
+                  <RotateCcw className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-extrabold text-[#0F172A] dark:text-white" style={HEADING_FONT}>
@@ -515,8 +515,8 @@ function DisputeConfirmModal({ project, isSubmitting, submitError, onClose, onCo
           >
             <div className="p-6">
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50 dark:border-red-900/40 dark:bg-red-500/10">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-extrabold text-[#0F172A] dark:text-white" style={HEADING_FONT}>
@@ -604,8 +604,8 @@ function CancelRefundConfirmModal({ project, isSubmitting, submitError, onClose,
           >
             <div className="p-6">
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50 dark:border-red-900/40 dark:bg-red-500/10">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-extrabold text-[#0F172A] dark:text-white" style={HEADING_FONT}>
@@ -695,17 +695,17 @@ function CancelRefundConfirmModal({ project, isSubmitting, submitError, onClose,
 // skills/questionnaire answers, exactly as intended. Tier colors only
 // matter once standing_door === 'win'.
 const TIER_CARD_STYLES = {
-  slate: "border-slate-200",
-  gray: "border-slate-300 shadow-[0_0_15px_rgba(148,163,184,0.25)]",
-  yellow: "border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)]",
-  teal: "border-teal-300 shadow-[0_0_15px_rgba(20,184,166,0.25)]",
+  slate: "border-slate-200 dark:border-slate-700",
+  gray: "border-slate-300 dark:border-slate-600 shadow-[0_0_15px_rgba(148,163,184,0.25)]",
+  yellow: "border-amber-300 dark:border-amber-700 shadow-[0_0_15px_rgba(245,158,11,0.25)]",
+  teal: "border-teal-300 dark:border-teal-700 shadow-[0_0_15px_rgba(20,184,166,0.25)]",
   blue: "border-[#FF6B35] shadow-[0_0_15px_rgba(255,107,53,0.25)]",
 };
 
 function StandingBadge({ standingDoor, currentLevel }) {
   if (standingDoor === "span") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
         <Sparkles className="h-2.5 w-2.5" />
         Rising — On the Bridge
       </span>
@@ -714,7 +714,7 @@ function StandingBadge({ standingDoor, currentLevel }) {
   if (standingDoor === "win") {
     const { tier } = getTierData(currentLevel);
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3EC] px-2 py-0.5 text-[10px] font-bold text-[#FF6B35]">
+      <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3EC] dark:bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold text-[#FF6B35] dark:text-orange-400">
         <Award className="h-2.5 w-2.5" />
         {tier}
       </span>
@@ -790,7 +790,7 @@ function AIToolsPanel({ project }) {
         </button>
       </div>
 
-      {shortlistError && <p className="text-xs font-semibold text-red-500">{shortlistError}</p>}
+      {shortlistError && <p className="text-xs font-semibold text-red-500 dark:text-red-400">{shortlistError}</p>}
 
       {shortlist && (
         <div className="space-y-2">
@@ -798,7 +798,7 @@ function AIToolsPanel({ project }) {
             {shortlist.length === 0 ? "No matching workers found yet" : "Suggested Workers"}
           </p>
           {shortlist.map((w) => (
-            <div key={w.id} className="flex items-center gap-2.5 rounded-lg bg-white px-3 py-2 dark:bg-slate-800">
+            <div key={w.id} className="flex items-center gap-2.5 rounded-lg bg-white dark:bg-slate-800 px-3 py-2">
               {w.avatar_url ? (
                 <img src={w.avatar_url} alt={w.name} className="h-8 w-8 flex-shrink-0 rounded-lg object-cover" />
               ) : (
@@ -838,9 +838,9 @@ function ApplicantsModal({ project, candidates, isLoading, respondingId, onClose
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
-            className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
           >
-            <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">Applicants &amp; Invites</p>
                 <h3 className="truncate text-base font-extrabold text-[#0F172A] dark:text-white" style={HEADING_FONT}>
@@ -850,7 +850,7 @@ function ApplicantsModal({ project, candidates, isLoading, respondingId, onClose
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -860,7 +860,7 @@ function ApplicantsModal({ project, candidates, isLoading, respondingId, onClose
               <AIToolsPanel project={project} />
               {isLoading ? (
                 <div className="flex justify-center py-10">
-                  <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-300 dark:text-slate-600" />
                 </div>
               ) : candidates.length === 0 ? (
                 <p className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
@@ -869,9 +869,9 @@ function ApplicantsModal({ project, candidates, isLoading, respondingId, onClose
               ) : (
                 candidates.map((c) => {
                   const tierStyle =
-                    c.standing_door === "win" ? TIER_CARD_STYLES[getTierData(c.current_level).colorTheme] : "border-slate-200";
+                    c.standing_door === "win" ? TIER_CARD_STYLES[getTierData(c.current_level).colorTheme] : "border-slate-200 dark:border-slate-700";
                   return (
-                  <div key={c.id} className={`rounded-xl border bg-slate-50 p-4 ${tierStyle}`}>
+                  <div key={c.id} className={`rounded-xl border bg-slate-50 dark:bg-slate-800 p-4 ${tierStyle}`}>
                     <div className="flex items-start gap-3">
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt={c.worker_name} className="h-10 w-10 flex-shrink-0 rounded-xl object-cover" />
@@ -893,13 +893,13 @@ function ApplicantsModal({ project, candidates, isLoading, respondingId, onClose
                           )}
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              c.source === "INVITE" ? "bg-[#F4F6FF] dark:bg-[#1B3FAB]/10 text-[#1B3FAB] dark:text-blue-400" : "bg-slate-200 text-slate-600 dark:text-slate-400"
+                              c.source === "INVITE" ? "bg-[#F4F6FF] dark:bg-[#1B3FAB]/10 text-[#1B3FAB] dark:text-blue-400" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
                             }`}
                           >
                             {c.source === "INVITE" ? "You invited" : "Applied"}
                           </span>
                           {c.status !== "PENDING" && (
-                            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                            <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                               {c.status}
                             </span>
                           )}
@@ -926,7 +926,7 @@ function ApplicantsModal({ project, candidates, isLoading, respondingId, onClose
                           <button
                             onClick={() => onRespond(c.id, false)}
                             disabled={respondingId === c.id}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 disabled:opacity-60"
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                           >
                             Decline
                           </button>
@@ -975,18 +975,18 @@ function RatingModal({ project, currentUserId, onClose, onRated }) {
       onClick={onClose}
     >
       <div
-        className="wb-scroll-clean relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="wb-scroll-clean relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-slate-900"
         onClick={(event) => event.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-slate-500 dark:text-slate-400 hover:bg-slate-100"
+          className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700"
         >
           <X className="h-4 w-4" />
         </button>
         {existingReview === undefined ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+            <Loader2 className="h-6 w-6 animate-spin text-slate-300 dark:text-slate-600" />
           </div>
         ) : (
           <ProjectCompletionHub
@@ -1435,7 +1435,7 @@ export default function BusinessProjects({ onOpenChat }) {
             translucent glass surface on this page; financial data below
             stays on solid/near-solid backgrounds for readability. */}
         <div className="mb-6 flex items-center gap-2.5 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-slate-600 dark:text-slate-400 shadow-sm backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/40">
-          <ShieldCheck className="h-4 w-4 flex-shrink-0 text-emerald-600" />
+          <ShieldCheck className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
           <p className="text-xs font-semibold">Every payment release goes through WorkBridge in one clean step — nothing is ever left half-transferred.</p>
         </div>
 
@@ -1444,7 +1444,7 @@ export default function BusinessProjects({ onOpenChat }) {
             <p className="text-sm font-semibold text-red-600 dark:text-red-400">{loadError}</p>
             <button
               onClick={loadProjects}
-              className="flex-shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-red-600 shadow-sm hover:bg-red-50 dark:bg-slate-900 dark:hover:bg-red-950/30"
+              className="flex-shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-red-600 shadow-sm hover:bg-red-50 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/30"
             >
               Retry
             </button>
@@ -1465,7 +1465,7 @@ export default function BusinessProjects({ onOpenChat }) {
                   key={id}
                   onClick={() => setProjectsTab(id)}
                   className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
-                    active ? "bg-white text-[#0F172A] dark:text-white shadow-sm dark:bg-slate-700" : "text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                    active ? "bg-white text-[#0F172A] dark:text-white shadow-sm dark:bg-slate-700" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -1608,7 +1608,7 @@ export default function BusinessProjects({ onOpenChat }) {
                   >
                     {isDisputed && (
                       <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-5 py-2.5 dark:border-red-900/40 dark:bg-red-950/30">
-                        <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-red-500" />
+                        <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-red-500 dark:text-red-400" />
                         <p className="text-xs font-bold text-red-600 dark:text-red-400">
                           Dispute raised · Funds stay held until WorkBridge reviews this project.
                         </p>
@@ -1891,7 +1891,7 @@ export default function BusinessProjects({ onOpenChat }) {
                       </div>
                     ) : (
                       <div className="flex flex-shrink-0 flex-wrap items-center gap-3">
-                        <span className="font-mono text-sm font-bold text-emerald-700">{formatINR(p.budget)}</span>
+                        <span className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-400">{formatINR(p.budget)}</span>
 
                         <button
                           onClick={() => setWorkerDrawerProject(p)}
@@ -1935,7 +1935,7 @@ export default function BusinessProjects({ onOpenChat }) {
 
                         <Link
                           to={`/invoice?id=${p.id}`}
-                          className="flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200"
+                          className="flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
                         >
                           <CheckCircle2 className="h-3 w-3" />
                           View Invoice

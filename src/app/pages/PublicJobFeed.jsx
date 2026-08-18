@@ -4,6 +4,8 @@ import { Briefcase, Clock3, Flame, IndianRupee, Lock, Search, ShieldCheck, Users
 import { listPublicOpenJobs } from "../lib/projectsApi";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { ApiError } from "../lib/apiClient";
+import TextReveal from "../components/common/TextReveal";
+import ScrollReveal from "../components/common/ScrollReveal";
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
@@ -30,21 +32,21 @@ function JobDetailModal({ job, onClose, onSignIn }) {
       onClick={onClose}
     >
       <div
-        className="wb-scroll-clean relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="wb-scroll-clean relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-xl">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-6 py-4 backdrop-blur-xl">
           <div className="min-w-0">
-            <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
               <Briefcase className="h-3 w-3" />
               {job.business_name}
             </p>
-            <h2 className="mt-1 truncate text-xl font-black text-slate-900">{job.title}</h2>
+            <h2 className="font-display mt-1 truncate text-xl font-black text-slate-900 dark:text-white">{job.title}</h2>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
           >
             <X className="h-4 w-4" />
           </button>
@@ -52,7 +54,7 @@ function JobDetailModal({ job, onClose, onSignIn }) {
 
         <div className="space-y-5 px-6 py-5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300">
               <IndianRupee className="h-3 w-3" />
               {Number(job.budget).toLocaleString("en-IN")}
             </span>
@@ -63,7 +65,7 @@ function JobDetailModal({ job, onClose, onSignIn }) {
               </span>
             )}
             {job.estimated_duration && (
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
+              <span className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
                 Est. {job.estimated_duration}
               </span>
             )}
@@ -72,23 +74,23 @@ function JobDetailModal({ job, onClose, onSignIn }) {
           {job.required_skills?.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {job.required_skills.map((skill) => (
-                <span key={skill} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
+                <span key={skill} className="rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   {skill}
                 </span>
               ))}
             </div>
           )}
 
-          <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
+          <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-slate-300">
             {job.description || "No further details were added to this post."}
           </p>
 
-          <div className="rounded-2xl border border-[#1B3FAB]/15 bg-[#F4F6FF] p-4">
+          <div className="rounded-2xl border border-[#1B3FAB]/15 dark:border-[#6B8AF0]/20 bg-[#F4F6FF] dark:bg-[#6B8AF0]/10 p-4">
             <div className="flex items-start gap-2.5">
-              <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#1B3FAB]" />
+              <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#1B3FAB] dark:text-[#6B8AF0]" />
               <div>
-                <p className="text-sm font-bold text-[#0F172A]">Sign in to apply</p>
-                <p className="mt-1 text-xs leading-5 text-slate-600">
+                <p className="text-sm font-bold text-[#0F172A] dark:text-white">Sign in to apply</p>
+                <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
                   Browsing is free for everyone — applying takes a free WorkBridge account so the business can see
                   who you are.
                 </p>
@@ -148,46 +150,51 @@ export default function PublicJobFeed({ onSelect }) {
   const handleSignIn = () => onSelect?.("worker");
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#070B18] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-black text-slate-900 sm:text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Browse Freelance Jobs
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <TextReveal
+            as="h1"
+            text="Browse Freelance Jobs"
+            className="font-display text-3xl font-black text-slate-900 dark:text-white sm:text-4xl"
+          />
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Every open post on WorkBridge, live — no account needed to look around.
           </p>
         </div>
 
-        <div className="mx-auto mb-8 flex max-w-xl items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div className="mx-auto mb-8 flex max-w-xl items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 shadow-sm">
           <Search className="h-4 w-4 flex-shrink-0 text-slate-400" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search title, business, or skill"
-            className="w-full text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            className="w-full text-sm text-slate-900 dark:text-white bg-transparent outline-none placeholder:text-slate-400"
           />
         </div>
 
         {loading ? (
           <div className="flex justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#1B3FAB]" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 dark:border-slate-700 border-t-[#1B3FAB] dark:border-t-[#6B8AF0]" />
           </div>
         ) : loadError ? (
-          <div className="mx-auto max-w-md rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-center text-sm text-red-600">
+          <div className="mx-auto max-w-md rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-center text-sm text-red-600 dark:text-red-400">
             {loadError}
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-            <Briefcase className="mx-auto h-10 w-10 text-slate-300" />
-            <h2 className="mt-4 text-lg font-bold text-slate-900">No open jobs right now</h2>
-            <p className="mt-1 text-sm text-slate-500">New posts show up here as businesses hire — check back soon.</p>
+          <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-10 text-center">
+            <Briefcase className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
+            <h2 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">No open jobs right now</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">New posts show up here as businesses hire — check back soon.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {filteredJobs.map((job) => (
-              <article
+            {filteredJobs.map((job, i) => (
+              <ScrollReveal
                 key={job.id}
+                as="article"
+                delay={(i % 6) * 0.06}
+                distance={16}
                 role="button"
                 tabIndex={0}
                 onClick={() => setSelectedJob(job)}
@@ -199,18 +206,18 @@ export default function PublicJobFeed({ onSelect }) {
                 }}
                 className={`cursor-pointer rounded-2xl border p-5 shadow-lg backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl ${
                   job.is_urgent
-                    ? "border-[#FF6B35]/40 bg-orange-50/50 shadow-orange-200/40"
-                    : "border-white/70 bg-white/60 shadow-slate-200/40"
+                    ? "border-[#FF6B35]/40 bg-orange-50/50 dark:bg-orange-500/10 shadow-orange-200/40 dark:shadow-none"
+                    : "border-white/70 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 shadow-slate-200/40 dark:shadow-none"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                      <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                         <Briefcase className="h-3 w-3" />
                         {job.business_name}
                       </p>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-300">
                         <IndianRupee className="h-3 w-3" />
                         {Number(job.budget).toLocaleString("en-IN")}
                       </span>
@@ -221,42 +228,42 @@ export default function PublicJobFeed({ onSelect }) {
                         </span>
                       )}
                     </div>
-                    <h2 className="mt-2 text-lg font-black leading-snug text-slate-900">{job.title}</h2>
+                    <h2 className="font-display mt-2 text-lg font-black leading-snug text-slate-900 dark:text-white">{job.title}</h2>
                     {job.required_skills?.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {job.required_skills.slice(0, 4).map((skill) => (
-                          <span key={skill} className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                          <span key={skill} className="rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                             {skill}
                           </span>
                         ))}
                         {job.required_skills.length > 4 && (
-                          <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-400">
+                          <span className="rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500">
                             +{job.required_skills.length - 4}
                           </span>
                         )}
                       </div>
                     )}
                   </div>
-                  <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <ShieldCheck className="h-4 w-4" />
                   </span>
                 </div>
 
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {job.description || "No further details were added to this post."}
                 </p>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/20 bg-white/40 backdrop-blur-md p-3 text-center">
+                <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/20 dark:border-slate-700/50 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md p-3 text-center">
                   <div>
-                    <p className="text-xs text-slate-500">Applicants</p>
-                    <p className="mt-1 flex items-center justify-center gap-1 text-sm font-black text-slate-900">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Applicants</p>
+                    <p className="mt-1 flex items-center justify-center gap-1 text-sm font-black text-slate-900 dark:text-white">
                       <Users className="h-3.5 w-3.5" />
                       {job.applicant_count ?? 0}
                     </p>
                   </div>
-                  <div className="border-l border-slate-200">
-                    <p className="text-xs text-slate-500">Posted</p>
-                    <p className="mt-1 flex items-center justify-center gap-1 text-sm font-black text-slate-900">
+                  <div className="border-l border-slate-200 dark:border-slate-700">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Posted</p>
+                    <p className="mt-1 flex items-center justify-center gap-1 text-sm font-black text-slate-900 dark:text-white">
                       <Clock3 className="h-3.5 w-3.5" />
                       {timeAgo(job.created_at)}
                     </p>
@@ -269,12 +276,12 @@ export default function PublicJobFeed({ onSelect }) {
                     event.stopPropagation();
                     setSelectedJob(job);
                   }}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#1B3FAB]/20 bg-[#F4F6FF] py-2.5 text-sm font-bold text-[#1B3FAB] transition-colors hover:bg-[#e8ecff]"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#1B3FAB]/20 dark:border-[#6B8AF0]/30 bg-[#F4F6FF] dark:bg-[#6B8AF0]/10 py-2.5 text-sm font-bold text-[#1B3FAB] dark:text-[#6B8AF0] transition-colors hover:bg-[#e8ecff] dark:hover:bg-[#6B8AF0]/20"
                 >
                   <Lock className="h-3.5 w-3.5" />
                   View & Sign In to Apply
                 </button>
-              </article>
+              </ScrollReveal>
             ))}
           </div>
         )}

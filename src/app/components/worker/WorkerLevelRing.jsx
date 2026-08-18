@@ -49,7 +49,7 @@ export default function WorkerLevelRing({ level, currentXp, nextLevelXp, progres
 
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Level</span>
-          <span className="text-5xl font-extrabold leading-none text-slate-900 dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <span className="font-display text-5xl font-extrabold leading-none text-slate-900 dark:text-white">
             {level}
           </span>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { Briefcase, Search, Wallet, User, LogOut, Handshake, Settings, Sparkles } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { listProjects } from "../../lib/projectsApi";
@@ -67,7 +68,7 @@ export default function WorkerSidebar({ tab, onTabChange, onLogout }) {
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <p className="font-display truncate text-base font-semibold text-white">
                 WorkBridge
               </p>
               <p className="truncate text-xs text-slate-400">Where freelance work gets done</p>
@@ -130,14 +131,17 @@ export default function WorkerSidebar({ tab, onTabChange, onLogout }) {
               key={id}
               onClick={() => onTabChange(id)}
               title={isCollapsed ? label : undefined}
-              className={`flex w-full items-center gap-3 rounded-2xl py-3 text-left text-sm font-medium transition-all duration-200 ${
+              className={`relative flex w-full items-center gap-3 rounded-2xl py-3 text-left text-sm font-medium transition-colors duration-200 ${
                 isCollapsed ? "justify-center px-0" : "px-3"
-              } ${
-                active
-                  ? "border-l-4 border-[#FF6B35] bg-[#17233f] text-white shadow-sm"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
-              }`}
+              } ${active ? "text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
             >
+              {active && (
+                <motion.span
+                  layoutId="worker-nav-active"
+                  className="absolute inset-0 rounded-2xl border-l-4 border-[#FF6B35] bg-[#17233f] shadow-sm"
+                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                />
+              )}
               <span className="relative flex-shrink-0">
                 <Icon className={`h-4 w-4 ${active ? "text-[#FF6B35]" : "text-slate-400"}`} />
                 {isCollapsed && id === "negotiations" && hasPendingInvites && (
@@ -148,7 +152,7 @@ export default function WorkerSidebar({ tab, onTabChange, onLogout }) {
                 )}
               </span>
               {!isCollapsed && (
-                <span className="flex items-center gap-2">
+                <span className="relative flex items-center gap-2">
                   {label}
                   {id === "negotiations" && hasPendingInvites && (
                     <span className="relative flex h-2 w-2 flex-shrink-0">

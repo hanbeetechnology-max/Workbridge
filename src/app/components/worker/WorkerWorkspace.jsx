@@ -363,7 +363,7 @@ export default function WorkerWorkspace() {
           land in their workspace, before they even open a conversation. */}
       {currentUser?.is_chat_banned && (
         <div className="flex flex-shrink-0 items-start gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3 dark:border-amber-900/40 dark:bg-amber-950/30">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
             Your chat privileges have been temporarily suspended due to a policy violation. You can still submit
             active deliverables to receive payment.
@@ -604,7 +604,7 @@ export default function WorkerWorkspace() {
                   <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 dark:border-slate-700 dark:bg-slate-800">
                     {PROJECT_STATUS_META[selectedTask.status]?.label}
                   </span>
-                  <h3 className="mt-3 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <h3 className="font-display mt-3 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
                     {selectedTask.title}
                   </h3>
                   <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -619,7 +619,7 @@ export default function WorkerWorkspace() {
                   <div className="md:text-right">
                     <p className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">₹{Number(selectedTask.budget).toLocaleString("en-IN")}</p>
                     {selectedTask.status !== "ACCEPTED" && (
-                      <p className="mt-0.5 text-xs font-bold text-emerald-600">Funds Secured</p>
+                      <p className="mt-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">Funds Secured</p>
                     )}
                   </div>
                   {/* The one action this project actually needs from the
@@ -716,13 +716,13 @@ export default function WorkerWorkspace() {
                clicks on empty space that isn't even part of this status. */
             <div className="absolute bottom-3 right-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-2 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur sm:bottom-5 sm:right-8 sm:gap-3 sm:p-2.5 dark:border-slate-700 dark:bg-slate-900/95">
               {selectedTask.status === "FILES_SUBMITTED" && (
-                <span className="flex min-h-[36px] items-center gap-2 whitespace-nowrap text-xs font-semibold text-amber-600">
+                <span className="flex min-h-[36px] items-center gap-2 whitespace-nowrap text-xs font-semibold text-amber-600 dark:text-amber-400">
                   <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-amber-500" />
                   Awaiting business approval &amp; fund release
                 </span>
               )}
               {selectedTask.status === "PENDING_RELEASE" && (
-                <span className="flex min-h-[36px] items-center gap-2 whitespace-nowrap text-xs font-semibold text-amber-600">
+                <span className="flex min-h-[36px] items-center gap-2 whitespace-nowrap text-xs font-semibold text-amber-600 dark:text-amber-400">
                   <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-amber-500" />
                   Release requested — WorkBridge is processing your payout
                 </span>
@@ -799,7 +799,7 @@ function ApplicationDetail({ application, navigate }) {
         <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusMeta.tone}`}>
           {statusMeta.label}
         </span>
-        <h3 className="mt-3 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h3 className="font-display mt-3 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
           {application.project_title}
         </h3>
         <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">

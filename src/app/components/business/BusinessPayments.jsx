@@ -74,7 +74,7 @@ function InvoicesTab({ projects, loading, loadError }) {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-slate-300 dark:text-slate-600" />
       </div>
     );
   }
@@ -201,8 +201,8 @@ function SubscriptionTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6 dark:border-slate-800 dark:from-slate-800/60 dark:to-slate-900">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Current Plan</p>
-          <p className="mt-1 text-2xl font-black text-[#0A1128] dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Current Plan</p>
+          <p className="font-display mt-1 text-2xl font-black text-[#0A1128] dark:text-white">
             Free
           </p>
         </div>
@@ -236,14 +236,14 @@ function SubscriptionTab() {
                 <Icon className="h-4 w-4" />
               </span>
 
-              <p className={`text-xs font-bold uppercase tracking-wide ${tier.premium ? "text-slate-300" : "text-slate-400"}`}>
+              <p className={`text-xs font-bold uppercase tracking-wide ${tier.premium ? "text-slate-300" : "text-slate-400 dark:text-slate-500"}`}>
                 {tier.name}
               </p>
               <p className="mt-1.5 flex items-baseline gap-1">
-                <span className={`text-2xl font-black ${tier.premium ? "" : "text-[#0A1128] dark:text-white"}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <span className={`font-display text-2xl font-black ${tier.premium ? "" : "text-[#0A1128] dark:text-white"}`}>
                   {amount}
                 </span>
-                <span className={`text-xs font-semibold ${tier.premium ? "text-slate-400" : "text-slate-400"}`}>{period}</span>
+                <span className={`text-xs font-semibold ${tier.premium ? "text-slate-400" : "text-slate-400 dark:text-slate-500"}`}>{period}</span>
               </p>
 
               <ul className="mt-4 flex-1 space-y-2">
@@ -357,7 +357,7 @@ export default function BusinessPayments({ isVerified }) {
   return (
     <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
       <div className="mb-6 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 p-6 shadow-md sm:p-8">
-        <h1 className="text-xl font-extrabold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h1 className="font-display text-xl font-extrabold text-white">
           Billing & Payments
         </h1>
         <p className="mt-1 text-sm text-slate-300">

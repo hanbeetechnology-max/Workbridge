@@ -128,7 +128,7 @@ export default function WorkerLedger({ embedded = false }) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-slate-300 dark:text-slate-600" />
       </div>
     );
   }
@@ -165,11 +165,11 @@ export default function WorkerLedger({ embedded = false }) {
     <div className={embedded ? "" : "w-full px-4 py-8 sm:px-6 sm:py-10"}>
       <div className="mb-6">
         {!embedded && (
-          <h1 className="text-xl font-extrabold text-[#0A1128] dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <h1 className="font-display text-xl font-extrabold text-[#0A1128] dark:text-white">
             Ledger
           </h1>
         )}
-        <p className={embedded ? "text-sm text-slate-500" : "mt-1 text-sm text-slate-500"}>
+        <p className={embedded ? "text-sm text-slate-500 dark:text-slate-400" : "mt-1 text-sm text-slate-500 dark:text-slate-400"}>
           Your real Bridge Token balance, earn history, and shop purchases — all in one place.
         </p>
       </div>
@@ -276,7 +276,7 @@ export default function WorkerLedger({ embedded = false }) {
                     className="flex items-center justify-between gap-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
                         <ShoppingBag className="h-4 w-4" />
                       </div>
                       <div>
@@ -285,7 +285,7 @@ export default function WorkerLedger({ embedded = false }) {
                       </div>
                     </div>
                     <div className="flex flex-shrink-0 items-center gap-3 text-sm font-bold">
-                      <span className="text-rose-600">−{p.token_cost} 🪙</span>
+                      <span className="text-rose-600 dark:text-rose-400">−{p.token_cost} 🪙</span>
                     </div>
                   </motion.div>
                 );
@@ -313,7 +313,7 @@ export default function WorkerLedger({ embedded = false }) {
                   </div>
                   <div className="flex flex-shrink-0 items-center gap-3 text-sm font-bold">
                     {event.xp_delta > 0 && <span className="text-[#FF6B35]">+{event.xp_delta} XP</span>}
-                    {event.token_delta > 0 && <span className="text-amber-600">+{event.token_delta} 🪙</span>}
+                    {event.token_delta > 0 && <span className="text-amber-600 dark:text-amber-400">+{event.token_delta} 🪙</span>}
                   </div>
                 </motion.div>
               );

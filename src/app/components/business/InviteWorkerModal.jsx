@@ -57,7 +57,7 @@ export default function InviteWorkerModal({ worker, openJobs, onClose, onSubmitE
               type="button"
               onClick={() => setMode("existing")}
               className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
-                mode === "existing" ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : "text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                mode === "existing" ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               }`}
             >
               Select Existing Project
@@ -66,7 +66,7 @@ export default function InviteWorkerModal({ worker, openJobs, onClose, onSubmitE
               type="button"
               onClick={() => setMode("new")}
               className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
-                mode === "new" ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : "text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                mode === "new" ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               }`}
             >
               Draft New Project

@@ -100,34 +100,31 @@ export default function AdminPanel({ onLogout }) {
   const ActiveTabComponent = TAB_COMPONENTS[activeTab];
 
   return (
-    <div
-      className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-br from-[#eef2ff] via-[#f8fafc] to-[#fff3ec]"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
-    >
+    <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-br from-[#eef2ff] via-[#f8fafc] to-[#fff3ec] dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
       {/* ── Ambient background (light, non-white — everything above it is glass) ── */}
       <div className="pointer-events-none fixed -top-40 -left-32 -z-10 h-96 w-96 rounded-full bg-[#1B3FAB]/10 blur-[120px]" />
       <div className="pointer-events-none fixed -bottom-40 -right-32 -z-10 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-[120px]" />
       <div className="pointer-events-none fixed top-1/3 right-1/4 -z-10 h-72 w-72 rounded-full bg-purple-400/10 blur-[100px]" />
 
       {/* ── Sticky glass header ── */}
-      <header className="relative z-20 flex-shrink-0 border-b border-white/60 bg-white/50 backdrop-blur-2xl">
+      <header className="relative z-20 flex-shrink-0 border-b border-white/60 dark:border-slate-800 bg-white/50 dark:bg-slate-900/60 backdrop-blur-2xl">
         <div className="flex items-center justify-between px-6 py-3.5">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FF6B35]">
               <img src={brandLogo} alt="" className="h-5 w-5 object-contain" />
             </div>
-            <span className="font-semibold text-slate-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span className="font-display font-semibold text-slate-900 dark:text-white">
               WorkBridge
             </span>
-            <span className="rounded-full border border-white/60 bg-white/40 px-2.5 py-1 text-xs font-semibold text-slate-500">
+            <span className="rounded-full border border-white/60 dark:border-slate-700 bg-white/40 dark:bg-slate-800/60 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
               Admin Console
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-sm font-semibold text-slate-900">{currentUser?.name}</p>
-              <p className="text-xs text-slate-500">Super Administrator</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{currentUser?.name}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Super Administrator</p>
             </div>
             {currentUser?.avatar_url ? (
               <img src={currentUser.avatar_url} alt={currentUser.name} className="h-9 w-9 rounded-full object-cover" />
@@ -139,7 +136,7 @@ export default function AdminPanel({ onLogout }) {
             <button
               onClick={onLogout}
               title="Sign out"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/60 bg-white/30 text-slate-500 transition-colors hover:bg-white/60 hover:text-slate-700"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/60 dark:border-slate-700 bg-white/30 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 transition-colors hover:bg-white/60 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -148,7 +145,7 @@ export default function AdminPanel({ onLogout }) {
 
         {/* ── Pill tab nav ── */}
         <div className="overflow-x-auto px-6 pb-3">
-          <div className="flex w-fit gap-1 rounded-xl border border-white/50 bg-white/30 p-1 backdrop-blur-md">
+          <div className="flex w-fit gap-1 rounded-xl border border-white/50 dark:border-slate-700 bg-white/30 dark:bg-slate-800/40 p-1 backdrop-blur-md">
             {NAV.map(({ id, label, icon: Icon, badgeKey }) => {
               const active = activeTab === id;
               const count = badgeKey ? badgeCounts[badgeKey] : 0;
@@ -158,7 +155,9 @@ export default function AdminPanel({ onLogout }) {
                   onClick={() => setActiveTab(id)}
                   title={count > 0 ? `${count} awaiting action` : undefined}
                   className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    active ? "bg-white/70 text-slate-900 shadow-sm backdrop-blur-sm" : "text-slate-500 hover:text-slate-700"
+                    active
+                      ? "bg-white/70 dark:bg-slate-700/70 text-slate-900 dark:text-white shadow-sm backdrop-blur-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -166,7 +165,7 @@ export default function AdminPanel({ onLogout }) {
                   {count > 0 && (
                     <span
                       className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold ${
-                        active ? "bg-[#FF6B35] text-white" : "bg-slate-200/70 text-slate-700"
+                        active ? "bg-[#FF6B35] text-white" : "bg-slate-200/70 dark:bg-slate-600/70 text-slate-700 dark:text-slate-200"
                       }`}
                     >
                       {count}

@@ -139,14 +139,14 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
       }}
       direction="right"
     >
-      <DrawerContent className="w-full bg-white sm:max-w-md">
+      <DrawerContent className="w-full bg-white dark:bg-slate-900 sm:max-w-md">
         <div className="flex h-full flex-col">
-          <div className="flex-shrink-0 border-b border-slate-100 bg-white px-6 py-5">
-            <h2 className="text-lg font-extrabold text-slate-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <div className="flex-shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5">
+            <h2 className="font-display text-lg font-extrabold text-slate-900 dark:text-white">
               Fund Escrow &amp; Start Project
             </h2>
-            <p className="mt-1 text-sm text-slate-500">Direct bank transfer — no card or gateway fees added on top</p>
-            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Direct bank transfer — no card or gateway fees added on top</p>
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
               <Lock className="h-3 w-3" />
               Verified by Staff
             </span>
@@ -154,10 +154,10 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
 
           <div className="wb-scroll-clean flex-1 overflow-y-auto px-6 py-5">
             {submitted ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-10 text-center">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-500/10 px-5 py-10 text-center">
                 <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-                <p className="text-base font-bold text-emerald-800">Submitted for verification</p>
-                <p className="text-sm text-emerald-700">
+                <p className="text-base font-bold text-emerald-800 dark:text-emerald-300">Submitted for verification</p>
+                <p className="text-sm text-emerald-700 dark:text-emerald-400">
                   WorkBridge staff will confirm your transfer shortly — the project moves to Funds Secured once verified.
                 </p>
                 <button
@@ -170,10 +170,10 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
               </div>
             ) : (
               <>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-800">Amount to Fund</span>
-                    <span className="text-lg font-extrabold text-slate-900">₹{budget.toLocaleString("en-IN")}</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Amount to Fund</span>
+                    <span className="text-lg font-extrabold text-slate-900 dark:text-white">₹{budget.toLocaleString("en-IN")}</span>
                   </div>
                 </div>
 
@@ -194,34 +194,34 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                 </div>
 
                 <div className="mt-5">
-                  <p className="mb-3 text-sm font-bold text-slate-800">Confirm Your Transfer</p>
+                  <p className="mb-3 text-sm font-bold text-slate-800 dark:text-slate-200">Confirm Your Transfer</p>
 
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Transaction ID / UTR Number
                   </label>
                   <input
                     value={utrReference}
                     onChange={(e) => setUtrReference(e.target.value)}
                     placeholder="e.g. 402913847562"
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30"
                   />
 
-                  <label className="mb-1.5 mt-4 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <label className="mb-1.5 mt-4 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Upload Payment Screenshot
                   </label>
-                  <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center transition hover:border-[#FF6B35] hover:bg-orange-50/40">
+                  <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-8 text-center transition hover:border-[#FF6B35] hover:bg-orange-50/40 dark:hover:bg-orange-500/10">
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files?.[0])} />
                     {screenshotUrl ? (
                       <>
                         <img src={screenshotUrl} alt="Payment screenshot preview" className="max-h-28 rounded-lg object-contain" />
-                        <p className="text-xs font-semibold text-slate-600">{screenshotName}</p>
+                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{screenshotName}</p>
                         <span className="text-[11px] font-bold text-[#FF6B35]">Click to replace</span>
                       </>
                     ) : (
                       <>
                         <Upload className="h-6 w-6 text-slate-400" />
-                        <p className="text-xs font-semibold text-slate-500">Drop a screenshot here, or click to browse</p>
-                        <p className="text-[11px] text-slate-400">PNG or JPG, under 3MB</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Drop a screenshot here, or click to browse</p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500">PNG or JPG, under 3MB</p>
                       </>
                     )}
                   </label>
@@ -229,7 +229,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                 </div>
 
                 {submitError && (
-                  <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                     <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                     <span>{submitError}</span>
                   </div>
@@ -239,7 +239,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
           </div>
 
           {!submitted && (
-            <div className="flex-shrink-0 border-t border-slate-100 bg-white px-6 py-4">
+            <div className="flex-shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4">
               <button
                 type="button"
                 onClick={handleSubmit}

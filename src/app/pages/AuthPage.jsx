@@ -19,6 +19,8 @@ import {
   User,
   Zap,
 } from "lucide-react";
+import { motion } from "motion/react";
+import brandLogo from "../assets/logo.png";
 import { adminAuthSchema, authSchema, signupSchema, forgotPasswordSchema } from "../utils/formValidation";
 import { apiFetch } from "../lib/apiClient";
 import { useAuth } from "../context/AuthContext";
@@ -31,10 +33,10 @@ const USER_CONFIG = {
 };
 
 const BRAND_FEATURES = [
-  { Icon: Lock, text: "Your money sits in escrow until you approve the work" },
-  { Icon: Zap, text: "Fast payouts once your work is approved — no chasing invoices" },
-  { Icon: Shield, text: "Verified freelancers with trust scores you can actually check" },
-  { Icon: Award, text: "Real badges and recognition for the work you deliver" },
+  { Icon: Lock, text: "Protected funds released strictly on your approval" },
+  { Icon: Zap, text: "Instant automated payout upon milestone sign-off" },
+  { Icon: Shield, text: "Be a specialists with verified track records" },
+  { Icon: Award, text: "Elite performance tiers reflecting proven quality" },
 ];
 
 // Signup-only checklist — shown instead of BRAND_FEATURES while creating an
@@ -450,7 +452,7 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
   const isOtpComplete = otp.every(Boolean);
 
   return (
-    <div className="flex min-h-screen" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="flex min-h-screen">
       <aside className="relative hidden w-5/12 flex-col overflow-hidden bg-[#0A1128] p-10 md:flex">
         <button
           type="button"
@@ -462,16 +464,22 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
         </button>
 
         <div className="z-10 flex max-w-sm flex-1 flex-col justify-center">
-          <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF6B2C] shadow-lg shadow-[#FF6B2C]/30">
-              <Zap className="h-5 w-5 text-white" />
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-[#FF6B2C]/20">
+              <img src={brandLogo} alt="" className="h-6 w-6 object-contain" />
             </div>
-            <span className="text-xl font-extrabold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span className="font-display text-xl font-extrabold text-white">
               WorkBridge
             </span>
           </div>
 
-          <h1 className="mb-4 text-3xl font-extrabold leading-tight text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <motion.h1
+            key={`${authMode}-${isAdmin}`}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="font-display mb-4 text-3xl font-extrabold leading-tight text-white"
+          >
             {isAdmin ? (
               "Secure admin access"
             ) : (
@@ -482,10 +490,10 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                 </span>
               </>
             )}
-          </h1>
+          </motion.h1>
           <p className="mb-10 text-sm leading-relaxed text-slate-400">
-            {userType === "worker" && "Real projects, real clients, and payouts you don't have to chase down."}
-            {userType === "business" && "Hire verified freelancers, pay through escrow, and only release funds when you're happy with the work."}
+            {userType === "worker" && "High-value contracts, verified businesses, and automated milestone settlements."}
+            {userType === "business" && "Hire  talent with 100% protected payments—funds are released strictly upon your milestone sign-off."}
             {userType === "admin" && "Manage verifications, resolve disputes, and keep the platform running safely."}
           </p>
 

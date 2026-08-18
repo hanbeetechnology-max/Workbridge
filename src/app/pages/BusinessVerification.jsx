@@ -27,11 +27,11 @@ const STEPS = [
 ];
 
 // ── Shared input / label styles ───────────────────────────────────────────
-const LABEL = "block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5";
+const LABEL = "block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5";
 const INPUT =
-  "w-full px-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B2C]/20 focus:border-[#FF6B2C] transition-all";
+  "w-full px-4 py-3 bg-[#F8FAFC] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FF6B2C]/20 focus:border-[#FF6B2C] transition-all";
 const SELECT =
-  "w-full px-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF6B2C]/20 focus:border-[#FF6B2C] transition-all appearance-none cursor-pointer";
+  "w-full px-4 py-3 bg-[#F8FAFC] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#FF6B2C]/20 focus:border-[#FF6B2C] transition-all appearance-none cursor-pointer";
 
 // ════════════════════════════════════════════════════════════════════════════
 // Main component
@@ -64,7 +64,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
 
   return (
     <div
-      className="min-h-screen flex bg-white"
+      className="min-h-screen flex bg-white dark:bg-slate-950"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       {/* ══════════════════════════════════════════
@@ -80,8 +80,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
             <Zap className="w-5 h-5 text-white" />
           </div>
           <span
-            className="text-white font-extrabold text-lg tracking-tight"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            className="text-white font-extrabold text-lg tracking-tight font-display"
           >
             WorkBridge
           </span>
@@ -93,8 +92,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
             Business Verification
           </p>
           <h2
-            className="text-xl font-extrabold text-white mb-2 leading-snug"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            className="text-xl font-extrabold text-white mb-2 leading-snug font-display"
           >
             Get your<br />Verified Badge.
           </h2>
@@ -179,16 +177,16 @@ export default function BusinessVerification({ onComplete, onExit }) {
       {/* ══════════════════════════════════════════
           RIGHT — Form Area
           ══════════════════════════════════════════ */}
-      <main className="flex-1 flex flex-col min-h-screen bg-[#F8FAFC]">
+      <main className="flex-1 flex flex-col min-h-screen bg-[#F8FAFC] dark:bg-slate-950">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-5 py-5 bg-white border-b border-slate-100 shadow-sm shadow-slate-100/50 flex-shrink-0 sm:px-10">
+        <div className="flex items-center justify-between px-5 py-5 bg-white border-b border-slate-100 shadow-sm shadow-slate-100/50 flex-shrink-0 sm:px-10 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
           {/* Step breadcrumb — hidden below sm; the progress dots next to it
               already carry step position on narrow screens */}
-          <div className="hidden items-center gap-2 text-xs text-slate-400 sm:flex">
+          <div className="hidden items-center gap-2 text-xs text-slate-400 dark:text-slate-500 sm:flex">
             <span>Business Verification</span>
             <ChevronRight className="w-3 h-3" />
-            <span className="font-semibold text-slate-600">{STEPS[activeStep - 1].title}</span>
+            <span className="font-semibold text-slate-600 dark:text-slate-300">{STEPS[activeStep - 1].title}</span>
           </div>
 
           {/* Progress dots */}
@@ -201,7 +199,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
                     ? "w-6 bg-emerald-400"
                     : s.id === activeStep
                     ? "w-6 bg-[#FF6B2C]"
-                    : "w-3 bg-slate-200"
+                    : "w-3 bg-slate-200 dark:bg-slate-700"
                 }`}
               />
             ))}
@@ -210,14 +208,14 @@ export default function BusinessVerification({ onComplete, onExit }) {
           {/* Exit */}
           <button
             onClick={onExit}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors"
+            className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors dark:text-slate-500 dark:hover:text-slate-300"
           >
             <X className="w-4 h-4" /> Exit
           </button>
         </div>
 
         {/* Orange progress line */}
-        <div className="h-0.5 bg-slate-100 flex-shrink-0">
+        <div className="h-0.5 bg-slate-100 dark:bg-slate-800 flex-shrink-0">
           <div
             className="h-full bg-gradient-to-r from-[#FF6B2C] to-rose-400 transition-all duration-700"
             style={{ width: `${(activeStep / STEPS.length) * 100}%` }}
@@ -273,7 +271,7 @@ function Step1({ onNext, INPUT, LABEL, SELECT }) {
         sub="We'll use this to verify your business and fill out your company profile."
       />
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-5 sm:p-8">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-5 sm:p-8 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
 
         <div>
           <label className={LABEL}>Registered Company Name</label>
@@ -342,17 +340,17 @@ function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1
         sub="Upload your official documents to get the Business Verified badge and start hiring."
       />
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-7 sm:p-8">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-7 sm:p-8 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
 
         {/* Upload Block 1: GST & PAN */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-bold text-[#0A1128] text-sm">GST Certificate & Company PAN</h3>
-              <p className="text-slate-400 text-[11px] mt-0.5">PDF or image · Max 10 MB each</p>
+              <h3 className="font-bold text-[#0A1128] dark:text-white text-sm">GST Certificate & Company PAN</h3>
+              <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">PDF or image · Max 10 MB each</p>
             </div>
             {gstFile && (
-              <span className="flex items-center gap-1 text-emerald-600 text-xs font-semibold">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Uploaded
               </span>
             )}
@@ -373,11 +371,11 @@ function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-bold text-[#0A1128] text-sm">Certificate of Incorporation</h3>
-              <p className="text-slate-400 text-[11px] mt-0.5">MCA-issued document · PDF preferred · Max 10 MB</p>
+              <h3 className="font-bold text-[#0A1128] dark:text-white text-sm">Certificate of Incorporation</h3>
+              <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">MCA-issued document · PDF preferred · Max 10 MB</p>
             </div>
             {incorpFile && (
-              <span className="flex items-center gap-1 text-emerald-600 text-xs font-semibold">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Uploaded
               </span>
             )}
@@ -419,12 +417,12 @@ function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SE
         sub="One final step — we need your banking details on file to stay compliant with RBI guidelines."
       />
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-7 sm:p-8">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-7 sm:p-8 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
 
         {/* Director / Owner ID */}
         <div>
-          <h3 className="font-bold text-[#0A1128] text-sm mb-4 flex items-center gap-2">
-            <div className="w-5 h-5 bg-orange-50 border border-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <h3 className="font-bold text-[#0A1128] dark:text-white text-sm mb-4 flex items-center gap-2">
+            <div className="w-5 h-5 bg-orange-50 border border-orange-100 rounded-full flex items-center justify-center flex-shrink-0 dark:bg-orange-500/10 dark:border-orange-900/40">
               <span className="text-[10px] font-bold text-[#FF6B2C]">1</span>
             </div>
             Director / Owner Identity
@@ -457,12 +455,12 @@ function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SE
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-slate-100" />
+        <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
         {/* Bank Account */}
         <div>
-          <h3 className="font-bold text-[#0A1128] text-sm mb-4 flex items-center gap-2">
-            <div className="w-5 h-5 bg-orange-50 border border-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <h3 className="font-bold text-[#0A1128] dark:text-white text-sm mb-4 flex items-center gap-2">
+            <div className="w-5 h-5 bg-orange-50 border border-orange-100 rounded-full flex items-center justify-center flex-shrink-0 dark:bg-orange-500/10 dark:border-orange-900/40">
               <span className="text-[10px] font-bold text-[#FF6B2C]">2</span>
             </div>
             Bank Account for Payouts
@@ -486,7 +484,7 @@ function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SE
                   <button
                     type="button"
                     onClick={() => setShowAccNum((v) => !v)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                   >
                     {showAccNum ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -517,9 +515,9 @@ function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SE
         <SecurityNote />
 
         {/* Completion note */}
-        <div className="flex items-start gap-3 p-4 bg-blue-50/60 border border-blue-100 rounded-xl">
-          <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-blue-700 font-medium leading-relaxed">
+        <div className="flex items-start gap-3 p-4 bg-blue-50/60 border border-blue-100 rounded-xl dark:bg-blue-500/10 dark:border-blue-900/40">
+          <CheckCircle2 className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
             After submission, our compliance team reviews your documents within <strong>24–48 hours</strong>.
             You'll be notified by email and can start posting jobs immediately.
           </p>
@@ -542,12 +540,11 @@ function StepHeader({ step, title, sub }) {
         Step {step} of 3
       </span>
       <h1
-        className="text-2xl font-extrabold text-[#0A1128] mt-1.5 mb-2 leading-snug"
-        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        className="text-2xl font-extrabold text-[#0A1128] dark:text-white mt-1.5 mb-2 leading-snug font-display"
       >
         {title}
       </h1>
-      <p className="text-slate-500 text-sm leading-relaxed">{sub}</p>
+      <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{sub}</p>
     </div>
   );
 }
@@ -571,10 +568,10 @@ function DropZone({ file, setFile, dragging, setDragging, icon, label, large }) 
         large ? "p-10" : "p-6"
       } ${
         dragging
-          ? "border-[#FF6B2C] bg-orange-50/40 scale-[1.01]"
+          ? "border-[#FF6B2C] bg-orange-50/40 dark:bg-orange-500/10 scale-[1.01]"
           : file
-          ? "border-emerald-300 bg-emerald-50/30"
-          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60"
+          ? "border-emerald-300 bg-emerald-50/30 dark:border-emerald-700 dark:bg-emerald-500/10"
+          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/60"
       }`}
     >
       <input
@@ -586,34 +583,34 @@ function DropZone({ file, setFile, dragging, setDragging, icon, label, large }) 
 
       {file ? (
         <div className="flex flex-col items-center gap-2.5">
-          <div className="w-11 h-11 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center">
+          <div className="w-11 h-11 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center dark:bg-emerald-500/10 dark:border-emerald-900/40">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           </div>
-          <p className="text-sm font-semibold text-emerald-700 truncate max-w-xs">{file.name}</p>
-          <p className="text-xs text-slate-400">
+          <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 truncate max-w-xs">{file.name}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">
             {(file.size / 1024 / 1024).toFixed(2)} MB
           </p>
           <button
             onClick={(e) => { e.stopPropagation(); setFile(null); }}
-            className="text-xs text-slate-400 hover:text-red-500 underline-offset-2 hover:underline transition-colors"
+            className="text-xs text-slate-400 hover:text-red-500 underline-offset-2 hover:underline transition-colors dark:text-slate-500 dark:hover:text-red-400"
           >
             Remove file
           </button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3">
-          <div className={`${large ? "w-14 h-14" : "w-10 h-10"} bg-slate-100 rounded-2xl flex items-center justify-center`}>
+          <div className={`${large ? "w-14 h-14" : "w-10 h-10"} bg-slate-100 rounded-2xl flex items-center justify-center dark:bg-slate-800`}>
             {icon}
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-600">{label}</p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{label}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
               or{" "}
               <span className="text-[#FF6B2C] font-semibold hover:underline cursor-pointer underline-offset-2">
                 Browse Files
               </span>
             </p>
-            <p className="text-[11px] text-slate-300 mt-1">PDF, JPG, PNG · Max 10 MB</p>
+            <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">PDF, JPG, PNG · Max 10 MB</p>
           </div>
         </div>
       )}
@@ -623,11 +620,11 @@ function DropZone({ file, setFile, dragging, setDragging, icon, label, large }) 
 
 function SecurityNote() {
   return (
-    <div className="flex items-start gap-3 p-4 bg-emerald-50/60 border border-emerald-100 rounded-xl">
-      <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Shield className="w-4 h-4 text-emerald-600" />
+    <div className="flex items-start gap-3 p-4 bg-emerald-50/60 border border-emerald-100 rounded-xl dark:bg-emerald-500/10 dark:border-emerald-900/40">
+      <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 dark:bg-emerald-500/10">
+        <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
       </div>
-      <p className="text-xs text-emerald-700 font-medium leading-relaxed">
+      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">
         Your documents are encrypted and reviewed only by our compliance team. They are never
         shared with freelancers or third parties.
       </p>
@@ -637,11 +634,11 @@ function SecurityNote() {
 
 function ActionRow({ onBack, onNext, nextLabel, isComplete }) {
   return (
-    <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+    <div className="flex items-center justify-between pt-2 border-t border-slate-50 dark:border-slate-800">
       {onBack ? (
         <button
           onClick={onBack}
-          className="px-6 py-2.5 text-slate-500 hover:text-slate-700 font-semibold text-sm border border-slate-200 hover:border-slate-300 rounded-xl hover:bg-slate-50 transition-all"
+          className="px-6 py-2.5 text-slate-500 hover:text-slate-700 font-semibold text-sm border border-slate-200 hover:border-slate-300 rounded-xl hover:bg-slate-50 transition-all dark:text-slate-400 dark:hover:text-slate-200 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800"
         >
           ← Back
         </button>

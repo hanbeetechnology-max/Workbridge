@@ -15,7 +15,11 @@ import {
   Zap,
 } from "lucide-react";
 
-// MASTER_ECONOMY_PLAN.md Part 6's Worker Reward Roadmap, verbatim — shared
+// Based on MASTER_ECONOMY_PLAN.md Part 6's Worker Reward Roadmap, with the
+// "Fee Discount" rewards removed — the platform fee is flat (15%, not
+// tiered) and never named in worker-facing UI, so a reward promising a
+// tier-based fee break would be both false and a leak of the one thing
+// that's deliberately never disclosed outside Terms & Conditions. Shared
 // between WorkerMilestones.jsx (the full badge grid) and Avatar.jsx (the
 // small pinned-badge overlay) so both always agree on which level maps to
 // which icon/name, rather than keeping two lists in sync by hand. Mirrors
@@ -27,14 +31,14 @@ export const MILESTONES = [
   { level: 25, name: "Verified Momentum", reward: 'Portfolio showcase reel; "Trending Talent" carousel eligibility', icon: Trophy, major: true },
   { level: 30, name: "Spotlight", reward: 'Pin one "spotlight project" at the top of your profile', icon: Pin, color: "rose" },
   { level: 40, name: "Early Access", reward: "Early-access window to new job postings", icon: Zap, color: "violet" },
-  { level: 50, name: "Established Professional", reward: "Silver-Tier Fee Discount; dedicated support queue", icon: ShieldCheck, major: true },
+  { level: 50, name: "Established Professional", reward: "Dedicated support queue", icon: ShieldCheck, major: true },
   { level: 60, name: "Signature Banner", reward: "Custom animated profile banner", icon: Award, color: "sky" },
   { level: 75, name: "Direct Line", reward: "Limited direct proposals without an open posting", icon: Send, color: "emerald" },
-  { level: 100, name: "Top Rated", reward: "Gold-Tier Fee Discount; gold-ring verification upgrade", icon: Crown, major: true },
+  { level: 100, name: "Top Rated", reward: "Gold-ring verification upgrade", icon: Crown, major: true },
   { level: 125, name: "Mentor", reward: "Paid mentorship sessions to newer workers", icon: Users, color: "fuchsia" },
-  { level: 150, name: "Elite Circle", reward: "Platinum-Tier Fee Discount; priority dispute-resolution queue", icon: Gem, major: true },
+  { level: 150, name: "Elite Circle", reward: "Priority dispute-resolution queue", icon: Gem, major: true },
   { level: 175, name: "Vanity URL", reward: "Custom vanity profile URL slug", icon: Link2, color: "teal" },
-  { level: 200, name: "Legend of WorkBridge", reward: "Permanent hall-of-fame badge; Diamond-Tier Fee Discount for life", icon: Medal, major: true },
+  { level: 200, name: "Legend of WorkBridge", reward: "Permanent hall-of-fame badge, for life", icon: Medal, major: true },
 ];
 
 export function getMilestoneByLevel(level) {

@@ -191,7 +191,7 @@ function PerkCard({ perk, balance, targetOptions, onPurchase, index, isPurchasin
               setAttemptedNoTarget(false);
             }}
             className={`relative mt-3 w-full rounded-lg border bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 outline-none dark:bg-slate-800 dark:text-slate-200 ${
-              attemptedNoTarget && !targetId ? "border-red-300" : "border-slate-200 dark:border-slate-700"
+              attemptedNoTarget && !targetId ? "border-red-300 dark:border-red-700" : "border-slate-200 dark:border-slate-700"
             }`}
           >
             <option value="">Choose {perk.targetKind === "shieldableProject" || perk.targetKind === "disputedProject" ? "an" : "a"} {kind.label}…</option>
@@ -205,13 +205,13 @@ function PerkCard({ perk, balance, targetOptions, onPurchase, index, isPurchasin
       )}
 
       {attemptedInsufficient && !canAfford && (
-        <p className="relative mt-2 flex items-center gap-1 text-[11px] font-semibold text-red-500">
+        <p className="relative mt-2 flex items-center gap-1 text-[11px] font-semibold text-red-500 dark:text-red-400">
           <AlertTriangle className="h-3 w-3 flex-shrink-0" />
           Not enough tokens for this tier
         </p>
       )}
       {attemptedNoTarget && !targetId && !hasNoEligibleTargets && (
-        <p className="relative mt-2 flex items-center gap-1 text-[11px] font-semibold text-red-500">
+        <p className="relative mt-2 flex items-center gap-1 text-[11px] font-semibold text-red-500 dark:text-red-400">
           <AlertTriangle className="h-3 w-3 flex-shrink-0" />
           Pick {perk.targetKind === "shieldableProject" || perk.targetKind === "disputedProject" ? "an" : "a"} {kind.label} first
         </p>
@@ -338,7 +338,7 @@ export default function WorkerTokenShop({ embedded = false }) {
       <div className="mb-6 flex items-center justify-between">
         <div>
           {!embedded && (
-            <h1 className="text-xl font-extrabold text-[#0A1128] dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h1 className="font-display text-xl font-extrabold text-[#0A1128] dark:text-white">
               Token Shop
             </h1>
           )}
