@@ -8,6 +8,7 @@ import {
   Briefcase,
   Camera,
   ExternalLink,
+  FileCheck2,
   GraduationCap,
   Loader2,
   MapPin,
@@ -18,11 +19,13 @@ import {
   ShieldCheck,
   Star,
   Trash2,
+  Upload,
   User,
   X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { updateOwnProfile } from "../../lib/profilesApi";
+import { INDIAN_CITIES } from "../../lib/indianCities";
 import { listReviewsFor } from "../../lib/reviewsApi";
 import { getMyProfileAudits } from "../../lib/perksApi";
 import { getInitials } from "../../utils/formValidation";
@@ -34,6 +37,7 @@ import { ApiError } from "../../lib/apiClient";
 import { getSocket } from "../../lib/socketClient";
 import EditableCoverPhoto from "../shared/EditableCoverPhoto";
 import ShareProfileButton from "../shared/ShareProfileButton";
+import ImageLightbox from "../shared/ImageLightbox";
 import { shouldShowFrame, verifiedRingClass } from "../../utils/verification";
 
 const MAX_AVATAR_BYTES = 1.5 * 1024 * 1024; // 1.5MB — stored as a data URL in avatar_url (TEXT), no file-storage backend exists yet.
@@ -234,6 +238,7 @@ export default function WorkerProfile() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
   const [coverUploading, setCoverUploading] = useState(false);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -299,6 +304,28 @@ export default function WorkerProfile() {
     setDraft((d) => ({ ...d, [field]: d[field].filter((_, i) => i !== index) }));
   };
 
+  // Same data-URL pattern as the avatar/cover uploads above — no dedicated
+  // file-storage backend exists yet, so the certificate file is stored
+  // inline as a data URL on the certification entry itself.
+  const [certFileError, setCertFileError] = useState({});
+  const handleCertificateFileChange = (index, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setCertFileError((prev) => ({ ...prev, [index]: "" }));
+    if (file.size > MAX_AVATAR_BYTES) {
+      setCertFileError((prev) => ({ ...prev, [index]: "File is too large — please choose one under 1.5MB." }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateDraftListItem("certifications", index, { fileUrl: reader.result, fileName: file.name });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const saveEdit = async () => {
     setSaving(true);
     setSaveError("");
@@ -321,7 +348,13 @@ export default function WorkerProfile() {
             .map((e) => ({ degree: e.degree?.trim() ?? "", school: e.school?.trim() ?? "", year: e.year?.trim() ?? "" }))
             .filter((e) => e.degree || e.school),
           certifications: draft.certifications
-            .map((c) => ({ name: c.name?.trim() ?? "", issuer: c.issuer?.trim() ?? "", year: c.year?.trim() ?? "" }))
+            .map((c) => ({
+              name: c.name?.trim() ?? "",
+              issuer: c.issuer?.trim() ?? "",
+              year: c.year?.trim() ?? "",
+              fileUrl: c.fileUrl || undefined,
+              fileName: c.fileName || undefined,
+            }))
             .filter((c) => c.name),
           projects: draft.projects
             .map((p) => ({ title: p.title?.trim() ?? "", link: p.link?.trim() ?? "", description: p.description?.trim() ?? "" }))
@@ -438,6 +471,12 @@ export default function WorkerProfile() {
                       <img
                         src={currentUser.avatar_url}
                         alt={`${currentUser.name} profile`}
+                        // preventDefault stops this click from bubbling into
+                        // the parent <label>'s default action (opening the
+                        // file picker) — clicking the photo itself should
+                        // view it full-size; the hover camera icon overlay
+                        // (unchanged) is still what triggers an upload.
+                        onClick={(e) => { e.preventDefault(); setAvatarPreviewOpen(true); }}
                         className={`h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg ${verifiedRingClass(shouldShowFrame(currentUser?.verified, currentUser), "md", "emerald")}`}
                       />
                     ) : (
@@ -605,6 +644,16 @@ export default function WorkerProfile() {
                       <div key={index} className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800">
                         <p className="text-sm font-bold text-slate-900 dark:text-white">{c.name}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">{[c.issuer, c.year].filter(Boolean).join(" · ")}</p>
+                        {c.fileUrl && (
+                          <a
+                            href={c.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-[#1B3FAB] dark:text-blue-400 hover:underline"
+                          >
+                            View certificate <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -722,8 +771,14 @@ export default function WorkerProfile() {
                       value={draft.location}
                       onChange={(e) => setDraft((d) => ({ ...d, location: e.target.value }))}
                       placeholder="e.g. Mumbai, India"
+                      list="worker-location-suggestions"
                       className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
                     />
+                    <datalist id="worker-location-suggestions">
+                      {INDIAN_CITIES.map((city) => (
+                        <option key={city} value={city} />
+                      ))}
+                    </datalist>
                   </label>
                   <label className="block sm:col-span-2">
                     <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Mobile Number</span>
@@ -736,7 +791,7 @@ export default function WorkerProfile() {
                         maxLength={10}
                         value={draft.phone}
                         onChange={(e) => setDraft((d) => ({ ...d, phone: e.target.value.replace(/\D/g, "") }))}
-                        placeholder="9876543210"
+                        placeholder="XXXXXXXXXX"
                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
                       />
                     </div>
@@ -862,35 +917,71 @@ export default function WorkerProfile() {
                 <div className="space-y-3">
                   {draft.certifications.length === 0 && <EmptySectionHint text="No certifications added yet." />}
                   {draft.certifications.map((entry, index) => (
-                    <div key={index} className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                      <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 md:grid-cols-[1fr_1fr_90px]">
-                        <input
-                          value={entry.name}
-                          onChange={(e) => updateDraftListItem("certifications", index, { name: e.target.value })}
-                          placeholder="Course / certification name"
-                          className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
-                        />
-                        <input
-                          value={entry.issuer}
-                          onChange={(e) => updateDraftListItem("certifications", index, { issuer: e.target.value })}
-                          placeholder="Issued by (e.g. Coursera)"
-                          className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
-                        />
-                        <input
-                          value={entry.year}
-                          onChange={(e) => updateDraftListItem("certifications", index, { year: e.target.value })}
-                          placeholder="Year"
-                          className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
-                        />
+                    <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                      <div className="flex items-start gap-2">
+                        <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 md:grid-cols-[1fr_1fr_90px]">
+                          <input
+                            value={entry.name}
+                            onChange={(e) => updateDraftListItem("certifications", index, { name: e.target.value })}
+                            placeholder="Course / certification name"
+                            className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
+                          />
+                          <input
+                            value={entry.issuer}
+                            onChange={(e) => updateDraftListItem("certifications", index, { issuer: e.target.value })}
+                            placeholder="Issued by (e.g. Coursera)"
+                            className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
+                          />
+                          <input
+                            value={entry.year}
+                            onChange={(e) => updateDraftListItem("certifications", index, { year: e.target.value })}
+                            placeholder="Year"
+                            className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeDraftListItem("certifications", index)}
+                          aria-label="Remove this certification"
+                          className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeDraftListItem("certifications", index)}
-                        aria-label="Remove this certification"
-                        className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+
+                      <div className="mt-2.5 flex items-center gap-2.5">
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          className="hidden"
+                          id={`cert-upload-${index}`}
+                          onChange={(e) => handleCertificateFileChange(index, e)}
+                        />
+                        <label
+                          htmlFor={`cert-upload-${index}`}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-500 transition hover:border-[#1B3FAB] hover:text-[#1B3FAB] dark:border-slate-600 dark:text-slate-400 dark:hover:border-blue-400 dark:hover:text-blue-400"
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                          {entry.fileUrl ? "Replace certificate" : "Upload certificate"}
+                        </label>
+                        {entry.fileUrl && (
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            <FileCheck2 className="h-3.5 w-3.5" />
+                            {entry.fileName || "Attached"}
+                            <button
+                              type="button"
+                              onClick={() => updateDraftListItem("certifications", index, { fileUrl: "", fileName: "" })}
+                              aria-label="Remove attached certificate file"
+                              className="text-slate-400 hover:text-rose-500"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        )}
+                        {certFileError[index] && (
+                          <span className="text-xs font-semibold text-red-500 dark:text-red-400">{certFileError[index]}</span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -927,6 +1018,14 @@ export default function WorkerProfile() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {avatarPreviewOpen && currentUser?.avatar_url && (
+        <ImageLightbox
+          src={currentUser.avatar_url}
+          alt={`${currentUser.name} profile`}
+          onClose={() => setAvatarPreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -57,7 +57,7 @@ const STATUS_META = {
   INVITED: { label: "Awaiting Response", tone: "amber" },
   ACCEPTED: { label: "Negotiating", tone: "blue" },
   PENDING_FUNDS: { label: "Verifying Funds", tone: "amber" },
-  FUNDS_SECURED: { label: "Escrow Funded", tone: "emerald" },
+  FUNDS_SECURED: { label: "Funds Secured", tone: "emerald" },
   WORK_IN_PROGRESS: { label: "In Progress", tone: "blue" },
   FILES_SUBMITTED: { label: "Review Pending", tone: "amber" },
   PENDING_RELEASE: { label: "Release Pending", tone: "amber" },
@@ -367,7 +367,7 @@ function HubHeader({ thread, projects, onViewContractTerms, onProjectUpdated, bl
               }`}
             >
               <ShieldCheck className="h-4 w-4" />
-              {isCancelled ? "Cancelled" : isPaidOut ? "Paid Out" : fundsSecured ? "Escrow Secure" : "Awaiting Escrow"}
+              {isCancelled ? "Cancelled" : isPaidOut ? "Paid Out" : fundsSecured ? "Funds Secured" : "Awaiting Funds"}
             </span>
             <button
               type="button"

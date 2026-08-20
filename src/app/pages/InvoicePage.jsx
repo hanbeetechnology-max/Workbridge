@@ -298,13 +298,13 @@ export default function InvoicePage() {
                     {isPaid
                       ? `${formatINR(workerReceives)} was automatically released to ${project.worker_name}'s wallet — payment successfully cleared.`
                       : isPendingRelease
-                        ? `${project.business_name} has requested this release — WorkBridge staff will pay ${project.worker_name} out of escrow shortly.`
-                        : `${formatINR(budget)} is secured in WorkBridge Escrow until work is approved.`}
+                        ? `${project.business_name} has requested this release — WorkBridge staff will pay ${project.worker_name} the secured funds shortly.`
+                        : `${formatINR(budget)} is held securely by WorkBridge until work is approved.`}
                   </p>
                 </div>
               </div>
 
-              {/* Escrow release and wallet credit are the same atomic
+              {/* Funds release and wallet credit are the same atomic
                   operation today (completeProject has no separate
                   settlement delay) — both rows share the one real
                   timestamp rather than inventing a fake gap between them. */}
@@ -316,7 +316,7 @@ export default function InvoicePage() {
                 return (
                   <div className="mx-auto mt-4 max-w-sm space-y-2 border-t border-emerald-200/60 pt-4">
                     <div className="flex items-center justify-between gap-4 text-xs">
-                      <span className="font-semibold text-emerald-700">Released from WorkBridge Escrow</span>
+                      <span className="font-semibold text-emerald-700">Funds Released</span>
                       <span className="font-mono text-emerald-800">{formatted}</span>
                     </div>
                     <div className="flex items-center justify-between gap-4 text-xs">

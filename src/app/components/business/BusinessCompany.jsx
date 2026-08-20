@@ -25,6 +25,7 @@ import ShareProfileButton from "../shared/ShareProfileButton";
 import { useAuth } from "../../context/AuthContext";
 import { updateOwnProfile } from "../../lib/profilesApi";
 import { ApiError } from "../../lib/apiClient";
+import { INDIAN_CITIES } from "../../lib/indianCities";
 import { getInitials } from "../../utils/formValidation";
 
 // ── Static data ───────────────────────────────────────────────────────────────
@@ -578,9 +579,15 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
               ].map(({ key, label }) => (
                 <Field key={key} label={label}>
                   <input value={draft[key] ?? ""} onChange={(e) => onChange(key, e.target.value)}
+                    list={key === "location" ? "business-location-suggestions" : undefined}
                     className="w-full px-4 py-2.5 bg-[#F4F6FF] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 focus:border-[#1B3FAB]" />
                 </Field>
               ))}
+              <datalist id="business-location-suggestions">
+                {INDIAN_CITIES.map((city) => (
+                  <option key={city} value={city} />
+                ))}
+              </datalist>
             </div>
           </EditFormSection>
 

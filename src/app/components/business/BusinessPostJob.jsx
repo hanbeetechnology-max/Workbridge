@@ -394,7 +394,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                     billing exists, so this isn't a setting to look for
                     elsewhere on the page. Read-only, explains itself. */}
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  🔒 Fixed Price Escrow
+                  🔒 Fixed Price · Funds Secured Upfront
                 </div>
                 <p className="text-xs text-slate-400 dark:text-slate-500">
                   WorkBridge is fixed-price only — the full budget below is held in escrow and released to the worker once you approve the delivered work. There's no hourly billing to switch to.

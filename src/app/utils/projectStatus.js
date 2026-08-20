@@ -51,7 +51,7 @@ export const PROJECT_STATUS_META = {
   // transfer from the Admin Panel's Escrow Funding tab, same shape as
   // PENDING_RELEASE below.
   PENDING_FUNDS: {
-    label: "Escrow Verification Pending",
+    label: "Funds Verification Pending",
     shortLabel: "Verifying Funds",
     tone: "amber",
     triggeredBy: "business",

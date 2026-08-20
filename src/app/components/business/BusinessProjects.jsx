@@ -307,7 +307,7 @@ function PaymentApprovalModal({ project, isSubmitting, submitError, onClose, onC
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-extrabold text-[#0F172A] dark:text-white" style={HEADING_FONT}>
-                    Request Release from Escrow
+                    Request Release of Secured Funds
                   </h3>
                   <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500" style={DATA_FONT}>
                     {project.title}

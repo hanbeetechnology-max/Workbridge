@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { LifeBuoy } from "lucide-react";
+import { Headphones } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 // A global, always-reachable floating help button ("MNC-style" corner
@@ -59,7 +59,7 @@ export default function SupportFab() {
       // 96px clears the tallest composer bar (~92px) with a small margin.
       className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FF6B35] text-white shadow-[0_10px_30px_-8px_rgba(255,107,53,0.55)] transition-transform duration-200 hover:scale-105 active:scale-95"
     >
-      <LifeBuoy className="h-6 w-6" />
+      <Headphones className="h-6 w-6" />
     </button>
   );
 }

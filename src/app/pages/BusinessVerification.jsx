@@ -97,7 +97,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
             Get your<br />Verified Badge.
           </h2>
           <p className="text-slate-400 text-xs leading-relaxed">
-            Complete all three steps and you're ready to post jobs, with payments held securely in escrow.
+            Complete all three steps and you're ready to post jobs, with payments held securely until you approve the work.
           </p>
         </div>
 

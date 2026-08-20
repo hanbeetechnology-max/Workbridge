@@ -8,7 +8,7 @@ import {
   Headphones,
   Loader2,
   Lock,
-  ShieldAlert,
+  PowerOff,
   ShieldCheck,
   Trash2,
   User,
@@ -20,6 +20,7 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { getInitials } from "../utils/formValidation";
 import { ApiError } from "../lib/apiClient";
 import { getPushStatus, subscribeToPush, unsubscribeFromPush } from "../lib/pushNotifications";
+import { updateNotificationPrefs } from "../lib/authApi";
 import SupportChat from "../components/shared/SupportChat";
 import ThemeToggle from "../components/shared/ThemeToggle";
 
@@ -30,7 +31,7 @@ const TABS = [
   { id: "security", label: "Security & Auth", icon: Lock },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "support", label: "Support", icon: Headphones },
-  { id: "danger", label: "Danger Zone", icon: ShieldAlert },
+  { id: "danger", label: "Deactivate Account", icon: PowerOff },
 ];
 
 function SectionCard({ children }) {
@@ -185,6 +186,7 @@ function GeneralProfileTab() {
 
 function SecurityTab() {
   const { currentUser } = useAuth();
+  const hasUsablePassword = currentUser?.has_usable_password !== false;
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -206,7 +208,7 @@ function SecurityTab() {
     }
     setSubmitting(true);
     try {
-      await changePassword({ currentPassword, newPassword });
+      await changePassword({ currentPassword: hasUsablePassword ? currentPassword : undefined, newPassword });
       setSuccess(true);
       setCurrentPassword("");
       setNewPassword("");
@@ -221,24 +223,36 @@ function SecurityTab() {
   return (
     <div className="space-y-6">
       <SectionCard>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className={`h-4 w-4 ${currentUser?.email_verified ? "text-emerald-500" : "text-slate-300 dark:text-slate-600"}`} />
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Email {currentUser?.email_verified ? "verified" : "not verified"}
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className={`h-4 w-4 ${currentUser?.email_verified ? "text-emerald-500" : "text-slate-300 dark:text-slate-600"}`} />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Email {currentUser?.email_verified ? "verified" : "not verified"}
+            </p>
+          </div>
         </div>
       </SectionCard>
 
       <SectionCard>
-        <p className="mb-4 text-sm font-bold text-[#0A1128] dark:text-white">Change Password</p>
+        <p className="mb-1 text-sm font-bold text-[#0A1128] dark:text-white">
+          {hasUsablePassword ? "Change Password" : "Set a Password"}
+        </p>
+        {!hasUsablePassword && (
+          <p className="mb-4 text-xs text-slate-400">
+            You signed up with Google, so there's no password to enter yet — set one below to also be able to log in
+            with email + password.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Current password"
-            className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
-          />
+          {hasUsablePassword && (
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Current password"
+              className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+            />
+          )}
           <input
             type="password"
             value={newPassword}
@@ -269,10 +283,10 @@ function SecurityTab() {
 
           <button
             type="submit"
-            disabled={submitting || !currentPassword || !newPassword}
+            disabled={submitting || (hasUsablePassword && !currentPassword) || !newPassword}
             className="rounded-xl bg-[#0A1128] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1a2547] disabled:opacity-60 dark:bg-white dark:text-[#0A1128] dark:hover:bg-slate-200"
           >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : hasUsablePassword ? "Update password" : "Set password"}
           </button>
         </form>
       </SectionCard>
@@ -293,10 +307,60 @@ const PUSH_STATUS_COPY = {
   unsubscribed: { label: "Off on this device", dot: "bg-slate-300", tone: "text-slate-500 bg-slate-50 border-slate-200 dark:text-slate-400 dark:bg-slate-800 dark:border-slate-700" },
 };
 
+const NOTIFICATION_CATEGORIES = [
+  { key: "chat", label: "Chat Messages", description: "New messages in project chats and negotiations." },
+  { key: "projects", label: "Project Updates", description: "Applications, invites, and status changes on your projects." },
+  { key: "payments", label: "Payments", description: "Funds secured, released, or a payout landing in your wallet." },
+];
+
+function CategoryToggleRow({ label, description, checked, onToggle, busy }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+      <div>
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</p>
+        <p className="mt-0.5 text-xs text-slate-400">{description}</p>
+      </div>
+      <button
+        onClick={onToggle}
+        disabled={busy}
+        role="switch"
+        aria-checked={checked}
+        aria-label={`Toggle ${label}`}
+        className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${
+          checked ? "bg-[#FF6B35]" : "bg-slate-200 dark:bg-slate-700"
+        }`}
+      >
+        <span
+          className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+            checked ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 function NotificationsTab() {
+  const { currentUser, updateCurrentUser } = useAuth();
+  const [prefs, setPrefs] = useState(currentUser?.notification_prefs ?? { chat: true, projects: true, payments: true });
+  const [savingKey, setSavingKey] = useState(null);
   const [status, setStatus] = useState("checking");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  const handlePrefToggle = async (key) => {
+    const next = !prefs[key];
+    setPrefs((p) => ({ ...p, [key]: next }));
+    setSavingKey(key);
+    try {
+      const updated = await updateNotificationPrefs({ [key]: next });
+      updateCurrentUser(updated);
+    } catch {
+      setPrefs((p) => ({ ...p, [key]: !next }));
+    } finally {
+      setSavingKey(null);
+    }
+  };
 
   const refreshStatus = () => {
     getPushStatus()
@@ -340,7 +404,7 @@ function NotificationsTab() {
               <Bell className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#0A1128] dark:text-white">Push Notifications</h3>
+              <h3 className="text-sm font-bold text-[#0A1128] dark:text-white">Notifications</h3>
               <p className="mt-1 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Get a real notification on this device for new messages, invites, applications, and project updates —
                 even when WorkBridge isn't open in a tab.
@@ -378,6 +442,23 @@ function NotificationsTab() {
               </span>
             </button>
           )}
+        </div>
+      </SectionCard>
+
+      <SectionCard>
+        <p className="text-sm font-bold text-[#0A1128] dark:text-white">What you get notified about</p>
+        <p className="mt-1 text-xs text-slate-400">Applies to this device's notifications above, and to your in-app notification history.</p>
+        <div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+          {NOTIFICATION_CATEGORIES.map(({ key, label, description }) => (
+            <CategoryToggleRow
+              key={key}
+              label={label}
+              description={description}
+              checked={prefs[key] !== false}
+              busy={savingKey === key}
+              onToggle={() => handlePrefToggle(key)}
+            />
+          ))}
         </div>
       </SectionCard>
     </div>
@@ -458,7 +539,12 @@ export default function SettingsPage() {
   }, [location.state]);
 
   return (
-    <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+    // h-full + its own overflow-y-auto — DashboardLayout's children slot is
+    // deliberately overflow-hidden (see its own comment) and expects every
+    // tab panel to own its scroll against that bounded-height ancestor, same
+    // as WorkerJobFeed/WorkerNegotiationInbox/etc. already do. This page
+    // never had that, so content past the fold was simply unreachable.
+    <div className="wb-scroll-clean h-full w-full overflow-y-auto px-4 py-8 sm:px-6 sm:py-10">
       <div className="mb-6">
         <h1 className="text-xl font-extrabold text-[#0A1128] dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Settings

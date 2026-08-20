@@ -199,11 +199,11 @@ export default function BusinessDashboard({ onLogout, onVerify, isVerified = fal
               <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
                 {isVerified ? (
                   <span
-                    title="Escrow releases only after you approve the work."
+                    title="Secured funds release only after you approve the work."
                     className="hidden items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-400 sm:inline-flex"
                   >
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Escrow Protected
+                    Funds Secured
                   </span>
                 ) : (
                   <button

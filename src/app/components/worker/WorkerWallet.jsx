@@ -444,10 +444,11 @@ export default function WorkerWallet() {
         <div className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full bg-[#1B3FAB]/10 blur-[80px]" />
 
         {/* 3-column financial stats: Available (primary, unlocked money) vs
-            Pending in Escrow / Lifetime Earned (secondary, informational —
-            not spendable yet or already spent) — kept visually distinct so
+            Pending / Lifetime Earned (secondary, informational — not
+            spendable yet or already spent) — kept visually distinct so
             the balance a user can actually withdraw is never confused with
-            money that's still tied to an active project. */}
+            money that's still tied to an active project. "Secured Funds" not
+            "escrow" — that word is reserved for the legal pages. */}
         <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div>
             <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
@@ -465,7 +466,7 @@ export default function WorkerWallet() {
           <div className="sm:border-l sm:border-slate-200/70 dark:sm:border-slate-700/70 sm:pl-6">
             <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
               <Lock className="h-3.5 w-3.5 text-amber-500" />
-              Pending in Escrow
+              Pending
             </p>
             <p className="mt-2 text-3xl font-bold tracking-tight text-slate-700 dark:text-slate-200">
               {formatINR(heldSecurely)}

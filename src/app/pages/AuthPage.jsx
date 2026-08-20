@@ -41,17 +41,19 @@ const BRAND_FEATURES = [
 
 // Signup-only checklist — shown instead of BRAND_FEATURES while creating an
 // account, same "here's what you get" pattern as a job board's registration
-// page. Grounded in what actually exists today (real job feed, real escrow,
-// real badges) — no invented perks.
+// page. Grounded in what actually exists today (real job feed, real Secured
+// Funds flow, real badges) — no invented perks. "Secured Funds" not
+// "escrow" — that word is reserved for the legal pages (Terms/Privacy/
+// Refund), never product-facing copy.
 const REGISTER_BENEFITS = {
   worker: [
     "Build a real profile businesses can find and hire you from",
     "Apply to open jobs the moment they're posted",
-    "Get paid through escrow once your work is approved",
+    "Get paid once your work is approved — funds are secured upfront",
   ],
   business: [
     "Post real jobs and browse verified freelancer profiles",
-    "Fund projects through escrow — pay only when you approve the work",
+    "Secure project funds upfront — pay only when you approve the work",
     "Track every project from application to payout in one place",
   ],
 };
@@ -121,16 +123,18 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(activeSchema),
-    defaultValues: { fullName: "", email: "", phone: "", password: "" },
+    defaultValues: { fullName: "", email: "", phone: "", password: "", agreedToTerms: false },
   });
+  const agreedToTerms = watch("agreedToTerms");
 
   useEffect(() => {
     resetAuthState();
     setAuthMode("signin");
-    reset({ fullName: "", email: "", phone: "", password: "" });
+    reset({ fullName: "", email: "", phone: "", password: "", agreedToTerms: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, reset, userType]);
 
@@ -225,7 +229,7 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
     if (mode === authMode) return;
     resetAuthState();
     setAuthMode(mode);
-    reset({ fullName: "", email: "", phone: "", password: "" });
+    reset({ fullName: "", email: "", phone: "", password: "", agreedToTerms: false });
   };
 
   // "Forgot password?" drops into its own mode rather than signin/signup —
@@ -234,13 +238,13 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
   const startForgotPassword = () => {
     resetAuthState();
     setAuthMode("forgot");
-    reset({ fullName: "", email: "", phone: "", password: "" });
+    reset({ fullName: "", email: "", phone: "", password: "", agreedToTerms: false });
   };
 
   const backToSignIn = () => {
     resetAuthState();
     setAuthMode("signin");
-    reset({ fullName: "", email: "", phone: "", password: "" });
+    reset({ fullName: "", email: "", phone: "", password: "", agreedToTerms: false });
   };
 
   // Sign-in is password-only now — no OTP step at all. Works identically
@@ -727,7 +731,22 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                       that looks live but does nothing. */}
                   {!isAdmin && authMode !== "forgot" && GOOGLE_CLIENT_ID && (
                     <div className="mb-5">
-                      <div className="flex min-h-11 items-center justify-center overflow-hidden rounded-full" ref={googleButtonRef} />
+                      <div className="relative flex min-h-11 items-center justify-center overflow-hidden rounded-full">
+                        <div ref={googleButtonRef} className="flex w-full items-center justify-center" />
+                        {/* Google's button is its own hosted iframe — it can't be
+                            programmatically disabled, so a transparent blocker
+                            sits on top of it in signup mode until the Terms
+                            checkbox is checked, same requirement as the email
+                            form below enforces via signupSchema. */}
+                        {authMode === "signup" && !agreedToTerms && (
+                          <button
+                            type="button"
+                            aria-label="Agree to the Terms & Conditions and Privacy Policy first"
+                            onClick={() => setFormError("Please agree to the Terms & Conditions and Privacy Policy before continuing.")}
+                            className="absolute inset-0 cursor-not-allowed"
+                          />
+                        )}
+                      </div>
                       {googleSubmitting && (
                         <p className="mt-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Signing you in…</p>
                       )}
@@ -786,7 +805,7 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                             inputMode="numeric"
                             autoComplete="tel-national"
                             maxLength={10}
-                            placeholder="9876543210"
+                            placeholder="XXXXXXXXXX"
                             {...register("phone", { setValueAs: (value) => value.replace(/\D/g, "") })}
                             className={AUTH_INPUT_CLASS}
                           />
@@ -828,6 +847,32 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                       </div>
                     )}
 
+                    {!isAdmin && authMode === "signup" && (
+                      <div>
+                        <label className="flex items-start gap-2.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                          <input
+                            type="checkbox"
+                            {...register("agreedToTerms")}
+                            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-slate-300 text-[#FF6B35] outline-none focus:ring-2 focus:ring-orange-500/30 dark:border-slate-600 dark:bg-slate-800"
+                          />
+                          <span>
+                            I agree to WorkBridge's{" "}
+                            <Link to="/terms" target="_blank" className="font-semibold text-[#1B3FAB] hover:underline dark:text-blue-400">
+                              Terms &amp; Conditions
+                            </Link>{" "}
+                            and{" "}
+                            <Link to="/privacy" target="_blank" className="font-semibold text-[#1B3FAB] hover:underline dark:text-blue-400">
+                              Privacy Policy
+                            </Link>
+                            .
+                          </span>
+                        </label>
+                        {errors.agreedToTerms && (
+                          <p className="mt-1.5 pl-6 text-xs font-semibold text-red-500 dark:text-red-400">{errors.agreedToTerms.message}</p>
+                        )}
+                      </div>
+                    )}
+
                     <button
                       type="submit"
                       disabled={sendingOtp}
@@ -843,23 +888,10 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                     </button>
 
                     {!isAdmin && authMode === "signup" && (
-                      <>
-                        <div className="flex items-center justify-center gap-2 pt-1 text-xs text-slate-400 dark:text-slate-500">
-                          <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                          We'll email you a 6-digit code to verify your address
-                        </div>
-                        <p className="pt-1 text-center text-[11px] text-slate-400 dark:text-slate-500">
-                          By creating an account, you agree to WorkBridge's{" "}
-                          <Link to="/terms" className="font-semibold text-[#1B3FAB] hover:underline dark:text-blue-400">
-                            Terms
-                          </Link>{" "}
-                          and{" "}
-                          <Link to="/privacy" className="font-semibold text-[#1B3FAB] hover:underline dark:text-blue-400">
-                            Privacy Policy
-                          </Link>
-                          .
-                        </p>
-                      </>
+                      <div className="flex items-center justify-center gap-2 pt-1 text-xs text-slate-400 dark:text-slate-500">
+                        <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        We'll email you a 6-digit code to verify your address
+                      </div>
                     )}
 
                   </form>

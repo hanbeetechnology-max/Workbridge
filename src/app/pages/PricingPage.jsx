@@ -39,7 +39,7 @@ export default function PricingPage() {
       <LegalSection id="payment-gateway-note" title="4. A Note on Live Payments">
         <p>
           As described in our <a href="/terms">Terms &amp; Conditions</a> §5, WorkBridge does not yet have a live,
-          automated payment gateway — Escrow funding and Worker payouts are currently verified and processed
+          automated payment gateway — Secured Funds deposits and Worker payouts are currently verified and processed
           manually by our team.
         </p>
       </LegalSection>

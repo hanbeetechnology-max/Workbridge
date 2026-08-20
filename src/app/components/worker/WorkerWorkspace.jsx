@@ -248,7 +248,7 @@ export default function WorkerWorkspace() {
       switch (event.type) {
         case "FUNDS_SECURED":
           patchProject({ id: event.projectId, status: "FUNDS_SECURED" });
-          toast.success(`${project.business_name} just funded the Escrow for "${project.title}"!`);
+          toast.success(`${project.business_name} just secured the funds for "${project.title}"!`);
           break;
         case "COMPLETED":
           patchProject({ id: event.projectId, status: "COMPLETED" });

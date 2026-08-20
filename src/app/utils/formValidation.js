@@ -62,6 +62,9 @@ export const authSchema = z.object({
 export const signupSchema = authSchema.extend({
   fullName: cleanText,
   phone: phoneSchema,
+  agreedToTerms: z.boolean().refine((v) => v === true, {
+    message: "You must agree to the Terms & Conditions and Privacy Policy to continue.",
+  }),
 });
 
 export const adminAuthSchema = z.object({

@@ -1,19 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Loader2, Plus, Sparkles, X, Zap } from "lucide-react";
+import { Loader2, Plus, X, Zap } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { updateOwnProfile } from "../../lib/profilesApi";
 import { ApiError } from "../../lib/apiClient";
 import ThemeToggle from "../shared/ThemeToggle";
-
-const TIMEZONES = [
-  "Asia/Kolkata (IST, UTC+5:30)",
-  "Asia/Dubai (GST, UTC+4)",
-  "Asia/Singapore (SGT, UTC+8)",
-  "Europe/London (GMT, UTC+0)",
-  "America/New_York (EST, UTC-5)",
-  "America/Los_Angeles (PST, UTC-8)",
-];
 
 const INPUT_CLASSES =
   "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white";
@@ -188,24 +179,12 @@ function StepQualifications({ data, onChange }) {
   );
 }
 
-function StepPreferences({ data, onChange }) {
+function StepPreferences() {
   return (
-    <StepShell title="Set up your dashboard" subtitle="A couple of last things so it feels like yours.">
-      <div className="space-y-6">
-        <div>
-          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">Timezone</label>
-          <select value={data.timezone} onChange={(e) => onChange({ timezone: e.target.value })} className={INPUT_CLASSES}>
-            {TIMEZONES.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Appearance</p>
-          <ThemeToggle />
-        </div>
+    <StepShell title="Set up your dashboard" subtitle="One last thing so it feels like yours.">
+      <div>
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Appearance</p>
+        <ThemeToggle />
       </div>
     </StepShell>
   );
@@ -234,7 +213,6 @@ export default function OnboardingWizard() {
     school: "",
     yearsOfExperience: "",
     skills: currentUser?.profile?.skills ?? [],
-    timezone: TIMEZONES[0],
   });
 
   const patch = (fields) => setData((prev) => ({ ...prev, ...fields }));
@@ -251,7 +229,6 @@ export default function OnboardingWizard() {
         title: data.title.trim() || undefined,
         profilePatch: {
           bio: data.bio.trim(),
-          timezone: data.timezone,
           ...(isWorker
             ? {
                 education,
@@ -291,8 +268,7 @@ export default function OnboardingWizard() {
       >
         <div className="border-b border-slate-100 px-8 pb-6 pt-8 dark:border-slate-800">
           <div className="mb-5 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#FF6B35]">
-              <Sparkles className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#FF6B35]">
               Welcome to WorkBridge
             </span>
             <span className="text-xs font-semibold text-slate-400">
@@ -313,7 +289,7 @@ export default function OnboardingWizard() {
             >
               {currentStep === "basics" && <StepBasics data={data} onChange={patch} />}
               {currentStep === "qualifications" && <StepQualifications data={data} onChange={patch} />}
-              {currentStep === "preferences" && <StepPreferences data={data} onChange={patch} />}
+              {currentStep === "preferences" && <StepPreferences />}
             </motion.div>
           </AnimatePresence>
 

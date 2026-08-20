@@ -45,7 +45,14 @@ export default function LegalPageLayout({ title, lastUpdated, intro, children })
   }, [sections]);
 
   return (
-    <div className="bg-slate-50 dark:bg-[#070B18] px-4 py-16 sm:px-6">
+    // relative z-10 — without an explicit position this wrapper is a static
+    // in-flow element, which paints BEHIND .wb-aurora (fixed, z-index:0) in
+    // the CSS stacking order regardless of its own solid background —
+    // static elements paint before positioned ones. Same bleed-through bug
+    // already fixed on .wb-footer; this page just wasn't tagged with any of
+    // the classes that stacking rule already covers (wb-nav/wb-footer/
+    // wb-hero/wb-section).
+    <div className="relative z-10 bg-slate-50 dark:bg-[#070B18] px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-3xl">
         <Link
           to="/"

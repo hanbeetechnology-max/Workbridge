@@ -17,7 +17,7 @@ function formatINR(amount) {
 }
 
 const SUB_TABS = [
-  { id: "invoices", label: "Invoices & Escrow" },
+  { id: "invoices", label: "Invoices & Payments" },
   { id: "subscription", label: "Subscription Plans" },
   { id: "trust", label: "Trust & Verification" },
 ];
@@ -29,7 +29,7 @@ const SUB_TABS = [
 // for any project that had funds secured before it was cancelled. This is
 // the full ledger; the Overview widget stays a quick-glance preview of it.
 const LEDGER_META = {
-  secured: { icon: ShieldCheck, label: "Funds in Escrow", tone: "blue" },
+  secured: { icon: ShieldCheck, label: "Funds Secured", tone: "blue" },
   delivered: { icon: CheckCircle2, label: "Released", tone: "emerald" },
   refunded: { icon: RotateCcw, label: "Refunded", tone: "slate" },
 };
@@ -58,7 +58,7 @@ function InvoicesTab({ projects, loading, loadError }) {
           out.push({ id: `${p.id}-secured`, projectId: p.id, type: "secured", project: p.title, worker: p.worker_name, amount: budget, at: event.at });
         }
         if (event.status === "COMPLETED") {
-          // Same amount as the "Funds in Escrow" row above — the Business
+          // Same amount as the "Funds Secured" row above — the Business
           // never sees a fee-reduced figure; that split only exists on the
           // Worker's side of the ledger.
           out.push({ id: `${p.id}-delivered`, projectId: p.id, type: "delivered", project: p.title, worker: p.worker_name, amount: budget, at: event.at });

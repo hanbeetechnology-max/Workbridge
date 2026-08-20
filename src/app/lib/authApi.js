@@ -11,6 +11,13 @@ export function changePassword({ currentPassword, newPassword }) {
   });
 }
 
+export function updateNotificationPrefs(prefsPatch) {
+  return apiFetch("/api/auth/notification-prefs", {
+    method: "PATCH",
+    body: prefsPatch,
+  });
+}
+
 export function deactivateAccount(confirmation) {
   return apiFetch("/api/auth/deactivate-self", {
     method: "PATCH",

@@ -143,7 +143,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
         <div className="flex h-full flex-col">
           <div className="flex-shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5">
             <h2 className="font-display text-lg font-extrabold text-slate-900 dark:text-white">
-              Fund Escrow &amp; Start Project
+              Secure Funds &amp; Start Project
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Direct bank transfer — no card or gateway fees added on top</p>
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
@@ -180,12 +180,12 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                 <div className="mt-5 rounded-xl bg-slate-900 p-5 text-white shadow-lg">
                   <div className="mb-3 flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-[#FF6B35]" />
-                    <p className="text-sm font-bold">WorkBridge Official Escrow Account</p>
+                    <p className="text-sm font-bold">WorkBridge Official Secured Funds Account</p>
                   </div>
                   <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[11px] leading-4 text-amber-200">
                     <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-                    Placeholder account details — WorkBridge staff must replace these with the real escrow
-                    account before this is used for a real transfer.
+                    Placeholder account details — WorkBridge staff must replace these with the real account
+                    before this is used for a real transfer.
                   </div>
                   <CopyField label="Account Name" value={ESCROW_ACCOUNT.accountName} />
                   <CopyField label="Account Number" value={ESCROW_ACCOUNT.accountNumber} />
