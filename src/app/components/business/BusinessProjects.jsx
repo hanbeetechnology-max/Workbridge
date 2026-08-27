@@ -361,14 +361,14 @@ function PaymentApprovalModal({ project, isSubmitting, submitError, onClose, onC
                 <button
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-all active:scale-[0.98] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={onConfirm}
                   disabled={isSubmitting}
-                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-md shadow-emerald-500/20 transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-600/60"
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-600/60"
                 >
                   {isSubmitting ? (
                     <>
@@ -464,14 +464,14 @@ function RequestRevisionModal({ project, note, onNoteChange, isSubmitting, submi
                 <button
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-all active:scale-[0.98] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={onConfirm}
                   disabled={isSubmitting}
-                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-amber-600 text-sm font-bold text-white shadow-md shadow-amber-500/20 transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-amber-600/60"
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-amber-600 text-sm font-bold text-white shadow-md shadow-amber-500/20 transition-all active:scale-[0.98] hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-amber-600/60"
                 >
                   {isSubmitting ? (
                     <>
@@ -555,14 +555,14 @@ function DisputeConfirmModal({ project, isSubmitting, submitError, onClose, onCo
                 <button
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-all active:scale-[0.98] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={onConfirm}
                   disabled={isSubmitting}
-                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-bold text-white shadow-md shadow-red-500/20 transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-600/60"
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-bold text-white shadow-md shadow-red-500/20 transition-all active:scale-[0.98] hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-600/60"
                 >
                   {isSubmitting ? (
                     <>
@@ -656,14 +656,14 @@ function CancelRefundConfirmModal({ project, isSubmitting, submitError, onClose,
                 <button
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-all active:scale-[0.98] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                 >
                   Nevermind
                 </button>
                 <button
                   onClick={onConfirm}
                   disabled={isSubmitting}
-                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-bold text-white shadow-md shadow-red-500/20 transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-600/60"
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-bold text-white shadow-md shadow-red-500/20 transition-all active:scale-[0.98] hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-600/60"
                 >
                   {isSubmitting ? (
                     <>
@@ -1425,7 +1425,7 @@ export default function BusinessProjects({ onOpenChat }) {
             onClick={loadProjects}
             disabled={isLoading}
             aria-label="Refresh projects"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 dark:text-slate-400 transition-all active:scale-[0.98] hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -1762,9 +1762,16 @@ export default function BusinessProjects({ onOpenChat }) {
                         )}
 
                         {p.status === "PENDING_FUNDS" && (
+                          // funding_method distinguishes a real-time Razorpay
+                          // payment (resolves in seconds via webhook/verify,
+                          // no staff action needed — "Awaiting WorkBridge
+                          // Verification" was misleading here, it implies a
+                          // human is manually checking something) from the
+                          // manual bank-transfer fallback (genuinely does
+                          // wait on staff to confirm a submitted UTR).
                           <span className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-2 text-xs font-bold text-amber-700 sm:ml-auto sm:w-auto sm:justify-start dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400">
                             <ShieldCheck className="h-3.5 w-3.5" />
-                            Awaiting WorkBridge Verification
+                            {p.funding_method === "RAZORPAY" ? "Processing Payment…" : "Awaiting WorkBridge Verification"}
                           </span>
                         )}
 

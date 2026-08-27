@@ -17,9 +17,27 @@ const heroWordVariants = {
 
 const trustItems = ["Vetted.", "Seamless.", "Secure."];
 
+// AI Core badge — TEMPORARILY DISABLED (idea approved, UI/placement not
+// good enough yet — revisit design before re-enabling). See the commented
+// JSX block below in HeroSection for the markup this fed.
+// const aiCoreSamples = [
+//   "Priya matched — React Developer",
+//   "Arjun matched — UI/UX Designer",
+//   "Kavya matched — Content Writer",
+//   "Rohan matched — Backend Engineer",
+// ];
+
 export function HeroSection({ onSelect }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  // AI Core badge state — disabled alongside its JSX below.
+  // const [sampleIndex, setSampleIndex] = useState(0);
+  // useEffect(() => {
+  //   const id = setInterval(() => {
+  //     setSampleIndex((i) => (i + 1) % aiCoreSamples.length);
+  //   }, 2600);
+  //   return () => clearInterval(id);
+  // }, []);
 
   // Previously ignored whatever was typed here and sent everyone straight
   // to login regardless — now it actually searches the real, public Job
@@ -87,6 +105,43 @@ export function HeroSection({ onSelect }) {
               </span>
             ))}
           </div>
+
+          {/* AI Core / Live Operations badge — DISABLED for now. Idea was
+              good (a "something's actively matching" signal), but the
+              design/placement wasn't good enough yet. Revisit later rather
+              than delete — re-enable this block + the state/effect and
+              aiCoreSamples above once redesigned.
+          <motion.div
+            className="mt-6 inline-flex items-center gap-2.5 rounded-2xl border border-white/60 bg-white/70 px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-xl"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+              <motion.span
+                className="absolute inline-flex h-full w-full rounded-full bg-[#FF6B35]"
+                animate={{ scale: [1, 2.2], opacity: [0.6, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+              />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF6B35]" />
+            </span>
+            <div className="min-w-0 leading-tight">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">AI Core · Live</p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={sampleIndex}
+                  className="text-xs font-bold text-[#0F172A]"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                >
+                  {aiCoreSamples[sampleIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+          */}
         </div>
 
         {/* wb-hero-media-wrap handles entry animation; wb-hero-media handles hover */}

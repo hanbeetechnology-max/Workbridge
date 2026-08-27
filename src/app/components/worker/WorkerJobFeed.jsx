@@ -232,7 +232,7 @@ function JobDetailModal({ job, onClose, onApply, applying, applyError, alreadyAp
             <button
               onClick={() => onApply(message)}
               disabled={applying}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#FF6B35] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#E55E1F] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#FF6B35] px-5 py-2.5 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-[#E55E1F] disabled:opacity-60"
             >
               {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               {applying ? "Submitting…" : "Apply Now"}
@@ -261,14 +261,14 @@ function InviteCard({ candidate, onRespond, responding }) {
         <button
           onClick={() => onRespond(candidate.id, false)}
           disabled={responding}
-          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-[0.98] hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
         >
           Decline
         </button>
         <button
           onClick={() => onRespond(candidate.id, true)}
           disabled={responding}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1B3FAB] px-3.5 py-2 text-sm font-bold text-white hover:bg-[#15338d] disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1B3FAB] px-3.5 py-2 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-[#15338d] disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
         >
           {responding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
           Accept
@@ -473,9 +473,14 @@ export default function WorkerJobFeed() {
   };
 
   return (
-    <div className="wb-scroll-clean relative h-full min-h-0 overflow-y-auto bg-gradient-to-br from-[#dbe4ff] via-[#eef1ff] to-[#ffe4d2] pb-20 text-slate-900 dark:text-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="wb-scroll-clean relative h-full min-h-0 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-[#dbe4ff] via-[#eef1ff] to-[#ffe4d2] pb-20 text-slate-900 dark:text-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <section className="relative w-full px-6 py-8">
+        {/* SubscriptionBanner commented out (not deleted) — subscriptions
+            are real and working underneath, needed again later, just
+            hidden from the UI for now per a product decision to not
+            surface or hint at subscription plans yet.
         <SubscriptionBanner onUpgrade={() => toast.info("Subscriptions are coming soon!")} />
+        */}
 
         <div className="mb-8 rounded-2xl border border-white/70 bg-white/60 backdrop-blur-xl p-6 shadow-lg shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-900/60">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">WorkBridge Job Feed</p>

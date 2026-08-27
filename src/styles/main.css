@@ -313,6 +313,14 @@ html.dark .wb-brand-mark {
   transform: translateY(-2px);
 }
 
+/* Tactile press feedback — a quick settle-down on click/tap so every CTA
+   (hero search, nav Sign Up, pillar section actions) reads as physically
+   pressable, not just hoverable. Placed after :hover so it wins the
+   cascade tie when a mouse click lands mid-hover. */
+.wb-button:active {
+  transform: scale(0.98);
+}
+
 .wb-button--primary {
   background: var(--wb-orange);
   color: white;
@@ -676,6 +684,27 @@ html.dark .wb-search {
   .wb-shell,
   .wb-aurora,
   .wb-blob { animation: none; }
+
+  /* Same treatment for the page's other continuous, non-scroll-triggered
+     loops — the partner-chip marquee and the pillar-card float —
+     previously only the aurora background respected this. One-shot
+     entrance animations (fade-ups, ExplodeView, ScrollReveal/TextReveal)
+     are left as-is: those already terminate and don't loop. */
+  .wb-partners-track,
+  .wb-feature-card--float {
+    animation: none;
+  }
+
+  /* .wb-expert-pill's shorthand combines its one-shot fade-in ("both",
+     ending at opacity:1) with the infinite float on the same property —
+     a blanket `animation: none` here would leave it stuck at the base
+     rule's opacity:0 forever. Set the fade-in's end state directly
+     instead, so the pill still appears, just without the entrance or
+     the continuous bob. */
+  .wb-expert-pill {
+    opacity: 1;
+    animation: none;
+  }
 }
 
 /* Preserves the horizontal-centering transform throughout the animation */

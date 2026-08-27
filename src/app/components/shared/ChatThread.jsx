@@ -108,7 +108,7 @@ function formatDateDivider(date) {
 function DateDivider({ label }) {
   return (
     <div className="flex items-center justify-center py-1">
-      <span className="rounded-full bg-slate-200/70 px-3 py-1 text-[11px] font-bold text-slate-500">{label}</span>
+      <span className="rounded-full bg-slate-200/70 px-3 py-1 text-[11px] font-bold text-slate-500 dark:bg-slate-700/70 dark:text-slate-400">{label}</span>
     </div>
   );
 }
@@ -201,7 +201,7 @@ function MessageRow({ message, isMine, onPreview }) {
             {message.body}
           </div>
         )}
-        <span className="px-1 text-[11px] font-semibold text-slate-400">{time}</span>
+        <span className="px-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500">{time}</span>
       </div>
     </div>
   );
@@ -436,7 +436,7 @@ export default function ChatThread({
         ) : loadError ? (
           <p className="py-4 text-center text-xs text-red-500">{loadError}</p>
         ) : messages.length === 0 ? (
-          <p className="py-4 text-center text-xs text-slate-400">No messages yet — say hello.</p>
+          <p className="py-4 text-center text-xs text-slate-400 dark:text-slate-500">No messages yet — say hello.</p>
         ) : (
           renderMessageRows(messages, currentUser?.id, setPreviewSrc)
         )}
@@ -467,7 +467,7 @@ export default function ChatThread({
               type="button"
               onClick={() => setAttachOpen(false)}
               aria-label="Close attachment panel"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -565,7 +565,7 @@ export default function ChatThread({
               aria-label="Attach a file"
               title={activeProjects.length === 0 ? "No active project to attach a deliverable to" : "Attach a file"}
               className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                attachOpen ? "bg-[#1B3FAB] text-white" : "text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                attachOpen ? "bg-[#1B3FAB] text-white" : "text-slate-400 hover:bg-white hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
               }`}
             >
               <Paperclip className="h-4 w-4" />

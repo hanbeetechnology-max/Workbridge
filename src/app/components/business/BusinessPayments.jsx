@@ -7,19 +7,26 @@ import {
   ShieldCheck, TrendingUp,
 } from "lucide-react";
 import { listProjects } from "../../lib/projectsApi";
+import { getSubscriptionStatus } from "../../lib/paymentsApi";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { ApiError } from "../../lib/apiClient";
 import VerificationFeesTable from "../shared/VerificationFeesTable";
 import ComingSoonOverlay from "../shared/ComingSoonOverlay";
+import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 }
 
+// "Subscription Plans" tab commented out (not deleted) — subscriptions are
+// fully built and wired to real Razorpay checkout (SubscriptionTab below),
+// needed again later, just hidden from the UI for now per a product
+// decision to not surface or hint at subscription plans yet. Uncomment the
+// line below (and the matching render line further down) to bring it back.
 const SUB_TABS = [
   { id: "invoices", label: "Invoices & Payments" },
-  { id: "subscription", label: "Subscription Plans" },
-  { id: "trust", label: "Trust & Verification" },
+  // { id: "subscription", label: "Subscription Plans" },
+  { id: "trust", label: "Coming Soon" },
 ];
 
 // ── Invoices & Escrow ───────────────────────────────────────────────────────
@@ -196,6 +203,21 @@ function BillingToggle({ isYearly, onChange }) {
 
 function SubscriptionTab() {
   const [isYearly, setIsYearly] = useState(false);
+  const [currentTier, setCurrentTier] = useState(null);
+  const [expiresAt, setExpiresAt] = useState(null);
+
+  const refreshStatus = () => {
+    getSubscriptionStatus()
+      .then((s) => {
+        setCurrentTier(s.tier);
+        setExpiresAt(s.expiresAt);
+      })
+      .catch(() => setCurrentTier("FREE"));
+  };
+
+  useEffect(refreshStatus, []);
+
+  const currentTierMeta = BUSINESS_TIERS.find((t) => t.id === (currentTier ?? "free").toLowerCase());
 
   return (
     <div className="space-y-6">
@@ -203,8 +225,13 @@ function SubscriptionTab() {
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Current Plan</p>
           <p className="font-display mt-1 text-2xl font-black text-[#0A1128] dark:text-white">
-            Free
+            {currentTierMeta?.name ?? "Free"}
           </p>
+          {expiresAt && (
+            <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+              Renews {new Date(expiresAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+            </p>
+          )}
         </div>
         <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
           <ShieldCheck className="h-5 w-5" />
@@ -261,24 +288,46 @@ function SubscriptionTab() {
                 ))}
               </ul>
 
-              <button
-                disabled
-                className={`mt-6 w-full cursor-not-allowed rounded-xl py-2.5 text-xs font-bold ${
-                  tier.premium
-                    ? "bg-white/10 text-slate-300"
-                    : tier.id === "free"
-                      ? "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                      : "border border-slate-200 text-slate-400 dark:border-slate-700 dark:text-slate-500"
-                }`}
-              >
-                {tier.id === "free" ? "Current Plan" : "Coming soon"}
-              </button>
+              {tier.id === "free" && tier.id !== (currentTier ?? "free").toLowerCase() ? (
+                // Free has no checkout of its own — but must not claim to
+                // be the "Current Plan" once the business has genuinely
+                // upgraded (this label used to be unconditional here, a
+                // real bug: it kept reading "Current Plan" even for an
+                // account that had actually upgraded to a paid tier).
+                <button
+                  disabled
+                  className="mt-6 w-full cursor-not-allowed rounded-xl bg-slate-100 py-2.5 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                >
+                  Included
+                </button>
+              ) : tier.id === (currentTier ?? "free").toLowerCase() ? (
+                <button
+                  disabled
+                  className={`mt-6 w-full cursor-not-allowed rounded-xl py-2.5 text-xs font-bold ${
+                    tier.premium ? "bg-white/10 text-slate-300" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                  }`}
+                >
+                  Current Plan
+                </button>
+              ) : (
+                <SubscriptionCheckoutButton
+                  tier={tier.id.toUpperCase()}
+                  billingPeriod={isYearly ? "YEARLY" : "MONTHLY"}
+                  label={`Upgrade to ${tier.name}`}
+                  onConfirmed={refreshStatus}
+                  className={`mt-6 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                    tier.premium
+                      ? "bg-[#FF6B35] text-white hover:bg-[#e55a2b]"
+                      : "bg-[#FF6B35] text-white hover:bg-[#e55a2b]"
+                  }`}
+                />
+              )}
             </div>
           );
         })}
       </div>
       <p className="text-center text-[11px] text-slate-400 dark:text-slate-500">
-        Paid plans aren't live yet — this is a preview of what's coming.
+        Billing is real — plan perks below are still being rolled out and will unlock progressively.
       </p>
     </div>
   );
@@ -383,17 +432,10 @@ export default function BusinessPayments({ isVerified }) {
       </div>
 
       {subTab === "invoices" && <InvoicesTab projects={projects} loading={loading} loadError={loadError} />}
-      {subTab === "subscription" && (
-        <ComingSoonOverlay
-          title="Subscription Plans — Coming Soon"
-          message="Paid plans need real payment processing, which isn't live yet. This will open up once it is."
-        >
-          <SubscriptionTab />
-        </ComingSoonOverlay>
-      )}
+      {/* {subTab === "subscription" && <SubscriptionTab />} */}
       {subTab === "trust" && (
         <ComingSoonOverlay
-          title="Trust & Verification — Coming Soon"
+          title="Coming Soon"
           message="These paid trust badges need real payment processing, which isn't live yet. Your business verification itself is unaffected — that's still real and free."
         >
           <TrustTab isVerified={isVerified} />

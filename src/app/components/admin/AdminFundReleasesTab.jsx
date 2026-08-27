@@ -22,6 +22,9 @@ export default function AdminFundReleasesTab() {
   const [released, setReleased] = useState({});
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState("");
+  // One deliberate extra click before a real, irreversible payout —
+  // same pattern as AdminDisputesTab's refund/release confirm.
+  const [confirmingId, setConfirmingId] = useState(null);
 
   useEffect(() => {
     listPendingReleases()
@@ -36,6 +39,7 @@ export default function AdminFundReleasesTab() {
     try {
       await completeProject(id);
       setReleased((prev) => ({ ...prev, [id]: true }));
+      setConfirmingId(null);
     } catch (err) {
       setActionError(err.message || "Could not release funds for this project.");
     } finally {
@@ -117,6 +121,29 @@ export default function AdminFundReleasesTab() {
                     <CheckCircle2 className="h-4 w-4" />
                     Released to {p.worker_name}
                   </div>
+                ) : confirmingId === p.id ? (
+                  <div className="mt-4 space-y-2.5 rounded-lg border border-amber-200 bg-amber-50/60 p-3.5 dark:border-amber-900/40 dark:bg-amber-950/20">
+                    <p className="text-xs font-semibold text-amber-800 dark:text-amber-400">
+                      Confirm: release {formatINR(p.budget)} to {p.worker_name} — this moves real money and can't be undone.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleRelease(p.id)}
+                        disabled={busyId === p.id}
+                        className="flex items-center gap-1.5 rounded-lg bg-[#FF6B35] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e85a28] disabled:opacity-60"
+                      >
+                        {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Banknote className="h-3.5 w-3.5" />}
+                        Confirm Release
+                      </button>
+                      <button
+                        onClick={() => setConfirmingId(null)}
+                        disabled={busyId === p.id}
+                        className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="mt-4 flex flex-wrap gap-3">
                     <button
@@ -127,11 +154,10 @@ export default function AdminFundReleasesTab() {
                       View Invoice
                     </button>
                     <button
-                      onClick={() => handleRelease(p.id)}
-                      disabled={busyId === p.id}
-                      className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-900/40 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+                      onClick={() => setConfirmingId(p.id)}
+                      className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
                     >
-                      {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Banknote className="h-3.5 w-3.5" />}
+                      <Banknote className="h-3.5 w-3.5" />
                       Release Funds to Worker
                     </button>
                   </div>

@@ -36,6 +36,7 @@ import SharedSkillPicker from "../shared/SharedSkillPicker";
 import { ApiError } from "../../lib/apiClient";
 import { getSocket } from "../../lib/socketClient";
 import EditableCoverPhoto from "../shared/EditableCoverPhoto";
+import AvatarCropModal from "../shared/AvatarCropModal";
 import ShareProfileButton from "../shared/ShareProfileButton";
 import ImageLightbox from "../shared/ImageLightbox";
 import { shouldShowFrame, verifiedRingClass } from "../../utils/verification";
@@ -201,7 +202,7 @@ function BehaviorLevelBento({ behaviorScore, verified }) {
           </div>
           <button
             type="button"
-            onClick={() => toast.info("Subscriptions are coming soon!")}
+            onClick={() => toast.info("Identity verification is coming soon.")}
             className="flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-[#FF6B35] px-4 py-2.5 text-xs font-bold text-white transition-all duration-200 hover:bg-[#E85D2A] hover:shadow-lg active:scale-[0.98]"
           >
             Get Verified — Free
@@ -239,6 +240,7 @@ export default function WorkerProfile() {
   const [coverError, setCoverError] = useState("");
   const [coverUploading, setCoverUploading] = useState(false);
   const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
+  const [avatarCropFile, setAvatarCropFile] = useState(null);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -381,19 +383,23 @@ export default function WorkerProfile() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      setAvatarUploading(true);
-      try {
-        const updated = await updateOwnProfile({ avatarUrl: reader.result });
-        updateCurrentUser(updated);
-      } catch (err) {
-        setAvatarError(err instanceof ApiError ? err.message : "Could not upload photo.");
-      } finally {
-        setAvatarUploading(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    // Hands off to AvatarCropModal (WhatsApp-style reposition/zoom) instead
+    // of uploading the raw file straight away — handleCropConfirm below is
+    // what actually saves it once the user picks the visible circle.
+    setAvatarCropFile(file);
+  };
+
+  const handleCropConfirm = async (dataUrl) => {
+    setAvatarUploading(true);
+    try {
+      const updated = await updateOwnProfile({ avatarUrl: dataUrl });
+      updateCurrentUser(updated);
+      setAvatarCropFile(null);
+    } catch (err) {
+      setAvatarError(err instanceof ApiError ? err.message : "Could not upload photo.");
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   const handleRemoveAvatar = async (event) => {
@@ -440,7 +446,7 @@ export default function WorkerProfile() {
   const projects = profile.projects ?? [];
 
   return (
-    <div className="wb-scroll-clean h-full overflow-y-auto bg-[#F8FAFC] dark:bg-slate-950">
+    <div className="wb-scroll-clean h-full overflow-y-auto overflow-x-hidden bg-[#F8FAFC] dark:bg-slate-950">
       <main className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-20 text-slate-900 dark:text-white">
         <div className="w-full px-4 pt-8">
           <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_55px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
@@ -1008,7 +1014,7 @@ export default function WorkerProfile() {
                 type="button"
                 onClick={saveEdit}
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#1B3FAB] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#15338d] disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#1B3FAB] px-4 py-2.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:bg-[#15338d] disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {saving ? "Saving…" : "Save Changes"}
@@ -1024,6 +1030,15 @@ export default function WorkerProfile() {
           src={currentUser.avatar_url}
           alt={`${currentUser.name} profile`}
           onClose={() => setAvatarPreviewOpen(false)}
+        />
+      )}
+
+      {avatarCropFile && (
+        <AvatarCropModal
+          file={avatarCropFile}
+          saving={avatarUploading}
+          onCancel={() => setAvatarCropFile(null)}
+          onConfirm={handleCropConfirm}
         />
       )}
     </div>

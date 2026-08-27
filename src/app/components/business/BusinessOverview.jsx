@@ -4,16 +4,100 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import {
-  AlertCircle, ArrowRight, BadgeCheck, Briefcase, Calendar, CheckCircle2, Lock,
-  Plus, Receipt, Shield, ShieldCheck, TrendingUp, UserCheck, Zap,
+  AlertCircle, ArrowRight, BadgeCheck, Bell, Briefcase, Calendar, CheckCircle2, Lock,
+  Plus, Receipt, RotateCcw, Shield, ShieldCheck, TrendingUp, UserCheck, Zap,
 } from "lucide-react";
 import Avatar from "../shared/Avatar";
 import EnterprisePartnerTierCard from "./EnterprisePartnerTierCard";
 import { listProjects } from "../../lib/projectsApi";
+import { listNotifications, markNotificationsRead } from "../../lib/notificationsApi";
 import { getInitials } from "../../utils/formValidation";
 import { PROJECT_STATUS_FLOW } from "../../utils/projectStatus";
 import { verifiedRingClass } from "../../utils/verification";
 import { ApiError } from "../../lib/apiClient";
+
+function timeAgo(dateString) {
+  const ms = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+// Replaces the old "Go Gold Verified" upsell card in this same grid slot —
+// real data (GET /api/notifications, the same source NotificationBell.jsx
+// uses), not another purchase pitch. Shows the single most recent
+// notification so a business glances at Overview and sees something
+// actually useful instead of an ad.
+function RecentActivityCard() {
+  const navigate = useNavigate();
+  const [notification, setNotification] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    listNotifications()
+      .then((data) => {
+        setNotification(data.notifications?.[0] ?? null);
+        setUnreadCount(data.unreadCount ?? 0);
+      })
+      .catch(() => {
+        // Non-critical widget on an overview page — a failed fetch just
+        // leaves the empty state showing, no error banner needed.
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleClick = () => {
+    if (!notification) return;
+    if (unreadCount > 0) markNotificationsRead().catch(() => {});
+    if (notification.url) navigate(notification.url);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.06 }}
+      onClick={handleClick}
+      className={`rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_32px_0_rgba(0,0,0,0.05)] p-4 dark:border-slate-800 dark:bg-slate-900 ${
+        notification ? "cursor-pointer transition-colors hover:border-slate-300 dark:hover:border-slate-700" : ""
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <span className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          <Bell className="h-4.5 w-4.5" />
+          {unreadCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF6B35] px-1 text-[9px] font-bold text-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          {loading ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500">Loading…</p>
+          ) : notification ? (
+            <>
+              <h3 className="truncate text-sm font-bold text-[#0F172A] dark:text-white">{notification.title}</h3>
+              <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                {notification.message} · {timeAgo(notification.created_at)}
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">You're all caught up</h3>
+              <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                Payments, project updates, and messages will show up here.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
@@ -184,7 +268,9 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
     const rows = [];
     for (const p of projects) {
       const budget = Number(p.budget);
-      for (const event of p.timeline ?? []) {
+      const timeline = p.timeline ?? [];
+      const hadFundsSecured = timeline.some((e) => e.status === "FUNDS_SECURED");
+      for (const event of timeline) {
         if (event.status === "FUNDS_SECURED") {
           rows.push({
             id: `${p.id}-secured`,
@@ -208,6 +294,22 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
             at: event.at,
           });
         }
+        // CANCELLED after funds were already secured means a real refund
+        // happened (cancel-refund or a dispute resolved as "refund") — this
+        // was previously silently missing from the whole feed, the only
+        // place a business could ever see it was the per-project Invoice
+        // page. A CANCELLED project that never secured funds isn't a
+        // refund at all (nothing was ever charged), so it's excluded here.
+        if (event.status === "CANCELLED" && hadFundsSecured) {
+          rows.push({
+            id: `${p.id}-refunded`,
+            type: "refunded",
+            desc: `Refunded – ${p.title}`,
+            worker: p.worker_name,
+            amount: budget,
+            at: event.at,
+          });
+        }
       }
     }
     return rows.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
@@ -224,12 +326,14 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
     { key: "all", label: "All", count: paymentFeed.length },
     { key: "secured", label: "Secured", count: paymentFeed.filter((t) => t.type === "secured").length },
     { key: "delivered", label: "Delivered", count: paymentFeed.filter((t) => t.type === "delivered").length },
+    { key: "refunded", label: "Refunded", count: paymentFeed.filter((t) => t.type === "refunded").length },
   ];
 
   const TX_META = {
     secured: { icon: Shield, bg: "bg-emerald-50 dark:bg-emerald-500/10", color: "text-emerald-600 dark:text-emerald-400", badge: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400", sign: "–" },
     delivered: { icon: CheckCircle2, bg: "bg-purple-50 dark:bg-purple-500/10", color: "text-purple-600 dark:text-purple-400", badge: "bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400", sign: "+" },
     fee: { icon: Receipt, bg: "bg-amber-50 dark:bg-amber-500/10", color: "text-amber-600 dark:text-amber-400", badge: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400", sign: "–" },
+    refunded: { icon: RotateCcw, bg: "bg-slate-100 dark:bg-slate-800", color: "text-slate-600 dark:text-slate-400", badge: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400", sign: "+" },
   };
 
   // Monthly activity, grouped from the same real feed — sparse/mostly-empty
@@ -312,7 +416,7 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
           </div>
           <button
             onClick={onPostJob}
-            className="flex items-center gap-2 px-5 py-3 bg-[#FF6B35] text-white rounded-xl text-sm font-bold hover:bg-[#E55E1F] hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-[#FF6B35]/30"
+            className="flex items-center gap-2 px-5 py-3 bg-[#FF6B35] text-white rounded-xl text-sm font-bold hover:bg-[#E55E1F] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 shadow-md shadow-[#FF6B35]/30"
           >
             {isVerified ? <Plus className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             Post a Job
@@ -389,7 +493,7 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
             with the rest of the page's visual system instead of reading as
             a deliberate accent. The Verification card hides once isVerified
             is real and true — no point advertising something already owned. */}
-        <div className={`mt-6 grid grid-cols-1 gap-4 ${isVerified ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {!isVerified && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -417,14 +521,15 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
             </motion.div>
           )}
 
-          {/* Full Trust Frame upsell — the real ₹699 "Elite — Gold Standard"
-              tier from VerificationFeesTable.jsx (Settings > Billing). Unlike
-              the Business Verified card above, this one stays visible even
-              after isVerified is true — Full Trust is a further, optional
-              purchase on top of plain verification, not a duplicate of it.
-              Reuses the same gold ring swatch real Full Trust avatars would
-              get (verifiedRingClass) so the preview never drifts from what
-              buying it actually unlocks. */}
+          <RecentActivityCard />
+
+          {/* Full Trust Frame upsell (tied to the Subscription/Trust tier
+              system) and the Growth subscription upsell below — both
+              commented out (not deleted), same product decision as the
+              Subscription tabs in BusinessPayments.jsx/WorkerWallet.jsx: no
+              subscription-plan surface or hint anywhere in the UI for now.
+              Uncomment both blocks (and add back "lg:grid-cols-3" to this
+              grid's className) to bring them back.
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -455,9 +560,6 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
             </div>
           </motion.div>
 
-          {/* Same amber/gold treatment as EnterprisePartnerTierCard.jsx's
-              Gold tier, on request — ties this ad visually to the real tier
-              card right above it instead of using its own separate color. */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -480,13 +582,14 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
                 </p>
               </div>
               <button
-                onClick={() => toast.info("Subscriptions are coming soon!")}
+                onClick={() => goToPayments("subscription")}
                 className="flex-shrink-0 rounded-xl bg-[#FF6B35] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
               >
                 Upgrade Plan
               </button>
             </div>
           </motion.div>
+          */}
         </div>
 
         {/* ── Middle: Projects + Fund Flow ───────────────────────────────── */}

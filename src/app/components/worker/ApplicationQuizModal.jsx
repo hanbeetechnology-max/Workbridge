@@ -51,7 +51,7 @@ export default function ApplicationQuizModal({ open, onSubmitAnswered, onSkip, o
               just signals real engagement to businesses.
             </p>
           </div>
-          <button onClick={onCancel} className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onClick={onCancel} className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -100,21 +100,21 @@ export default function ApplicationQuizModal({ open, onSubmitAnswered, onSkip, o
 
         <div className="flex flex-shrink-0 flex-col gap-3 border-t border-slate-100 dark:border-slate-800 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
+            <ShieldCheck className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
             {answeredCount}/{QUESTIONS.length} answered
           </p>
           <div className="flex gap-2">
             <button
               onClick={onSkip}
               disabled={submitting}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-60"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-[0.98] hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-60"
             >
               Skip Quiz &amp; Apply Anyway (-5)
             </button>
             <button
               onClick={onSubmitAnswered}
               disabled={!allAnswered || submitting}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#FF6B35] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#E55E1F] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#FF6B35] px-5 py-2.5 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-[#E55E1F] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               Submit Answers &amp; Apply (+15)

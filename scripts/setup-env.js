@@ -2,12 +2,9 @@
 // hook in package.json). Validates environment variables before the build
 // starts rather than letting a missing var surface as a silent runtime bug.
 //
-// REQUIRED vars fail the build. VITE_API_URL is required as of the real
-// backend migration (see TECH_ROADMAP.md) — apiClient.js falls back to
-// http://localhost:4000 when it's unset, which is silently, completely
-// broken in any deployed build (every dashboard/auth call fails). That's
-// exactly the "missing var as silent runtime bug" this script exists to
-// catch, so this one fails the build instead of just warning.
+// VITE_API_URL is required for production/CI builds. Local builds can use
+// apiClient.js's localhost development fallback, so a missing value there is
+// a warning rather than a build failure.
 //
 // RECOMMENDED vars only warn — Sentry and PostHog both no-op gracefully at
 // runtime if their key is absent (see src/app/lib/monitoring.js and
@@ -15,7 +12,7 @@
 // to block a deploy.
 
 const REQUIRED_VARS = [
-  { name: "VITE_API_URL", why: "every API call falls back to localhost:4000 without it — completely broken in a deployed build" },
+  { name: "VITE_API_URL", why: "the production bundle needs the deployed backend URL" },
 ];
 
 const RECOMMENDED_VARS = [
@@ -29,8 +26,14 @@ function readEnv(name) {
   return process.env[name];
 }
 
-const missingRequired = REQUIRED_VARS.filter(({ name }) => !readEnv(name));
+const isProductionOrCI = process.env.NODE_ENV === "production" || Boolean(process.env.CI);
+const missingRequired = isProductionOrCI ? REQUIRED_VARS.filter(({ name }) => !readEnv(name)?.trim()) : [];
+const missingLocalFallbacks = !isProductionOrCI ? REQUIRED_VARS.filter(({ name }) => !readEnv(name)?.trim()) : [];
 const missingRecommended = RECOMMENDED_VARS.filter(({ name }) => !readEnv(name));
+
+if (missingLocalFallbacks.length > 0) {
+  console.warn("\n[setup-env] VITE_API_URL is not set; local builds will use http://localhost:4000.\n");
+}
 
 if (missingRecommended.length > 0) {
   console.warn("\n[setup-env] Missing recommended environment variables:");

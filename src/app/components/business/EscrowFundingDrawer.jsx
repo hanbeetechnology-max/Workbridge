@@ -1,24 +1,20 @@
 import { useState } from "react";
-import { AlertCircle, Check, CheckCircle2, Copy, Lock, Loader2, ShieldCheck, Upload } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Copy, Info, Lock, Loader2, ShieldCheck, Upload } from "lucide-react";
 import { Drawer, DrawerContent } from "../ui/drawer";
 import { fundEscrow } from "../../lib/projectsApi";
 import { ApiError } from "../../lib/apiClient";
 
 const MAX_SCREENSHOT_BYTES = 3 * 1024 * 1024;
 
-// ⚠️ PLACEHOLDER — these are NOT real account details. Replace every value
-// below with WorkBridge's actual escrow bank account before any business
-// relies on this screen. Shipping fabricated-but-realistic-looking account
-// numbers here risks a real business wiring real money to a wrong or
-// non-existent account — this constant exists so there's exactly one place
-// to fix that, and the on-screen warning below makes it visible to anyone
-// testing this flow that it isn't live yet.
-const ESCROW_ACCOUNT = {
-  accountName: "PLACEHOLDER — not a real account",
-  accountNumber: "0000000000",
-  ifsc: "PLACEHOLDER0000",
-  upiId: "placeholder@workbridge",
-};
+// Real WorkBridge escrow bank account, once one exists — set to null here
+// on purpose (not fabricated-but-realistic-looking placeholder digits,
+// which reads exactly like a phishing page and risks real money going to
+// a fake account). While this is null, the drawer shows an honest "not
+// configured yet, use Razorpay Checkout instead" state below rather than
+// display fake account details as if they were real.
+const ESCROW_ACCOUNT = null;
+// Example of what to set once WorkBridge's real account exists:
+// const ESCROW_ACCOUNT = { accountName: "Hanbee Technologies Private Limited", accountNumber: "...", ifsc: "...", upiId: "..." };
 
 function CopyField({ label, value }) {
   const [copied, setCopied] = useState(false);
@@ -35,18 +31,18 @@ function CopyField({ label, value }) {
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-white/10 py-2.5 last:border-0">
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-2.5 last:border-0 dark:border-slate-800">
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
-        <p className="mt-0.5 truncate font-mono text-sm text-white">{value}</p>
+        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</p>
+        <p className="mt-0.5 truncate font-mono text-sm font-semibold text-slate-900 dark:text-white">{value}</p>
       </div>
       <button
         type="button"
         onClick={handleCopy}
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white"
         aria-label={`Copy ${label}`}
       >
-        {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
       </button>
     </div>
   );
@@ -107,7 +103,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
   const handleSubmit = async () => {
     if (!project || submitting) return;
     if (!utrReference.trim()) {
-      setSubmitError("Enter the transaction ID / UTR number from your transfer.");
+      setSubmitError("Enter the UPI or payment reference number from your transfer.");
       return;
     }
     if (!screenshotUrl) {
@@ -143,7 +139,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
         <div className="flex h-full flex-col">
           <div className="flex-shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5">
             <h2 className="font-display text-lg font-extrabold text-slate-900 dark:text-white">
-              Secure Funds &amp; Start Project
+              Fund via Bank Transfer
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Direct bank transfer — no card or gateway fees added on top</p>
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
@@ -177,32 +173,40 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                   </div>
                 </div>
 
-                <div className="mt-5 rounded-xl bg-slate-900 p-5 text-white shadow-lg">
-                  <div className="mb-3 flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-[#FF6B35]" />
-                    <p className="text-sm font-bold">WorkBridge Official Secured Funds Account</p>
+                {ESCROW_ACCOUNT ? (
+                  <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-800/50">
+                    <div className="mb-1 flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-[#FF6B35]" />
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">WorkBridge Secured Funds Account</p>
+                    </div>
+                    <p className="mb-3 text-xs text-slate-400 dark:text-slate-500">
+                      Transfer the exact amount above from your business bank account.
+                    </p>
+                    <CopyField label="Account Name" value={ESCROW_ACCOUNT.accountName} />
+                    <CopyField label="Account Number" value={ESCROW_ACCOUNT.accountNumber} />
+                    <CopyField label="IFSC" value={ESCROW_ACCOUNT.ifsc} />
+                    <CopyField label="UPI ID" value={ESCROW_ACCOUNT.upiId} />
                   </div>
-                  <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[11px] leading-4 text-amber-200">
-                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-                    Placeholder account details — WorkBridge staff must replace these with the real account
-                    before this is used for a real transfer.
+                ) : (
+                  <div className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+                    <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400 dark:text-slate-500" />
+                    <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                      Bank transfer details aren't set up yet — for instant, automatically verified funding, close
+                      this and use <span className="font-semibold text-slate-700 dark:text-slate-300">Pay via Razorpay</span> instead.
+                    </p>
                   </div>
-                  <CopyField label="Account Name" value={ESCROW_ACCOUNT.accountName} />
-                  <CopyField label="Account Number" value={ESCROW_ACCOUNT.accountNumber} />
-                  <CopyField label="IFSC" value={ESCROW_ACCOUNT.ifsc} />
-                  <CopyField label="UPI ID" value={ESCROW_ACCOUNT.upiId} />
-                </div>
+                )}
 
                 <div className="mt-5">
                   <p className="mb-3 text-sm font-bold text-slate-800 dark:text-slate-200">Confirm Your Transfer</p>
 
                   <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                    Transaction ID / UTR Number
+                    UPI / Payment Reference Number
                   </label>
                   <input
                     value={utrReference}
                     onChange={(e) => setUtrReference(e.target.value)}
-                    placeholder="e.g. 402913847562"
+                    placeholder="e.g. 402913847562 (shown in your UPI app after paying)"
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30"
                   />
 
@@ -219,7 +223,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                       </>
                     ) : (
                       <>
-                        <Upload className="h-6 w-6 text-slate-400" />
+                        <Upload className="h-6 w-6 text-slate-400 dark:text-slate-500" />
                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Drop a screenshot here, or click to browse</p>
                         <p className="text-[11px] text-slate-400 dark:text-slate-500">PNG or JPG, under 3MB</p>
                       </>
@@ -244,7 +248,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF6B35] py-4 text-sm font-bold text-white shadow-md transition-transform hover:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF6B35] py-4 text-sm font-bold text-white shadow-md transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 {submitting ? "Submitting…" : "Submit for Admin Verification"}

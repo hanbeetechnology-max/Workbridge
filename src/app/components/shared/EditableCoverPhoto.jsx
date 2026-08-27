@@ -61,7 +61,7 @@ export default function EditableCoverPhoto({
             className="absolute right-4 top-4 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-60"
           >
             {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
-            {uploading ? "Uploading…" : "Edit Cover"}
+            {uploading ? "Uploading…" : "Edit Banner"}
           </button>
         </>
       )}

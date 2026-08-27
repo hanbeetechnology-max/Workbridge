@@ -114,7 +114,7 @@ export default function NotificationBell() {
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -123,13 +123,13 @@ export default function NotificationBell() {
               <div className="wb-scroll-clean min-h-0 flex-1 overflow-y-auto">
                 {loading ? (
                   <div className="flex h-32 items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-slate-300" />
+                    <Loader2 className="h-5 w-5 animate-spin text-slate-300 dark:text-slate-700" />
                   </div>
                 ) : notifications.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center px-6 py-16 text-center">
                     <Bell className="h-8 w-8 text-slate-200 dark:text-slate-700" />
-                    <p className="mt-3 text-sm font-semibold text-slate-500">Nothing yet</p>
-                    <p className="mt-1 text-xs text-slate-400">Real updates — payments, project status, messages — show up here as they happen.</p>
+                    <p className="mt-3 text-sm font-semibold text-slate-500 dark:text-slate-400">Nothing yet</p>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Real updates — payments, project status, messages — show up here as they happen.</p>
                   </div>
                 ) : (
                   <ul className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -146,8 +146,8 @@ export default function NotificationBell() {
                             <p className="text-sm font-bold text-slate-900 dark:text-white">{n.title}</p>
                             {!n.is_read && <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#FF6B35]" />}
                           </div>
-                          <p className="mt-0.5 text-xs leading-5 text-slate-500">{n.message}</p>
-                          <p className="mt-1 text-[11px] font-semibold text-slate-400">{timeAgo(n.created_at)}</p>
+                          <p className="mt-0.5 text-xs leading-5 text-slate-500 dark:text-slate-400">{n.message}</p>
+                          <p className="mt-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500">{timeAgo(n.created_at)}</p>
                         </button>
                       </li>
                     ))}

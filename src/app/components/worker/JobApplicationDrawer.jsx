@@ -103,7 +103,7 @@ export default function JobApplicationDrawer({
             </div>
 
             <div className="mt-6 flex items-start gap-2 rounded-xl bg-white/30 dark:bg-slate-800/30 backdrop-blur-md p-4">
-              <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400" />
+              <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400 dark:text-slate-500" />
               <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
                 Your Behavior Score shows up on your profile — businesses can see it when they're deciding who to hire.
               </p>

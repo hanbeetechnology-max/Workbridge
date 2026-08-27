@@ -6,6 +6,8 @@ import {
   FileCheck2,
   Headphones,
   PlugZap,
+  Receipt,
+  ShieldCheck,
   Wallet,
   Zap,
 } from "lucide-react";
@@ -14,9 +16,37 @@ import { motion } from "motion/react";
 import { Button } from "./Button";
 import { GlassCard } from "./GlassCard";
 import { ChromaGrid } from "./ChromaGrid";
+import ExplodeView from "./ExplodeView";
 import ScrollReveal from "./ScrollReveal";
 import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
+
+const escrowChecklist = [
+  "Funds locked the moment a business pays",
+  "Released only after the work is approved",
+  "Every movement recorded on an auditable ledger",
+];
+
+const escrowLayers = [
+  {
+    icon: FileCheck2,
+    title: "Smart Contract",
+    text: "The project's terms — budget, milestones, and the platform fee — locked in before a rupee moves.",
+    accent: "#1B3FAB",
+  },
+  {
+    icon: Receipt,
+    title: "Ledger",
+    text: "Every transaction — funded, released, refunded — recorded as its own auditable entry.",
+    accent: "#FF6B35",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Escrow Vault",
+    text: "Payment held safely with our Payment Partners until the business approves the delivered work.",
+    accent: "#16A34A",
+  },
+];
 
 const workFeatures = [
   {
@@ -210,6 +240,35 @@ export function HireTalentSection({ showLink = true, onSelect }) {
   );
 }
 
+// Escrow Security — a "how your money is actually protected" showcase.
+// Collapsed into a single card until scrolled into view, then the Smart
+// Contract / Ledger / Escrow Vault layers separate to show what's actually
+// underneath a payment, and pull back together on hover (see ExplodeView).
+export function EscrowSecuritySection() {
+  return (
+    <section className="wb-section" id="escrow-security">
+      <SectionHeader eyebrow="Escrow Security" title="Every rupee held safe until the work is done." />
+
+      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+        <ScrollReveal distance={20}>
+          <p className="max-w-md text-base leading-relaxed text-slate-500 dark:text-slate-400">
+            WorkBridge never lets money move on trust alone. Hover the stack to see how a single payment is actually protected, layer by layer.
+          </p>
+          <ul className="mt-6 space-y-3">
+            {escrowChecklist.map((item) => (
+              <li key={item} className="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300">
+                <Check size={16} className="flex-shrink-0 text-[#FF6B35]" /> {item}
+              </li>
+            ))}
+          </ul>
+        </ScrollReveal>
+
+        <ExplodeView layers={escrowLayers} />
+      </div>
+    </section>
+  );
+}
+
 export function EnterpriseSection({ showLink = true, onSelect }) {
   return (
     <section className="wb-section" id="enterprise">
@@ -250,6 +309,7 @@ export function PillarSections({ onSelect, showLink = true }) {
     <>
       <FindWorkSection  showLink={showLink} onSelect={onSelect} />
       <HireTalentSection showLink={showLink} onSelect={onSelect} />
+      <EscrowSecuritySection />
       <EnterpriseSection showLink={showLink} onSelect={onSelect} />
     </>
   );

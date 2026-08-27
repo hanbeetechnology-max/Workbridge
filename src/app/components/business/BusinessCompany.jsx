@@ -511,11 +511,11 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
           </div>
           <div className="flex gap-2">
             <button onClick={onCancel} disabled={saving}
-              className="px-4 py-2 bg-white border border-slate-200 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors disabled:opacity-60 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700">
+              className="px-4 py-2 bg-white border border-slate-200 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all active:scale-[0.98] disabled:opacity-60 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700">
               Cancel
             </button>
             <button onClick={onSave} disabled={saving}
-              className="flex items-center gap-1.5 px-5 py-2 bg-[#1B3FAB] text-white rounded-xl text-sm font-bold hover:bg-[#1635A0] transition-colors shadow-md shadow-[#1B3FAB]/20 disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:shadow-[#1B3FAB]/10 dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]">
+              className="flex items-center gap-1.5 px-5 py-2 bg-[#1B3FAB] text-white rounded-xl text-sm font-bold hover:bg-[#1635A0] transition-all active:scale-[0.98] shadow-md shadow-[#1B3FAB]/20 disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:shadow-[#1B3FAB]/10 dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]">
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
               {saving ? "Saving…" : "Save Changes"}
             </button>

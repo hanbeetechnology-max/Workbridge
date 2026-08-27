@@ -305,7 +305,7 @@ function JobDetailsModal({ project, onClose, onDecline, onAccept, actionBusy, ac
                   type="button"
                   onClick={onAccept}
                   disabled={actionBusy}
-                  className="flex min-h-[58px] w-full items-center justify-center gap-2 rounded-2xl bg-[#FF6B35] px-5 py-4 text-sm font-bold text-white shadow-md shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-[#e85d27] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                  className="flex min-h-[58px] w-full items-center justify-center gap-2 rounded-2xl bg-[#FF6B35] px-5 py-4 text-sm font-bold text-white shadow-md shadow-orange-200 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-[#e85d27] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
                   {actionBusy ? (
                     <>
@@ -329,7 +329,7 @@ function JobDetailsModal({ project, onClose, onDecline, onAccept, actionBusy, ac
                       type="button"
                       onClick={onDecline}
                       disabled={actionBusy}
-                      className="flex items-center gap-1.5 rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex items-center gap-1.5 rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white transition-all active:scale-[0.98] hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {actionBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
                       Confirm

@@ -1,12 +1,13 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AlertCircle, ArrowLeft, Clock, Download, Loader2, Lock, ShieldCheck, Zap } from "lucide-react";
+import { AlertCircle, ArrowLeft, Clock, Download, Loader2, Lock, RotateCcw, ShieldCheck, Zap } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getProject } from "../lib/projectsApi";
 // Only renders once "Fund Escrow" is actually clicked (fundingOpen), never
 // on initial page load — lazy-loaded rather than bundled into this route's
 // own chunk.
 const EscrowFundingDrawer = lazy(() => import("../components/business/EscrowFundingDrawer"));
+import CashfreeCheckoutTrigger from "../components/business/CashfreeCheckoutTrigger";
 import SuspenseFallback from "../components/common/SuspenseFallback";
 import { PROJECT_STATUS_META } from "../utils/projectStatus";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -73,17 +74,24 @@ export default function InvoicePage() {
   const isPaid = project.status === "COMPLETED";
   const isPendingRelease = project.status === "PENDING_RELEASE";
   // round2 (paise precision), matching projects.controller.js's
-  // completeProject exactly — the old Math.round (whole-rupee) here could
-  // show a fee/net that didn't quite match the real ledger amount.
+  // completeProject/createCheckoutOrder exactly — the old Math.round
+  // (whole-rupee) here could show a fee/net that didn't quite match the
+  // real ledger amount.
   const round2 = (n) => Math.round(n * 100) / 100;
   const budget = Number(project.budget);
-  const feePct = Number(project.platform_fee_pct ?? 15);
-  const platformFee = round2(budget * (feePct / 100));
-  const workerReceives = round2(budget - platformFee);
+  // Disclosed split — replaces the old flat, hidden platform_fee_pct.
+  // Business pays budget+businessFeePct at checkout (shown up front, not
+  // itemized-away); worker receives budget-workerFeePct at payout.
+  const businessFeePct = Number(project.business_fee_pct ?? 8);
+  const workerFeePct = Number(project.worker_fee_pct ?? 7);
+  const businessFee = round2(budget * (businessFeePct / 100));
+  const workerFee = round2(budget * (workerFeePct / 100));
+  const totalCharged = round2(budget + businessFee);
+  const workerReceives = round2(budget - workerFee);
 
   const handleOpenFunding = () => {
     if (project.status !== "ACCEPTED") return;
-    trackEvent("SecureFundsClicked", { amount: budget, projectId: project.id });
+    trackEvent("SecureFundsClicked", { amount: totalCharged, projectId: project.id });
     setFundingOpen(true);
   };
 
@@ -186,28 +194,45 @@ export default function InvoicePage() {
           </div>
 
           {/* ── Breakdown ──────────────────────────────────────────────── */}
-          {/* Deliberately role-gated: a viewer only ever sees the one
-              number that applies to them (what they pay, or what they
-              receive), never both side by side — showing both would reveal
-              the platform fee by subtraction. Admin/other viewers see the
-              full picture. */}
+          {/* Itemized and own-side-only: the disclosed-fee model means each
+              party sees exactly what they pay or receive, and why — this
+              replaces the old fully role-gated single-figure view, whose
+              entire premise (hiding the fee) is now backwards. A viewer
+              still never sees the OTHER side's number (a business doesn't
+              need to know the worker's payout, and vice versa) — that's
+              not a secrecy concern anymore, just not their business. */}
           <div className="p-6 sm:p-10">
             <div className="overflow-hidden rounded-xl border border-slate-100">
-              {(!isWorkerViewer || isBusinessViewer) && (
-                <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
-                  <span className="text-sm text-slate-600">Amount Paid</span>
-                  <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
-                    {formatINR(budget)}
-                  </span>
-                </div>
-              )}
-              {(!isBusinessViewer || isWorkerViewer) && (
-                <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
-                  <span className="text-sm text-slate-600">You'll Receive</span>
-                  <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
-                    {formatINR(workerReceives)}
-                  </span>
-                </div>
+              {isWorkerViewer ? (
+                <>
+                  <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
+                    <span className="text-sm text-slate-600">Project Budget</span>
+                    <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
+                      {formatINR(budget)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-white px-4 py-3.5">
+                    <span className="text-sm text-slate-600">Platform Fee ({workerFeePct}%)</span>
+                    <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-500">
+                      −{formatINR(workerFee)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between gap-4 bg-white px-4 py-3.5">
+                    <span className="text-sm text-slate-600">Project Budget</span>
+                    <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-900">
+                      {formatINR(budget)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-white px-4 py-3.5">
+                    <span className="text-sm text-slate-600">Platform Fee ({businessFeePct}%)</span>
+                    <span className="whitespace-nowrap font-mono text-sm font-semibold text-slate-500">
+                      +{formatINR(businessFee)}
+                    </span>
+                  </div>
+                </>
               )}
             </div>
             {/* mt-10 (not mt-2) — the PAID stamp below needs real clearance
@@ -218,10 +243,10 @@ export default function InvoicePage() {
                 above. More gap here is a real fix, not a tweak. */}
             <div className="relative mt-10 flex items-center justify-between gap-4 border-t-2 border-slate-900 pt-5">
               <span className="font-serif text-base font-bold tracking-tight text-[#0F172A]">
-                {isWorkerViewer ? "Total Payout" : "Total Secured by Business"}
+                {isWorkerViewer ? "You Receive" : "Total Charged"}
               </span>
               <span className="whitespace-nowrap font-mono text-2xl font-black tracking-tight text-[#0F172A] sm:text-3xl">
-                {formatINR(isWorkerViewer ? workerReceives : budget)}
+                {formatINR(isWorkerViewer ? workerReceives : totalCharged)}
               </span>
 
               {isPaid && (
@@ -253,17 +278,22 @@ export default function InvoicePage() {
               Worker / anyone else: read-only status. ── */}
           {isBusinessViewer && project.status === "ACCEPTED" && (
             <div className="border-t border-slate-100 bg-slate-50 p-6 sm:p-10 print:hidden">
-              <button
-                onClick={handleOpenFunding}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF6B35] py-4 text-base font-bold text-white shadow-[0_4px_14px_0_rgba(255,107,53,0.39)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e55a2b] hover:shadow-xl active:scale-[0.98]"
-              >
-                Pay {formatINR(budget)} &amp; Secure Funds
-                <Zap className="h-5 w-5" />
-              </button>
+              <CashfreeCheckoutTrigger
+                project={project}
+                amount={formatINR(totalCharged)}
+                onSecured={() => setProject((p) => ({ ...p, status: "FUNDS_SECURED" }))}
+              />
               <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
                 <Lock className="h-3 w-3" />
-                Every transfer is checked by WorkBridge staff before it counts as secured
+                Secured via Cashfree — held safely until work is approved
               </p>
+              <button
+                type="button"
+                onClick={handleOpenFunding}
+                className="mt-2 block w-full text-center text-xs font-semibold text-slate-400 underline-offset-2 hover:text-[#1B3FAB] hover:underline"
+              >
+                Prefer a bank transfer instead?
+              </button>
             </div>
           )}
 
@@ -271,7 +301,9 @@ export default function InvoicePage() {
             <div className="flex items-center gap-2.5 border-t border-slate-100 bg-amber-50 p-6 sm:p-10 print:hidden">
               <ShieldCheck className="h-5 w-5 flex-shrink-0 text-amber-600" />
               <p className="text-sm font-semibold text-amber-800">
-                Your transfer proof has been submitted — WorkBridge staff are verifying it now.
+                {project.funding_method === "RAZORPAY"
+                  ? "Confirming your payment with Cashfree — this updates automatically, usually within a few seconds."
+                  : "Your transfer proof has been submitted — WorkBridge staff are verifying it now."}
               </p>
             </div>
           )}
@@ -279,6 +311,31 @@ export default function InvoicePage() {
           {isBusinessViewer && project.status === "INVITED" && (
             <div className="border-t border-slate-100 bg-slate-50 p-6 text-center sm:p-10">
               <p className="text-sm font-semibold text-slate-500">Waiting for {project.worker_name} to accept this invitation.</p>
+            </div>
+          )}
+
+          {/* CANCELLED had no branch here at all before — a business or
+              worker viewing this invoice after a cancel-refund or a
+              disputed refund saw a bare "Cancelled" badge with no mention
+              of the money, no amount, nothing pointing at the real
+              razorpay_refund_id already stored on the project. */}
+          {project.status === "CANCELLED" && (isBusinessViewer || isWorkerViewer) && (
+            <div className="border-t border-slate-100 bg-slate-50 p-6 sm:p-10">
+              <div className="flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
+                <RotateCcw className="h-5 w-5 flex-shrink-0 text-slate-500" />
+                <div className="text-center">
+                  <p className="text-sm font-bold text-slate-800">
+                    {isWorkerViewer ? "Project Cancelled" : project.razorpay_refund_id ? "Refunded" : "Project Cancelled"}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {isWorkerViewer
+                      ? `This project was cancelled — no payout occurs for it. Any secured funds were returned to ${project.business_name}.`
+                      : project.razorpay_refund_id
+                        ? `${formatINR(budget)} was refunded to your original payment method. The ${businessFeePct}% platform fee is non-refundable, per our Terms.`
+                        : `This project was cancelled before any funds were secured — nothing was charged.`}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -296,7 +353,20 @@ export default function InvoicePage() {
                   </p>
                   <p className={`text-xs ${isPendingRelease ? "text-amber-700" : "text-emerald-700"}`}>
                     {isPaid
-                      ? `${formatINR(workerReceives)} was automatically released to ${project.worker_name}'s wallet — payment successfully cleared.`
+                      ? // Same role-gating as the breakdown table above — a
+                        // business viewer must never see workerReceives
+                        // next to the budget they already see elsewhere on
+                        // this page, since that pairing is exactly what
+                        // reveals the platform fee by subtraction. Can't fix
+                        // this by swapping in `budget` for a business viewer
+                        // here, either — "₹52,000 was released to Priya's
+                        // wallet" would be a false claim (only workerReceives
+                        // actually reaches the worker), so the business
+                        // copy states what THEY paid instead of any number
+                        // tied to what the worker received.
+                        isWorkerViewer
+                        ? `${formatINR(workerReceives)} was automatically released to your wallet — payment successfully cleared.`
+                        : `Work was approved and ${formatINR(budget)} has been paid out to ${project.worker_name} — payment successfully cleared.`
                       : isPendingRelease
                         ? `${project.business_name} has requested this release — WorkBridge staff will pay ${project.worker_name} the secured funds shortly.`
                         : `${formatINR(budget)} is held securely by WorkBridge until work is approved.`}

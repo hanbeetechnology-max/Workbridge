@@ -42,7 +42,7 @@ const TAB_TITLES = {
   feed: "Job Feed",
   negotiations: "Chats",
   workspace: "Your Workspace",
-  wallet: "Wallet & Subscription",
+  wallet: "Wallet",
   economy: "Economy Hub",
   profile: "My Profile",
   settings: "Account Settings",
@@ -157,7 +157,7 @@ export default function WorkerDashboard({ onLogout }) {
                   <TrendingUp className="h-3.5 w-3.5 flex-shrink-0 text-[#FF6B35]" />
                   <p className="text-xs font-bold text-slate-900 dark:text-white">
                     {hustleStats.thisWeek} this week
-                    <span className="font-normal text-slate-400"> · {hustleStats.thisMonth} this month</span>
+                    <span className="font-normal text-slate-400 dark:text-slate-500"> · {hustleStats.thisMonth} this month</span>
                   </p>
                 </div>
               )}
@@ -192,7 +192,7 @@ export default function WorkerDashboard({ onLogout }) {
               <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">₹{walletBalance.toLocaleString("en-IN")}</p>
-                  <p className="text-xs text-slate-500">Available balance</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Available balance</p>
                 </div>
               </div>
 
@@ -210,7 +210,7 @@ export default function WorkerDashboard({ onLogout }) {
               <div className="hidden items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:flex">
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">₹{walletBalance.toLocaleString("en-IN")}</p>
-                  <p className="text-xs text-slate-500">Available balance</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Available balance</p>
                 </div>
               </div>
               <NotificationBell />

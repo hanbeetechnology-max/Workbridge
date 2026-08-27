@@ -28,19 +28,18 @@ export default function PricingPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="not-live" title="3. Subscription Plans & Trust Tiers">
+      <LegalSection id="not-live" title="3. Trust Tiers">
         <p>
-          WorkBridge is previewing (but has not launched) optional paid Subscription Plans and an expanded Trust &amp;
-          Verification tier system. Both are shown in the app as a preview only — nothing is chargeable today, and
-          no user is billed for them. This page will be updated with real pricing if and when they launch.
+          WorkBridge is previewing (but has not launched) an expanded Trust &amp; Verification tier system, shown in
+          the app as a preview only — nothing is chargeable today, and no user is billed for it. This page will be
+          updated with real pricing if and when it launches.
         </p>
       </LegalSection>
 
-      <LegalSection id="payment-gateway-note" title="4. A Note on Live Payments">
+      <LegalSection id="payment-gateway-note" title="4. A Note on Payments">
         <p>
-          As described in our <a href="/terms">Terms &amp; Conditions</a> §5, WorkBridge does not yet have a live,
-          automated payment gateway — Secured Funds deposits and Worker payouts are currently verified and processed
-          manually by our team.
+          As described in our <a href="/terms">Terms &amp; Conditions</a> §5, Secured Funds deposits and Worker
+          payouts are processed through our Payment Partners.
         </p>
       </LegalSection>
 

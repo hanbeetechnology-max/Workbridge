@@ -183,7 +183,7 @@ export default function InviteWorkerModal({ worker, openJobs, onClose, onSubmitE
         </div>
 
         <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-6 py-4">
-          <button onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
+          <button onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 transition-all active:scale-[0.98] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
             Cancel
           </button>
           <button

@@ -23,6 +23,7 @@ import { getPushStatus, subscribeToPush, unsubscribeFromPush } from "../lib/push
 import { updateNotificationPrefs } from "../lib/authApi";
 import SupportChat from "../components/shared/SupportChat";
 import ThemeToggle from "../components/shared/ThemeToggle";
+import AvatarCropModal from "../components/shared/AvatarCropModal";
 
 const MAX_AVATAR_BYTES = 1.5 * 1024 * 1024;
 
@@ -52,6 +53,7 @@ function GeneralProfileTab() {
   const [saved, setSaved] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState("");
+  const [avatarCropFile, setAvatarCropFile] = useState(null);
 
   const handleSave = async (event) => {
     event.preventDefault();
@@ -80,22 +82,34 @@ function GeneralProfileTab() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      setAvatarUploading(true);
-      try {
-        const updated = await updateOwnProfile({ avatarUrl: reader.result });
-        updateCurrentUser(updated);
-      } catch (err) {
-        setAvatarError(err instanceof ApiError ? err.message : "Could not upload photo.");
-      } finally {
-        setAvatarUploading(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    setAvatarCropFile(file);
   };
 
-  const fullProfilePath = currentUser?.role === "business" ? "/business/company" : "/worker/profile";
+  const handleCropConfirm = async (dataUrl) => {
+    setAvatarUploading(true);
+    try {
+      const updated = await updateOwnProfile({ avatarUrl: dataUrl });
+      updateCurrentUser(updated);
+      setAvatarCropFile(null);
+    } catch (err) {
+      setAvatarError(err instanceof ApiError ? err.message : "Could not upload photo.");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  // Business has no dedicated profile URL — "Company" is an internal tab of
+  // BusinessDashboard (see its BUSINESS_TAB_IDS/location.state.tab
+  // convention, same one SupportFab.jsx uses), not a route of its own. A
+  // plain navigate("/business/company") 404s into the marketing landing
+  // page since that path was never registered in App.jsx.
+  const goToFullProfile = () => {
+    if (currentUser?.role === "business") {
+      navigate("/business-dashboard", { state: { tab: "company" } });
+    } else {
+      navigate("/worker/profile");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -165,7 +179,7 @@ function GeneralProfileTab() {
         <div className="flex items-center justify-between gap-3 pt-2">
           <button
             type="button"
-            onClick={() => navigate(fullProfilePath)}
+            onClick={goToFullProfile}
             className="text-xs font-bold text-[#1B3FAB] hover:underline dark:text-blue-400"
           >
             Edit bio, skills &amp; more on your full profile →
@@ -180,6 +194,15 @@ function GeneralProfileTab() {
         </div>
       </form>
     </SectionCard>
+
+    {avatarCropFile && (
+      <AvatarCropModal
+        file={avatarCropFile}
+        saving={avatarUploading}
+        onCancel={() => setAvatarCropFile(null)}
+        onConfirm={handleCropConfirm}
+      />
+    )}
     </div>
   );
 }
@@ -330,9 +353,14 @@ function CategoryToggleRow({ label, description, checked, onToggle, busy }) {
           checked ? "bg-[#FF6B35]" : "bg-slate-200 dark:bg-slate-700"
         }`}
       >
+        {/* Explicit left-1 base (not "auto" — see the push-notification
+            toggle above for why) + translate-x-5 for checked: 4px base +
+            20px shift = 24px left edge, +16px thumb width = 40px right
+            edge, a clean 4px margin inside the 44px (w-11) track, matching
+            the unchecked state's 4px left margin. */}
         <span
-          className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-            checked ? "translate-x-6" : "translate-x-1"
+          className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+            checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
       </button>
@@ -429,9 +457,17 @@ function NotificationsTab() {
                 isOn ? "bg-[#FF6B35]" : "bg-slate-200 dark:bg-slate-700"
               }`}
             >
+              {/* Explicit left-1 (not relying on the browser's "auto" static-
+                  position resolution, which in this build lands at an
+                  unpredictable non-zero offset) — translate-x is then a pure,
+                  deterministic additional shift on top of that fixed 4px
+                  base, so the checked-state math is exact: 4px base + 24px
+                  shift = 28px left edge, +24px thumb width = 52px right edge,
+                  a clean 4px margin inside the 56px (w-14) track — same 4px
+                  margin the unchecked state already has on the left. */}
               <span
-                className={`absolute top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md transition-transform duration-200 ${
-                  isOn ? "translate-x-6" : "translate-x-1"
+                className={`absolute top-1 left-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md transition-transform duration-200 ${
+                  isOn ? "translate-x-6" : "translate-x-0"
                 }`}
               >
                 {busy ? (

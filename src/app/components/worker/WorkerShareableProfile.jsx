@@ -160,7 +160,7 @@ export default function WorkerShareableProfile({ worker }) {
                           href={p.link}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#1B3FAB] hover:underline"
+                          className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#1B3FAB] dark:text-blue-400 hover:underline"
                         >
                           View project
                         </a>

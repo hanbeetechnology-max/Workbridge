@@ -14,6 +14,7 @@ import {
   GraduationCap,
   IndianRupee,
   Link2,
+  Loader2,
   Lock,
   Plus,
   ShieldCheck,
@@ -138,6 +139,12 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
   // Budget used to be two fields — a tier dropdown that silently overwrote
   // this one, plus this real number. One fixed, real budget field now.
   const summaryBudget = rawBudget;
+  // Matches projects.controller.js's createCheckoutOrder exactly — the
+  // disclosed 8% business fee, itemized here rather than folded silently
+  // into a single deposit figure (the old hidden-fee model this replaced).
+  const BUSINESS_FEE_PCT = 8;
+  const platformFee = Math.round(summaryBudget * (BUSINESS_FEE_PCT / 100) * 100) / 100;
+  const totalToDeposit = Math.round((summaryBudget + platformFee) * 100) / 100;
 
   const watchedTitle = watch("title");
   const watchedCategory = watch("category");
@@ -731,11 +738,19 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                     style={{ fontFamily: "'DM Mono', monospace" }}
                   >
                     <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Project Budget</span>
+                      <span className="font-semibold text-[#0F172A] dark:text-white">{formatINR(summaryBudget)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Platform Fee ({BUSINESS_FEE_PCT}%)</span>
+                      <span className="font-semibold text-[#0F172A] dark:text-white">+{formatINR(platformFee)}</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-slate-800">
                       <span className="font-bold text-[#0F172A] dark:text-white">You'll Deposit</span>
                       <span
                         className="font-extrabold text-[#FF6B35] text-base font-display"
                       >
-                        {formatINR(summaryBudget)}
+                        {formatINR(totalToDeposit)}
                       </span>
                     </div>
                   </div>
@@ -759,10 +774,11 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                   <button
                     type="submit"
                     disabled={posting}
-                    className="w-full py-4 bg-[#FF6B35] hover:bg-[#E55E1F] text-white rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/30 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 font-display"
+                    className="w-full py-4 bg-[#FF6B35] hover:bg-[#E55E1F] text-white rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0 font-display"
                   >
+                    {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     {posting ? "Posting…" : "Post Job — Go Live"}
-                    <ChevronRight className="w-4 h-4 opacity-70" />
+                    {!posting && <ChevronRight className="w-4 h-4 opacity-70" />}
                   </button>
                 </div>
 

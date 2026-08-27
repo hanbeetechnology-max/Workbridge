@@ -1,6 +1,7 @@
 // Thin fetch wrapper for the real backend (backend/src/server.js).
 // Exported so socketClient.js connects to the exact same origin.
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:4000" : "");
+export const API_URL = API_BASE_URL;
 
 // The single source of truth for the signed-in user's JWT — written by
 // AuthContext on login/register/logout, read here on every request. Kept as
@@ -62,10 +63,10 @@ export class ApiError extends Error {
  * login, public profile reads) simply omit the header rather than failing —
  * the backend decides what's guarded, this client doesn't duplicate that.
  */
-export async function apiFetch(path, { method = "GET", body } = {}) {
+export async function apiFetch(path, { method = "GET", body, headers: extraHeaders } = {}) {
   const token = getToken();
 
-  const headers = { "Content-Type": "application/json" };
+  const headers = { "Content-Type": "application/json", ...extraHeaders };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let res;

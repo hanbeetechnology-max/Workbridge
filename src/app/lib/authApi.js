@@ -11,6 +11,16 @@ export function changePassword({ currentPassword, newPassword }) {
   });
 }
 
+// Re-proves identity for a sensitive CHANGE (e.g. updating a saved payout
+// destination) beyond just having a session — returns a short-lived
+// { reverifyToken } to attach as X-Reverify-Token on the actual change call.
+export function verifyPassword(password) {
+  return apiFetch("/api/auth/verify-password", {
+    method: "POST",
+    body: { password },
+  });
+}
+
 export function updateNotificationPrefs(prefsPatch) {
   return apiFetch("/api/auth/notification-prefs", {
     method: "PATCH",

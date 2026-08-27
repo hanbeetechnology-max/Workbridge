@@ -538,7 +538,21 @@ export default function WorkerWorkspace() {
                       >
                         {meta?.label}
                       </span>
-                      <span className="text-sm font-semibold text-slate-900 dark:text-white">₹{Number(task.budget).toLocaleString("en-IN")}</span>
+                      {/* COMPLETED tasks show net earnings here, not the gross
+                          budget every other status shows — this card sits
+                          directly beside ProjectCompletionHub's own net
+                          "released to your wallet" figure (see its comment
+                          below) once a completed task is selected, so gross
+                          here would let the platform fee be read off by
+                          subtraction between the two numbers on the same
+                          screen. */}
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                        ₹{Number(
+                          task.status === "COMPLETED"
+                            ? Math.round(Number(task.budget) * (1 - Number(task.platform_fee_pct ?? 15) / 100))
+                            : task.budget
+                        ).toLocaleString("en-IN")}
+                      </span>
                     </div>
                   </motion.div>
                 );

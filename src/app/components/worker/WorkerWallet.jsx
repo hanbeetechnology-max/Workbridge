@@ -17,14 +17,17 @@ import {
   Crown,
   ShieldCheck,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "motion/react";
 import LockedCurrencyInput from "../common/LockedCurrencyInput";
-import ComingSoonOverlay from "../shared/ComingSoonOverlay";
 import VerificationFeesTable from "../shared/VerificationFeesTable";
+import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
+import { getSubscriptionStatus, getPayoutAccount, savePayoutDetails, getRouteAccountStatus, linkRouteAccount } from "../../lib/paymentsApi";
+import { verifyPassword } from "../../lib/authApi";
 import { positiveCurrencySchema } from "../../utils/formValidation";
 import { getWallet, withdraw, listWithdrawals } from "../../lib/walletApi";
 import { listProjects } from "../../lib/projectsApi";
@@ -33,6 +36,76 @@ import { useAuth } from "../../context/AuthContext";
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
+}
+
+// Password re-proof gate for CHANGING an already-saved payout destination
+// or linked Razorpay account — a valid session (JWT) alone isn't treated as
+// enough for this specific action, since a shared/unlocked device would
+// have the session but not the password. Shown in place of the actual edit
+// form until verification succeeds; onVerified receives the short-lived
+// reverifyToken to attach to the real change request.
+function ReverifyPrompt({ onVerified, onCancel }) {
+  const [password, setPassword] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!password) {
+      setError("Enter your password to continue.");
+      return;
+    }
+    setVerifying(true);
+    setError("");
+    try {
+      const result = await verifyPassword(password);
+      onVerified(result.reverifyToken);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not verify your password. Please try again.");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-6 space-y-3 border-t border-slate-200/60 dark:border-slate-700/60 pt-6">
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+        Confirm your password to change these details.
+      </p>
+      {error && (
+        <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-xs text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Your account password"
+        autoFocus
+        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+      />
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={verifying}
+          className="flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-xl bg-[#1B3FAB] py-2.5 text-sm font-bold text-white shadow-md shadow-[#1B3FAB]/20 transition-all duration-200 active:scale-[0.98] hover:-translate-y-0.5 hover:bg-[#1635A0] disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+          {verifying ? "Verifying…" : "Verify Password"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={verifying}
+          className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
 }
 
 // round2 matches the exact payout math projects.controller.js's
@@ -68,16 +141,16 @@ const SUBSCRIPTION_TIERS = [
   {
     id: "pro",
     name: "Pro",
-    monthlyPrice: 299,
-    yearlyPrice: 2999,
+    monthlyPrice: 99,
+    yearlyPrice: 999,
     highlight: true,
     perks: ["Unlimited job requests", "Priority alerts", "Verified badge"],
   },
   {
     id: "elite",
     name: "Elite",
-    monthlyPrice: 599,
-    yearlyPrice: 5999,
+    monthlyPrice: 199,
+    yearlyPrice: 1999,
     premium: true,
     perks: ["Top search placement", "Profile analytics", "Dedicated support"],
   },
@@ -135,9 +208,9 @@ function BillingToggle({ isYearly, onChange }) {
   );
 }
 
-function SubscriptionTierCard({ tier, isYearly, isUpgrading, upgradeResult, onUpgrade, behaviorScore }) {
+function SubscriptionTierCard({ tier, isYearly, currentTier, onConfirmed, behaviorScore }) {
   const Icon = TIER_ICONS[tier.id];
-  const isFree = tier.id === "free";
+  const isCurrent = tier.id === (currentTier ?? "free").toLowerCase();
   const isElite = tier.id === "elite";
   const eliteLocked = isElite && behaviorScore < ELITE_GOOD_STANDING;
   const { amount, period } = formatTierPrice(tier, isYearly);
@@ -197,7 +270,19 @@ function SubscriptionTierCard({ tier, isYearly, isUpgrading, upgradeResult, onUp
         </div>
       )}
 
-      {isFree ? (
+      {tier.id === "free" && !isCurrent ? (
+        // Free has no checkout of its own (nothing to buy), but must not
+        // claim to be the "Current Plan" when the real subscription_tier
+        // is actually Pro/Elite — that was a real bug: this label used to
+        // be unconditional on the free card, so it kept reading "Current
+        // Plan" even for an account that had genuinely upgraded.
+        <button
+          disabled
+          className="mt-7 w-full cursor-default rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+        >
+          Included
+        </button>
+      ) : isCurrent ? (
         <button
           disabled
           className={`mt-7 w-full cursor-default rounded-xl py-3 text-sm font-bold ${
@@ -214,23 +299,23 @@ function SubscriptionTierCard({ tier, isYearly, isUpgrading, upgradeResult, onUp
           <Lock className="h-4 w-4" />
           Reach {ELITE_GOOD_STANDING} Behavior Score to Unlock
         </button>
-      ) : upgradeResult === tier.id ? (
-        <p className="mt-7 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 py-3 text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
-          Coming Soon! (We're Still Wiring Up the Payment System)
-        </p>
       ) : (
-        <button
-          onClick={() => onUpgrade(tier.id)}
-          disabled={isUpgrading === tier.id}
+        <SubscriptionCheckoutButton
+          tier={tier.id.toUpperCase()}
+          billingPeriod={isYearly ? "YEARLY" : "MONTHLY"}
+          onConfirmed={onConfirmed}
+          label={
+            <>
+              <Zap className="h-4 w-4" />
+              Upgrade Now
+            </>
+          }
           className={`mt-7 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all duration-300 active:scale-[0.98] disabled:opacity-70 ${
             tier.premium
               ? "bg-[#FF6B35] text-white shadow-[0_0_25px_-5px_rgba(255,107,53,0.6)] hover:-translate-y-0.5 hover:bg-[#e85d27]"
               : "bg-[#0F172A] text-white hover:-translate-y-0.5 hover:bg-[#1a2547]"
           }`}
-        >
-          {isUpgrading === tier.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-          Upgrade Now
-        </button>
+        />
       )}
     </div>
   );
@@ -239,19 +324,16 @@ function SubscriptionTierCard({ tier, isYearly, isUpgrading, upgradeResult, onUp
 function SubscriptionTab() {
   const { currentUser } = useAuth();
   const behaviorScore = currentUser?.behavior_score ?? 1000;
-  const [isUpgrading, setIsUpgrading] = useState(null);
-  const [upgradeResult, setUpgradeResult] = useState(null);
   const [isYearly, setIsYearly] = useState(false);
+  const [currentTier, setCurrentTier] = useState(null);
 
-  const handleUpgrade = (tierId) => {
-    if (tierId === "elite" && behaviorScore < ELITE_GOOD_STANDING) return;
-    setIsUpgrading(tierId);
-    setUpgradeResult(null);
-    setTimeout(() => {
-      setIsUpgrading(null);
-      setUpgradeResult(tierId);
-    }, 900);
+  const refreshStatus = () => {
+    getSubscriptionStatus()
+      .then((s) => setCurrentTier(s.tier))
+      .catch(() => setCurrentTier("FREE"));
   };
+
+  useEffect(refreshStatus, []);
 
   return (
     <div className="rounded-2xl border border-white/70 bg-white/60 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-xl sm:p-8 dark:border-slate-800 dark:bg-slate-900/60">
@@ -264,7 +346,7 @@ function SubscriptionTab() {
           Grow faster on WorkBridge
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-          Pick a plan that gets you seen first — real billing is on its way, this is a preview of what's coming.
+          Pick a plan that gets you seen first — billing is real, plan perks are still rolling out.
         </p>
 
         <div className="mt-7 flex justify-center">
@@ -278,9 +360,8 @@ function SubscriptionTab() {
             key={tier.id}
             tier={tier}
             isYearly={isYearly}
-            isUpgrading={isUpgrading}
-            upgradeResult={upgradeResult}
-            onUpgrade={handleUpgrade}
+            currentTier={currentTier}
+            onConfirmed={refreshStatus}
             behaviorScore={behaviorScore}
           />
         ))}
@@ -297,9 +378,13 @@ const withdrawalSchema = z.object({
   payoutDetails: z.string().trim().min(3, "Enter a real UPI ID or bank account so WorkBridge can actually pay you."),
 });
 
+// "Upgrade Subscription" tab commented out (not deleted) — subscriptions
+// are fully built and wired to real Razorpay checkout (SubscriptionTab
+// below), needed again later, just hidden from the UI for now per a
+// product decision to not surface or hint at subscription plans yet.
 const WALLET_TABS = [
   { id: "ledger", label: "Financial Ledger", icon: Wallet },
-  { id: "subscription", label: "Upgrade Subscription", icon: Sparkles },
+  // { id: "subscription", label: "Upgrade Subscription", icon: Sparkles },
 ];
 
 export default function WorkerWallet() {
@@ -322,16 +407,47 @@ export default function WorkerWallet() {
   const [submitting, setSubmitting] = useState(false);
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
   const [activeView, setActiveView] = useState("transactions");
+  // Once a payout destination is saved, the withdraw form defaults to it
+  // instead of asking the worker to retype their UPI ID/bank details on
+  // every single withdrawal — this only flips true if they explicitly want
+  // to send THIS withdrawal somewhere else.
+  const [useDifferentPayout, setUseDifferentPayout] = useState(false);
+  const [payoutAccount, setPayoutAccount] = useState(null);
+  const [showPayoutForm, setShowPayoutForm] = useState(false);
+  const [payoutMethodInput, setPayoutMethodInput] = useState("UPI");
+  const [payoutDetailsInput, setPayoutDetailsInput] = useState("");
+  const [savingPayout, setSavingPayout] = useState(false);
+  const [payoutError, setPayoutError] = useState("");
+  const [showPayoutReverify, setShowPayoutReverify] = useState(false);
+  const [payoutReverifyToken, setPayoutReverifyToken] = useState(null);
+
+  // Razorpay Route linked-account fields — kept as plain controlled state
+  // (not react-hook-form) so each numeric/name field can filter its own
+  // keystrokes as the worker types, rather than only rejecting on submit.
+  const [routeAccount, setRouteAccount] = useState(null);
+  const [showRouteForm, setShowRouteForm] = useState(false);
+  const [routeEmail, setRouteEmail] = useState("");
+  const [routePhone, setRoutePhone] = useState("");
+  const [routeBeneficiaryName, setRouteBeneficiaryName] = useState("");
+  const [routeLegalBusinessName, setRouteLegalBusinessName] = useState("");
+  const [routeAccountNumber, setRouteAccountNumber] = useState("");
+  const [routeIfsc, setRouteIfsc] = useState("");
+  const [routeError, setRouteError] = useState("");
+  const [savingRoute, setSavingRoute] = useState(false);
+  const [showRouteReverify, setShowRouteReverify] = useState(false);
+  const [routeReverifyToken, setRouteReverifyToken] = useState(null);
 
   const loadWallet = async () => {
     setLoading(true);
     setLoadError("");
     try {
-      const [walletData, projects, completed, withdrawals] = await Promise.all([
+      const [walletData, projects, completed, withdrawals, payout, route] = await Promise.all([
         getWallet(),
         listProjects({ role: "worker" }),
         listProjects({ role: "worker", status: "COMPLETED" }),
         listWithdrawals(),
+        getPayoutAccount(),
+        getRouteAccountStatus(),
       ]);
       setWallet(walletData);
       setHeldSecurely(
@@ -341,10 +457,97 @@ export default function WorkerWallet() {
       );
       setInvoices(completed);
       setPendingWithdrawals(withdrawals.filter((w) => w.status === "PENDING"));
+      setPayoutAccount(payout?.payoutDetails ? payout : null);
+      if (payout?.payoutMethod) setPayoutMethodInput(payout.payoutMethod);
+      setRouteAccount(route?.razorpayAccountId ? route : null);
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : "Could not load your wallet.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const IFSC_PATTERN = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+  const onSubmitRouteAccount = async (e) => {
+    e.preventDefault();
+    if (!/^\S+@\S+\.\S+$/.test(routeEmail)) {
+      setRouteError("Enter a valid email address.");
+      return;
+    }
+    if (routePhone.length !== 10) {
+      setRouteError("Enter a valid 10-digit phone number.");
+      return;
+    }
+    if (routeBeneficiaryName.trim().length < 2) {
+      setRouteError("Enter the account holder's full name.");
+      return;
+    }
+    if (routeAccountNumber.length < 9 || routeAccountNumber.length > 18) {
+      setRouteError("Enter a valid bank account number (9–18 digits).");
+      return;
+    }
+    if (!IFSC_PATTERN.test(routeIfsc)) {
+      setRouteError("Enter a valid IFSC code (e.g. HDFC0001234).");
+      return;
+    }
+
+    setSavingRoute(true);
+    setRouteError("");
+    try {
+      const result = await linkRouteAccount({
+        email: routeEmail.trim().toLowerCase(),
+        phone: routePhone,
+        beneficiaryName: routeBeneficiaryName.trim(),
+        legalBusinessName: routeLegalBusinessName.trim() || undefined,
+        bankAccountNumber: routeAccountNumber,
+        bankIfsc: routeIfsc,
+        reverifyToken: routeReverifyToken,
+      });
+      setRouteAccount({ razorpayAccountId: result.razorpayAccountId, status: result.status });
+      setShowRouteForm(false);
+      setRouteReverifyToken(null);
+    } catch (err) {
+      setRouteError(err instanceof ApiError ? err.message : "Could not link your account. Please try again.");
+    } finally {
+      setSavingRoute(false);
+    }
+  };
+
+  const ROUTE_STATUS_STYLES = {
+    ACTIVE: "text-emerald-600 dark:text-emerald-400",
+    PENDING: "text-amber-600 dark:text-amber-400",
+    NEEDS_CLARIFICATION: "text-amber-600 dark:text-amber-400",
+    REJECTED: "text-red-600 dark:text-red-400",
+  };
+  const ROUTE_STATUS_LABELS = {
+    ACTIVE: "Active — ready to receive automatic payouts",
+    PENDING: "Pending Razorpay verification",
+    NEEDS_CLARIFICATION: "Needs additional documents — Razorpay flagged this account",
+    REJECTED: "Rejected — please link a different account",
+  };
+
+  const onSavePayoutDetails = async (e) => {
+    e.preventDefault();
+    if (payoutDetailsInput.trim().length < 3) {
+      setPayoutError("Enter a real UPI ID or bank account so WorkBridge can pay project completions directly.");
+      return;
+    }
+    setSavingPayout(true);
+    setPayoutError("");
+    try {
+      const saved = await savePayoutDetails({
+        payoutMethod: payoutMethodInput,
+        payoutDetails: payoutDetailsInput.trim(),
+        reverifyToken: payoutReverifyToken,
+      });
+      setPayoutAccount(saved);
+      setShowPayoutForm(false);
+      setPayoutReverifyToken(null);
+    } catch (err) {
+      setPayoutError(err instanceof ApiError ? err.message : "Could not save your payout details. Please try again.");
+    } finally {
+      setSavingPayout(false);
     }
   };
 
@@ -372,13 +575,28 @@ export default function WorkerWallet() {
     },
   });
 
+  // Once payoutAccount loads, default the withdraw form to it rather than
+  // leaving the fields the worker would otherwise have to fill in fresh
+  // every time — runs before the form is ever opened, so there's nothing
+  // to clobber.
+  useEffect(() => {
+    if (payoutAccount) {
+      reset({ amount: "", payoutMethod: payoutAccount.payoutMethod, payoutDetails: payoutAccount.payoutDetails });
+    }
+  }, [payoutAccount]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const onSubmit = async (formData) => {
+    const usingSaved = Boolean(payoutAccount) && !useDifferentPayout;
+    const payoutMethod = usingSaved ? payoutAccount.payoutMethod : formData.payoutMethod;
+    const payoutDetails = usingSaved ? payoutAccount.payoutDetails : formData.payoutDetails;
+
     setSubmitting(true);
     setSubmitError("");
     try {
-      await withdraw({ amount: formData.amount, payoutMethod: formData.payoutMethod, payoutDetails: formData.payoutDetails });
-      reset({ amount: "", payoutMethod: formData.payoutMethod, payoutDetails: "" });
+      await withdraw({ amount: formData.amount, payoutMethod, payoutDetails });
+      reset({ amount: "", payoutMethod, payoutDetails: usingSaved ? payoutDetails : "" });
       setShowWithdrawForm(false);
+      setUseDifferentPayout(false);
       await loadWallet();
     } catch (err) {
       setSubmitError(err instanceof ApiError ? err.message : "Withdrawal request failed. Please try again.");
@@ -411,31 +629,27 @@ export default function WorkerWallet() {
       <div className="pointer-events-none absolute -top-20 -left-16 -z-10 h-72 w-72 rounded-full bg-[#1B3FAB]/10 blur-[100px]" />
       <div className="pointer-events-none absolute top-40 -right-20 -z-10 h-72 w-72 rounded-full bg-[#FF6B35]/10 blur-[100px]" />
 
-      {/* Target 3's consolidation — Upgrade Subscription used to be its own
-          /worker/subscriptions route; it's a tab here now, alongside the
-          real ledger, so "everything about your money" lives in one place. */}
-      <div className="relative mb-6 flex w-fit gap-1.5 rounded-full border border-slate-200 bg-white p-1.5 dark:border-slate-700 dark:bg-slate-900">
-        {WALLET_TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setWalletTab(id)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-              walletTab === id ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white"
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* Tab selector only shows once there's more than one real tab to
+          switch between — see WALLET_TABS above. */}
+      {WALLET_TABS.length > 1 && (
+        <div className="relative mb-6 flex w-fit gap-1.5 rounded-full border border-slate-200 bg-white p-1.5 dark:border-slate-700 dark:bg-slate-900">
+          {WALLET_TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setWalletTab(id)}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                walletTab === id ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {walletTab === "subscription" ? (
-        <ComingSoonOverlay
-          title="Upgrade Subscription — Coming Soon"
-          message="Paid plans need real payment processing, which isn't live yet. This will open up once it is."
-        >
-          <SubscriptionTab />
-        </ComingSoonOverlay>
+        <SubscriptionTab />
       ) : (
       <>
 
@@ -531,46 +745,376 @@ export default function WorkerWallet() {
                     <span>{submitError}</span>
                   </div>
                 )}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Amount</label>
-                    <LockedCurrencyInput
-                      value={watch("amount")}
-                      onChange={(value) => setValue("amount", value, { shouldValidate: true })}
-                      placeholder="10000"
-                      inputClassName="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
-                    />
-                    {errors.amount && <p className="mt-1 text-xs font-semibold text-red-500">{errors.amount.message}</p>}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Payout Method</label>
-                    <select {...register("payoutMethod")} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 focus:dark:border-[#FF6B35]">
-                      <option value="UPI">UPI</option>
-                      <option value="BANK_TRANSFER">Bank Transfer</option>
-                    </select>
-                  </div>
-                </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                    {watch("payoutMethod") === "BANK_TRANSFER" ? "Account Number & IFSC" : "UPI ID"}
-                  </label>
-                  <input
-                    {...register("payoutDetails")}
-                    placeholder={watch("payoutMethod") === "BANK_TRANSFER" ? "e.g. 004501234567 · HDFC0000045" : "e.g. yourname@upi"}
-                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Amount</label>
+                  <LockedCurrencyInput
+                    value={watch("amount")}
+                    onChange={(value) => setValue("amount", value, { shouldValidate: true })}
+                    placeholder="10000"
+                    inputClassName="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
                   />
-                  {errors.payoutDetails && <p className="mt-1 text-xs font-semibold text-red-500">{errors.payoutDetails.message}</p>}
+                  {errors.amount && <p className="mt-1 text-xs font-semibold text-red-500">{errors.amount.message}</p>}
                 </div>
+
+                {payoutAccount && !useDifferentPayout ? (
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/60">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Sending to</p>
+                      <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        {payoutAccount.payoutMethod === "UPI" ? "UPI" : "Bank Transfer"} · {payoutAccount.payoutDetails}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUseDifferentPayout(true)}
+                      className="flex-shrink-0 text-xs font-bold text-[#1B3FAB] hover:underline dark:text-blue-400"
+                    >
+                      Use different
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {payoutAccount && (
+                      <button
+                        type="button"
+                        onClick={() => setUseDifferentPayout(false)}
+                        className="text-xs font-bold text-[#1B3FAB] hover:underline dark:text-blue-400"
+                      >
+                        ← Use my saved payout destination instead
+                      </button>
+                    )}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Payout Method</label>
+                        <select {...register("payoutMethod")} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 focus:dark:border-[#FF6B35]">
+                          <option value="UPI">UPI</option>
+                          <option value="BANK_TRANSFER">Bank Transfer</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          {watch("payoutMethod") === "BANK_TRANSFER" ? "Account Number & IFSC" : "UPI ID"}
+                        </label>
+                        <input
+                          {...register("payoutDetails")}
+                          placeholder={watch("payoutMethod") === "BANK_TRANSFER" ? "e.g. 004501234567 · HDFC0000045" : "e.g. yourname@upi"}
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                        />
+                        {errors.payoutDetails && <p className="mt-1 text-xs font-semibold text-red-500">{errors.payoutDetails.message}</p>}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#1B3FAB] py-3 text-sm font-bold text-white shadow-md shadow-[#1B3FAB]/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1635A0] hover:shadow-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:shadow-[#1B3FAB]/10 dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
+                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#1B3FAB] py-3 text-sm font-bold text-white shadow-md shadow-[#1B3FAB]/20 transition-all duration-200 active:scale-[0.98] hover:-translate-y-0.5 hover:bg-[#1635A0] hover:shadow-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:shadow-[#1B3FAB]/10 dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                   {submitting ? "Sending Request…" : "Request Withdrawal"}
                 </button>
                 <p className="text-center text-xs text-slate-400 dark:text-slate-500">
                   WorkBridge staff verify and send every payout — usually within one business day.
+                </p>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Payout Destination — a saved bank/UPI target so WorkBridge staff
+          can pay a completed project's earnings straight to a worker's real
+          account instead of always parking it in the in-app wallet first. */}
+      <div
+        className={`mt-6 rounded-3xl border shadow-xl backdrop-blur-2xl wb-card-enter ${
+          payoutAccount ? "border-white/70 bg-white/50 shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/50" : "border-amber-200 bg-amber-50/70 shadow-amber-100/50 dark:border-amber-900/40 dark:bg-amber-950/20"
+        } ${payoutAccount && !showPayoutForm && !showPayoutReverify ? "p-4" : "p-6"}`}
+        style={{ animationDelay: "80ms" }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            {(!payoutAccount || showPayoutForm || showPayoutReverify) && (
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#1B3FAB] dark:text-blue-400" />
+                Payout Destination
+              </p>
+            )}
+            {payoutAccount ? (
+              <p className={`flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400 ${!showPayoutForm && !showPayoutReverify ? "" : "mt-2"}`}>
+                <Check className="h-4 w-4" />
+                Payout Destination Configured — {payoutAccount.payoutMethod === "UPI" ? "UPI" : "Bank Transfer"}
+              </p>
+            ) : (
+              <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-400">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                Action Required: link your payout destination to receive escrow disbursements.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              if (showPayoutForm || showPayoutReverify) {
+                setShowPayoutForm(false);
+                setShowPayoutReverify(false);
+                setPayoutReverifyToken(null);
+                return;
+              }
+              if (payoutAccount) setShowPayoutReverify(true);
+              else setShowPayoutForm(true);
+            }}
+            className={`flex min-h-[40px] items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-colors ${
+              payoutAccount
+                ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                : "border-amber-300 bg-[#FF6B35] text-white hover:bg-[#e85a28]"
+            }`}
+          >
+            {showPayoutForm || showPayoutReverify ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+            {showPayoutForm || showPayoutReverify ? "Close" : payoutAccount ? "Change" : "Link Payout Account"}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showPayoutReverify && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <ReverifyPrompt
+                onVerified={(token) => {
+                  setPayoutReverifyToken(token);
+                  setShowPayoutReverify(false);
+                  setShowPayoutForm(true);
+                }}
+                onCancel={() => setShowPayoutReverify(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showPayoutForm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <form onSubmit={onSavePayoutDetails} className="mt-6 space-y-3 border-t border-slate-200/60 dark:border-slate-700/60 pt-6">
+                {payoutError && (
+                  <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-xs text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{payoutError}</span>
+                  </div>
+                )}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Payout Method</label>
+                  <select
+                    value={payoutMethodInput}
+                    onChange={(e) => setPayoutMethodInput(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 focus:dark:border-[#FF6B35]"
+                  >
+                    <option value="UPI">UPI</option>
+                    <option value="BANK_TRANSFER">Bank Transfer</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    {payoutMethodInput === "BANK_TRANSFER" ? "Account Holder Name, Account Number & IFSC" : "UPI ID"}
+                  </label>
+                  <input
+                    value={payoutDetailsInput}
+                    onChange={(e) => setPayoutDetailsInput(e.target.value)}
+                    placeholder={payoutMethodInput === "BANK_TRANSFER" ? "e.g. Jane Doe · 004501234567 · HDFC0000045" : "e.g. yourname@upi"}
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={savingPayout}
+                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#1B3FAB] py-3 text-sm font-bold text-white shadow-md shadow-[#1B3FAB]/20 transition-all duration-200 active:scale-[0.98] hover:-translate-y-0.5 hover:bg-[#1635A0] hover:shadow-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:shadow-[#1B3FAB]/10 dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
+                >
+                  {savingPayout ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {savingPayout ? "Saving…" : "Save Payout Destination"}
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Razorpay Linked Account (Route) — a real linked sub-account at
+          Razorpay (acc_XXXX), distinct from the Payout Destination above:
+          this one lets Razorpay itself move money to the worker directly
+          off a project's payment (once Route is enabled on the merchant
+          account), rather than WorkBridge triggering a RazorpayX payout
+          from its own settled balance. */}
+      <div
+        className={`mt-6 rounded-3xl border border-white/70 bg-white/50 shadow-xl shadow-slate-200/50 backdrop-blur-2xl wb-card-enter dark:border-slate-800 dark:bg-slate-900/50 ${
+          routeAccount && !showRouteForm && !showRouteReverify ? "p-4" : "p-6"
+        }`}
+        style={{ animationDelay: "120ms" }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            {(!routeAccount || showRouteForm || showRouteReverify) && (
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                <Building2 className="h-3.5 w-3.5 text-[#1B3FAB] dark:text-blue-400" />
+                Razorpay Linked Account
+              </p>
+            )}
+            {routeAccount ? (
+              <p className={`flex items-center gap-1.5 text-sm font-semibold ${ROUTE_STATUS_STYLES[routeAccount.status] ?? "text-slate-500 dark:text-slate-400"} ${!showRouteForm && !showRouteReverify ? "" : "mt-2"}`}>
+                <Check className="h-4 w-4" />
+                {ROUTE_STATUS_LABELS[routeAccount.status] ?? routeAccount.status}
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Link your bank account with Razorpay so WorkBridge can automatically create a payout-ready account for you.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              if (showRouteForm || showRouteReverify) {
+                setShowRouteForm(false);
+                setShowRouteReverify(false);
+                setRouteReverifyToken(null);
+                return;
+              }
+              if (routeAccount) setShowRouteReverify(true);
+              else setShowRouteForm(true);
+            }}
+            className="flex min-h-[40px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            {showRouteForm || showRouteReverify ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+            {showRouteForm || showRouteReverify ? "Close" : routeAccount ? "Change" : "Link Razorpay Account"}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showRouteReverify && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <ReverifyPrompt
+                onVerified={(token) => {
+                  setRouteReverifyToken(token);
+                  setShowRouteReverify(false);
+                  setShowRouteForm(true);
+                }}
+                onCancel={() => setShowRouteReverify(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showRouteForm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <form onSubmit={onSubmitRouteAccount} className="mt-6 space-y-3 border-t border-slate-200/60 dark:border-slate-700/60 pt-6">
+                {routeError && (
+                  <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-xs text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{routeError}</span>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Email</label>
+                    <input
+                      type="email"
+                      value={routeEmail}
+                      onChange={(e) => setRouteEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Phone</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
+                      value={routePhone}
+                      onChange={(e) => setRoutePhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      placeholder="9876543210"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Account Holder Name</label>
+                    <input
+                      type="text"
+                      value={routeBeneficiaryName}
+                      onChange={(e) => setRouteBeneficiaryName(e.target.value.replace(/[^a-zA-Z\s.'-]/g, ""))}
+                      placeholder="Jane Doe"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Business Name (optional)</label>
+                    <input
+                      type="text"
+                      value={routeLegalBusinessName}
+                      onChange={(e) => setRouteLegalBusinessName(e.target.value)}
+                      placeholder="Only if you freelance under a business name"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Bank Account Number</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={18}
+                      value={routeAccountNumber}
+                      onChange={(e) => setRouteAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 18))}
+                      placeholder="004501234567"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">IFSC Code</label>
+                    <input
+                      type="text"
+                      maxLength={11}
+                      value={routeIfsc}
+                      onChange={(e) => setRouteIfsc(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 11))}
+                      placeholder="HDFC0001234"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 focus:dark:border-[#FF6B35]"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={savingRoute}
+                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#1B3FAB] py-3 text-sm font-bold text-white shadow-md shadow-[#1B3FAB]/20 transition-all duration-200 active:scale-[0.98] hover:-translate-y-0.5 hover:bg-[#1635A0] hover:shadow-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gradient-to-r dark:from-[#16327A] dark:to-[#2b52d6] dark:shadow-[#1B3FAB]/10 dark:hover:from-[#1B3FAB] dark:hover:to-[#3a63e0]"
+                >
+                  {savingRoute ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                  {savingRoute ? "Linking…" : "Link Account"}
+                </button>
+                <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+                  Razorpay verifies this account (KYC) before it can receive automatic payouts — usually 24–48 hours.
                 </p>
               </form>
             </motion.div>

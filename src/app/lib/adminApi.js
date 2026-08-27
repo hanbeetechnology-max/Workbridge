@@ -30,8 +30,8 @@ export function listDisputes() {
   return apiFetch("/api/admin/disputes");
 }
 
-export function resolveDispute(id, resolution) {
-  return apiFetch(`/api/admin/disputes/${id}/resolve`, { method: "POST", body: { resolution } });
+export function resolveDispute(id, resolution, note) {
+  return apiFetch(`/api/admin/disputes/${id}/resolve`, { method: "POST", body: { resolution, note } });
 }
 
 export function listTransactions() {

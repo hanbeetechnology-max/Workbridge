@@ -387,7 +387,7 @@ function HubHeader({ thread, projects, onViewContractTerms, onProjectUpdated, bl
               onClick={onUnblock}
               disabled={blockActionBusy || isImpersonating}
               title={isImpersonating ? "Disabled in Impersonation Mode" : undefined}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-black text-emerald-700 shadow-sm transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-black text-emerald-700 shadow-sm transition-all active:scale-[0.98] hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
             >
               <ShieldOff className="h-3.5 w-3.5" />
               {isImpersonating ? "Disabled" : "Unblock"}
@@ -398,7 +398,7 @@ function HubHeader({ thread, projects, onViewContractTerms, onProjectUpdated, bl
               onClick={onBlock}
               disabled={blockActionBusy || isImpersonating}
               title={isImpersonating ? "Disabled in Impersonation Mode" : undefined}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-black text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-red-900/40 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-black text-slate-500 shadow-sm transition-all active:scale-[0.98] hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-red-900/40 dark:hover:bg-red-950/30 dark:hover:text-red-400"
             >
               <UserX className="h-3.5 w-3.5" />
               {isImpersonating ? "Disabled" : "Block"}
@@ -432,7 +432,7 @@ function HubHeader({ thread, projects, onViewContractTerms, onProjectUpdated, bl
                 onClick={() => handleResolveBudget(true)}
                 disabled={resolvingBudget}
                 title="Accept this budget"
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white transition-all active:scale-[0.92] hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {resolvingBudget ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
               </button>
@@ -441,7 +441,7 @@ function HubHeader({ thread, projects, onViewContractTerms, onProjectUpdated, bl
                 onClick={() => handleResolveBudget(false)}
                 disabled={resolvingBudget}
                 title="Decline this budget"
-                className="flex h-6 w-6 items-center justify-center rounded-full border border-amber-300 text-amber-600 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/50"
+                className="flex h-6 w-6 items-center justify-center rounded-full border border-amber-300 text-amber-600 transition-all active:scale-[0.92] hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/50"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

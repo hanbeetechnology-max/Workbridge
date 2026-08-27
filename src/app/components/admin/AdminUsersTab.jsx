@@ -16,6 +16,31 @@ function RoleBadge({ role }) {
   return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Admin</span>;
 }
 
+// Support-tier triage — a paying user should be visually obvious in the
+// directory at a glance, not something staff have to click into a profile
+// to discover. An expired subscription (real subscription_expires_at in
+// the past — same lapse rule payments.controller.js's getSubscriptionStatus
+// applies) reads as Free here too, so a stale badge never overstates a
+// lapsed plan as still active.
+const PLAN_STYLES = {
+  FREE: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+  PRO: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
+  ELITE: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+  GROWTH: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
+  ENTERPRISE: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+};
+
+function PlanBadge({ tier, expiresAt }) {
+  const isExpired = tier && tier !== "FREE" && (!expiresAt || new Date(expiresAt) <= new Date());
+  const effectiveTier = isExpired ? "FREE" : tier || "FREE";
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${PLAN_STYLES[effectiveTier] ?? PLAN_STYLES.FREE}`}>
+      {effectiveTier === "FREE" ? "Free" : effectiveTier[0] + effectiveTier.slice(1).toLowerCase()}
+      {isExpired && <span className="font-normal text-[10px] opacity-70">(lapsed)</span>}
+    </span>
+  );
+}
+
 function StatusPill({ ok, trueLabel, falseLabel }) {
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
@@ -135,8 +160,8 @@ export default function AdminUsersTab() {
     <div className="p-7">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Users</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{users.length} account{users.length === 1 ? "" : "s"} on the platform</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Users</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">{users.length} account{users.length === 1 ? "" : "s"} on the platform</p>
         </div>
         <div className="flex gap-2">
           {["All", "Freelancers", "Businesses", "Admins"].map((f) => (
@@ -144,7 +169,7 @@ export default function AdminUsersTab() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === f ? "bg-slate-900 text-white" : "bg-white/50 backdrop-blur-sm border border-white/60 text-slate-600 hover:bg-white/70"
+                filter === f ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-white/50 backdrop-blur-sm border border-white/60 text-slate-600 hover:bg-white/70 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               }`}
             >
               {f}
@@ -184,34 +209,41 @@ export default function AdminUsersTab() {
           <span>{loadError}</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white/40 py-16 text-center text-sm text-slate-400">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white/40 py-16 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500">
           No users match this filter.
         </div>
       ) : (
-        <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/70 overflow-hidden shadow-lg shadow-slate-200/40">
+        <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/70 overflow-hidden shadow-lg shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-900/60">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-white/40 border-b border-slate-200">
-                  {["Name", "Email", "Phone", "Role", "Email Verified", "ID Verified", "Status", "Joined", ""].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                <tr className="bg-white/40 border-b border-slate-200 dark:bg-slate-800/40 dark:border-slate-800">
+                  {["Name", "Email", "Phone", "Role", "Plan", "Email Verified", "ID Verified", "Status", "Joined", ""].map((h) => (
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filtered.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/40 transition-colors">
+                  <tr key={item.id} className="hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
                           {getInitials(item.name)}
                         </div>
-                        <span className="font-medium text-slate-800 text-sm">{item.name}</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200 text-sm">{item.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-500">{item.email}</td>
-                    <td className="px-5 py-4 text-sm text-slate-500">{item.phone ? `+91 ${item.phone}` : "—"}</td>
+                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{item.email}</td>
+                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{item.phone ? `+91 ${item.phone}` : "—"}</td>
                     <td className="px-5 py-4"><RoleBadge role={item.role} /></td>
+                    <td className="px-5 py-4">
+                      {item.role === "admin" ? (
+                        <span className="text-xs text-slate-300 dark:text-slate-600">—</span>
+                      ) : (
+                        <PlanBadge tier={item.subscription_tier} expiresAt={item.subscription_expires_at} />
+                      )}
+                    </td>
                     <td className="px-5 py-4">
                       <StatusPill ok={item.email_verified} trueLabel="Verified" falseLabel="Pending" />
                     </td>
@@ -224,10 +256,10 @@ export default function AdminUsersTab() {
                       ) : item.is_chat_banned === true ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">CHAT BANNED</span>
                       ) : (
-                        <span className="text-xs text-slate-400">—</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-500">
+                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">
                       {new Date(item.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
                     <td className="px-5 py-4 text-right">
