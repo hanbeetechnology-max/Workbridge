@@ -97,14 +97,29 @@ export default function BusinessVerification({ onComplete, onExit }) {
   const [businessType, setBusinessType]     = useState("");
   const typeDocs = BUSINESS_TYPE_DOCS[businessType] ?? DEFAULT_TYPE_DOCS;
 
+  // Step 1 fields — previously uncontrolled inputs with nothing tracking
+  // their value, which is exactly why "Continue" could never have checked
+  // whether anything was filled in.
+  const [companyName, setCompanyName]           = useState("");
+  const [yearEstablished, setYearEstablished]   = useState("");
+  const [gstNumber, setGstNumber]               = useState("");
+  const [pan, setPan]                           = useState("");
+  const [website, setWebsite]                   = useState("");
+  const [address, setAddress]                   = useState("");
+
   // Step 2 file state
   const [gstFile, setGstFile]       = useState(null);
   const [incorpFile, setIncorpFile] = useState(null);
   const [drag1, setDrag1]           = useState(false);
   const [drag2, setDrag2]           = useState(false);
 
-  // Step 3 visibility
+  // Step 3 fields
   const [showAccNum, setShowAccNum] = useState(false);
+  const [idType, setIdType]                 = useState("Aadhaar Card");
+  const [idNumber, setIdNumber]             = useState("");
+  const [bankName, setBankName]             = useState("");
+  const [accountNumber, setAccountNumber]   = useState("");
+  const [ifscCode, setIfscCode]             = useState("");
 
   const goNext = () => {
     setCompletedSteps((prev) => new Set([...prev, activeStep]));
@@ -287,6 +302,12 @@ export default function BusinessVerification({ onComplete, onExit }) {
               <Step1
                 onNext={goNext} INPUT={INPUT} LABEL={LABEL} SELECT={SELECT}
                 businessType={businessType} setBusinessType={setBusinessType}
+                companyName={companyName} setCompanyName={setCompanyName}
+                yearEstablished={yearEstablished} setYearEstablished={setYearEstablished}
+                gstNumber={gstNumber} setGstNumber={setGstNumber}
+                pan={pan} setPan={setPan}
+                website={website} setWebsite={setWebsite}
+                address={address} setAddress={setAddress}
               />
             )}
 
@@ -309,6 +330,11 @@ export default function BusinessVerification({ onComplete, onExit }) {
                 showAccNum={showAccNum} setShowAccNum={setShowAccNum}
                 onBack={goBack} onComplete={goNext}
                 INPUT={INPUT} LABEL={LABEL} SELECT={SELECT}
+                idType={idType} setIdType={setIdType}
+                idNumber={idNumber} setIdNumber={setIdNumber}
+                bankName={bankName} setBankName={setBankName}
+                accountNumber={accountNumber} setAccountNumber={setAccountNumber}
+                ifscCode={ifscCode} setIfscCode={setIfscCode}
               />
             )}
 
@@ -323,8 +349,37 @@ export default function BusinessVerification({ onComplete, onExit }) {
 // STEP 1 — Company Details
 // ════════════════════════════════════════════════════════════════════════════
 
-function Step1({ onNext, INPUT, LABEL, SELECT, businessType, setBusinessType }) {
+function Step1({
+  onNext, INPUT, LABEL, SELECT,
+  businessType, setBusinessType,
+  companyName, setCompanyName,
+  yearEstablished, setYearEstablished,
+  gstNumber, setGstNumber,
+  pan, setPan,
+  website, setWebsite,
+  address, setAddress,
+}) {
   const panLabel = BUSINESS_TYPE_DOCS[businessType]?.panLabel ?? "PAN";
+  const [attempted, setAttempted] = useState(false);
+
+  // GST and the website are the only two genuinely optional fields here —
+  // GST because it's turnover-threshold-based (see BUSINESS_TYPE_DOCS),
+  // website because plenty of legitimate small businesses don't have one.
+  const missing = [];
+  if (!companyName.trim()) missing.push("Registered Company Name");
+  if (!businessType) missing.push("Business Type");
+  if (!yearEstablished.trim()) missing.push("Year Established");
+  if (!pan.trim()) missing.push(panLabel);
+  if (!address.trim()) missing.push("Registered Business Address");
+
+  const handleNext = () => {
+    setAttempted(true);
+    if (missing.length === 0) onNext();
+  };
+
+  const fieldClass = (isEmpty) =>
+    attempted && isEmpty ? `${INPUT} border-red-300 focus:ring-red-100 focus:border-red-400` : INPUT;
+
   return (
     <div>
       <StepHeader
@@ -337,13 +392,19 @@ function Step1({ onNext, INPUT, LABEL, SELECT, businessType, setBusinessType }) 
 
         <div>
           <label className={LABEL}>Registered Company Name</label>
-          <input type="text" placeholder="RetailX Pvt. Ltd." className={INPUT} />
+          <input
+            type="text" placeholder="RetailX Pvt. Ltd." className={fieldClass(!companyName.trim())}
+            value={companyName} onChange={(e) => setCompanyName(e.target.value)}
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className={LABEL}>Business Type</label>
-            <select className={SELECT} value={businessType} onChange={(e) => setBusinessType(e.target.value)}>
+            <select
+              className={fieldClass(!businessType)}
+              value={businessType} onChange={(e) => setBusinessType(e.target.value)}
+            >
               <option value="">Select type</option>
               <option>Private Limited (Pvt. Ltd.)</option>
               <option>Public Limited (Ltd.)</option>
@@ -355,24 +416,36 @@ function Step1({ onNext, INPUT, LABEL, SELECT, businessType, setBusinessType }) 
           </div>
           <div>
             <label className={LABEL}>Year Established</label>
-            <input type="text" placeholder="e.g. 2019" className={INPUT} />
+            <input
+              type="text" placeholder="e.g. 2019" className={fieldClass(!yearEstablished.trim())}
+              value={yearEstablished} onChange={(e) => setYearEstablished(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className={LABEL}>GST Number (if registered)</label>
-            <input type="text" placeholder="22AAAAA0000A1Z5" className={INPUT} />
+            <input
+              type="text" placeholder="22AAAAA0000A1Z5" className={INPUT}
+              value={gstNumber} onChange={(e) => setGstNumber(e.target.value)}
+            />
           </div>
           <div>
             <label className={LABEL}>{panLabel}</label>
-            <input type="text" placeholder="AAAAA0000A" className={INPUT} />
+            <input
+              type="text" placeholder="AAAAA0000A" className={fieldClass(!pan.trim())}
+              value={pan} onChange={(e) => setPan(e.target.value)}
+            />
           </div>
         </div>
 
         <div>
           <label className={LABEL}>Company Website (optional)</label>
-          <input type="url" placeholder="https://yourcompany.in" className={INPUT} />
+          <input
+            type="url" placeholder="https://yourcompany.in" className={INPUT}
+            value={website} onChange={(e) => setWebsite(e.target.value)}
+          />
         </div>
 
         <div>
@@ -380,11 +453,18 @@ function Step1({ onNext, INPUT, LABEL, SELECT, businessType, setBusinessType }) 
           <textarea
             rows={2}
             placeholder="Floor 4, Cyber Hub, Sector 24, Gurugram, Haryana 122002"
-            className={`${INPUT} resize-none`}
+            className={`${fieldClass(!address.trim())} resize-none`}
+            value={address} onChange={(e) => setAddress(e.target.value)}
           />
         </div>
 
-        <ActionRow onBack={null} onNext={onNext} nextLabel="Continue to Documents" />
+        {attempted && missing.length > 0 && (
+          <p className="text-xs font-semibold text-red-500">
+            Please fill in: {missing.join(", ")}.
+          </p>
+        )}
+
+        <ActionRow onBack={null} onNext={handleNext} nextLabel="Continue to Documents" />
       </div>
     </div>
   );
@@ -396,6 +476,14 @@ function Step1({ onNext, INPUT, LABEL, SELECT, businessType, setBusinessType }) 
 
 function Step2({ typeDocs, gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1, drag2, setDrag2, onBack, onNext }) {
   const { label: incorpLabel, hint: incorpHint, required: incorpRequired } = typeDocs.incorporation;
+  const [attempted, setAttempted] = useState(false);
+  const missingIncorp = incorpRequired && !incorpFile;
+
+  const handleNext = () => {
+    setAttempted(true);
+    if (!missingIncorp) onNext();
+  };
+
   return (
     <div>
       <StepHeader
@@ -469,12 +557,17 @@ function Step2({ typeDocs, gstFile, setGstFile, incorpFile, setIncorpFile, drag1
             label={`Drop your ${incorpLabel} here`}
             large={false}
           />
+          {attempted && missingIncorp && (
+            <p className="mt-2 text-xs font-semibold text-red-500">
+              Please upload your {incorpLabel.toLowerCase()} to continue.
+            </p>
+          )}
         </div>
 
         {/* Security note */}
         <SecurityNote />
 
-        <ActionRow onBack={onBack} onNext={onNext} nextLabel="Continue to Identity" />
+        <ActionRow onBack={onBack} onNext={handleNext} nextLabel="Continue to Identity" />
       </div>
     </div>
   );
@@ -484,8 +577,28 @@ function Step2({ typeDocs, gstFile, setGstFile, incorpFile, setIncorpFile, drag1
 // STEP 3 — Identity & Banking
 // ════════════════════════════════════════════════════════════════════════════
 
-function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SELECT }) {
+function Step3({
+  typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SELECT,
+  idType, setIdType, idNumber, setIdNumber,
+  bankName, setBankName, accountNumber, setAccountNumber, ifscCode, setIfscCode,
+}) {
   const [idFile, setIdFile] = useState(null);
+  const [attempted, setAttempted] = useState(false);
+
+  const missing = [];
+  if (!idNumber.trim()) missing.push("ID Number");
+  if (!idFile) missing.push(`${typeDocs.ownerRole} ID document`);
+  if (!bankName.trim()) missing.push("Bank Name");
+  if (!accountNumber.trim()) missing.push("Account Number");
+  if (!ifscCode.trim()) missing.push("IFSC Code");
+
+  const handleComplete = () => {
+    setAttempted(true);
+    if (missing.length === 0) onComplete();
+  };
+
+  const fieldClass = (isEmpty) =>
+    attempted && isEmpty ? `${INPUT} border-red-300 focus:ring-red-100 focus:border-red-400` : INPUT;
 
   return (
     <div>
@@ -511,7 +624,7 @@ function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT,
           <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
             <div>
               <label className={LABEL}>ID Type</label>
-              <select className={SELECT}>
+              <select className={SELECT} value={idType} onChange={(e) => setIdType(e.target.value)}>
                 <option>Aadhaar Card</option>
                 <option>Passport</option>
                 <option>Driving Licence</option>
@@ -519,7 +632,10 @@ function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT,
             </div>
             <div>
               <label className={LABEL}>ID Number</label>
-              <input type="text" placeholder="XXXX XXXX XXXX" className={INPUT} />
+              <input
+                type="text" placeholder="XXXX XXXX XXXX" className={fieldClass(!idNumber.trim())}
+                value={idNumber} onChange={(e) => setIdNumber(e.target.value)}
+              />
             </div>
           </div>
 
@@ -549,17 +665,32 @@ function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT,
           <div className="space-y-4">
             <div>
               <label className={LABEL}>Bank Name</label>
-              <input type="text" placeholder="HDFC Bank" className={INPUT} />
+              <input
+                type="text" placeholder="HDFC Bank" className={fieldClass(!bankName.trim())}
+                value={bankName} onChange={(e) => setBankName(e.target.value)}
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className={LABEL}>Account Number</label>
                 <div className="relative">
+                  {/* type="text" always, never "password" — a bank account
+                      number isn't a login credential, but browsers can't
+                      tell the difference and will offer to autofill/save it
+                      as one the moment type="password" appears on any
+                      field. Masked visually instead via -webkit-text-
+                      security (Chrome/Edge/Safari; Firefox just shows plain
+                      text as a graceful fallback, no functional loss). */}
                   <input
-                    type={showAccNum ? "text" : "password"}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    name="business-bank-account-number"
                     placeholder="••••••••••4521"
-                    className={INPUT}
+                    className={fieldClass(!accountNumber.trim())}
+                    style={showAccNum ? undefined : { WebkitTextSecurity: "disc", textSecurity: "disc" }}
+                    value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)}
                   />
                   <button
                     type="button"
@@ -572,7 +703,10 @@ function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT,
               </div>
               <div>
                 <label className={LABEL}>IFSC Code</label>
-                <input type="text" placeholder="HDFC0001234" className={INPUT} />
+                <input
+                  type="text" placeholder="HDFC0001234" className={fieldClass(!ifscCode.trim())}
+                  value={ifscCode} onChange={(e) => setIfscCode(e.target.value)}
+                />
               </div>
             </div>
             {/* No cancelled-cheque/bank-statement upload here on purpose —
@@ -594,7 +728,13 @@ function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT,
           </p>
         </div>
 
-        <ActionRow onBack={onBack} onNext={onComplete} nextLabel="Submit for Verification" isComplete />
+        {attempted && missing.length > 0 && (
+          <p className="text-xs font-semibold text-red-500">
+            Please fill in: {missing.join(", ")}.
+          </p>
+        )}
+
+        <ActionRow onBack={onBack} onNext={handleComplete} nextLabel="Submit for Verification" isComplete />
       </div>
     </div>
   );
