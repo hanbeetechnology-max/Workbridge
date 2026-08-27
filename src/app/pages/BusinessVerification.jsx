@@ -37,9 +37,65 @@ const SELECT =
 // Main component
 // ════════════════════════════════════════════════════════════════════════════
 
+// Per-business-type document requirements — a sole proprietor was never
+// incorporated with the MCA and has no "Company PAN"; most partnership
+// firms are legally unregistered (a Partnership Deed, not a Registrar of
+// Firms certificate); GST is turnover-threshold-based for every type, not
+// something every business has. Driving Step 2/Step 3's field labels and
+// which upload blocks even appear off ONE lookup here keeps the "what does
+// this business type actually have" logic in one place instead of
+// scattered conditionals.
+const BUSINESS_TYPE_DOCS = {
+  "Private Limited (Pvt. Ltd.)": {
+    panLabel: "Company PAN",
+    incorporation: { label: "Certificate of Incorporation", hint: "MCA-issued document · PDF preferred · Max 10 MB", required: true },
+    ownerRole: "Director",
+  },
+  // Same document profile as Pvt Ltd — both are MCA-incorporated
+  // companies with a real Certificate of Incorporation and Director-based
+  // ownership. What actually differs (min. 3 directors vs. 2, min. 7
+  // shareholders vs. 2, stock-exchange listing eligibility) doesn't change
+  // what documents this form needs to collect.
+  "Public Limited (Ltd.)": {
+    panLabel: "Company PAN",
+    incorporation: { label: "Certificate of Incorporation", hint: "MCA-issued document · PDF preferred · Max 10 MB", required: true },
+    ownerRole: "Director",
+  },
+  "One Person Company (OPC)": {
+    panLabel: "Company PAN",
+    incorporation: { label: "Certificate of Incorporation", hint: "MCA-issued document · PDF preferred · Max 10 MB", required: true },
+    ownerRole: "Director",
+  },
+  "Limited Liability Partnership (LLP)": {
+    panLabel: "LLP PAN",
+    incorporation: { label: "LLP Incorporation Certificate", hint: "MCA-issued document · PDF preferred · Max 10 MB", required: true },
+    ownerRole: "Designated Partner",
+  },
+  "Partnership Firm": {
+    panLabel: "Firm PAN",
+    // Most partnerships in India are legally unregistered — a Partnership
+    // Deed is the real, near-universal document; a Registrar of Firms
+    // certificate only exists for the minority that registered.
+    incorporation: { label: "Partnership Deed", hint: "Registration Certificate instead, if your firm is registered · PDF preferred · Max 10 MB", required: false },
+    ownerRole: "Partner",
+  },
+  "Sole Proprietorship": {
+    panLabel: "Your PAN",
+    // Not incorporated at all — nothing MCA-issued to ask for. Udyam/MSME
+    // registration or a Shop & Establishment licence is the real
+    // alternative proof most solo businesses actually hold, and it's
+    // optional, not a blocker, since plenty operate with neither.
+    incorporation: { label: "Udyam Registration or Shop & Establishment Certificate", hint: "Optional — upload if you have either · PDF preferred · Max 10 MB", required: false },
+    ownerRole: "Proprietor",
+  },
+};
+const DEFAULT_TYPE_DOCS = BUSINESS_TYPE_DOCS["Private Limited (Pvt. Ltd.)"];
+
 export default function BusinessVerification({ onComplete, onExit }) {
   const [activeStep, setActiveStep]         = useState(1);
   const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [businessType, setBusinessType]     = useState("");
+  const typeDocs = BUSINESS_TYPE_DOCS[businessType] ?? DEFAULT_TYPE_DOCS;
 
   // Step 2 file state
   const [gstFile, setGstFile]       = useState(null);
@@ -228,12 +284,16 @@ export default function BusinessVerification({ onComplete, onExit }) {
 
             {/* ── STEP 1: Company Details ── */}
             {activeStep === 1 && (
-              <Step1 onNext={goNext} INPUT={INPUT} LABEL={LABEL} SELECT={SELECT} />
+              <Step1
+                onNext={goNext} INPUT={INPUT} LABEL={LABEL} SELECT={SELECT}
+                businessType={businessType} setBusinessType={setBusinessType}
+              />
             )}
 
             {/* ── STEP 2: Legal Documents ── */}
             {activeStep === 2 && (
               <Step2
+                typeDocs={typeDocs}
                 gstFile={gstFile}     setGstFile={setGstFile}
                 incorpFile={incorpFile} setIncorpFile={setIncorpFile}
                 drag1={drag1} setDrag1={setDrag1}
@@ -245,6 +305,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
             {/* ── STEP 3: Identity & Banking ── */}
             {activeStep === 3 && (
               <Step3
+                typeDocs={typeDocs}
                 showAccNum={showAccNum} setShowAccNum={setShowAccNum}
                 onBack={goBack} onComplete={goNext}
                 INPUT={INPUT} LABEL={LABEL} SELECT={SELECT}
@@ -262,7 +323,8 @@ export default function BusinessVerification({ onComplete, onExit }) {
 // STEP 1 — Company Details
 // ════════════════════════════════════════════════════════════════════════════
 
-function Step1({ onNext, INPUT, LABEL, SELECT }) {
+function Step1({ onNext, INPUT, LABEL, SELECT, businessType, setBusinessType }) {
+  const panLabel = BUSINESS_TYPE_DOCS[businessType]?.panLabel ?? "PAN";
   return (
     <div>
       <StepHeader
@@ -281,9 +343,10 @@ function Step1({ onNext, INPUT, LABEL, SELECT }) {
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className={LABEL}>Business Type</label>
-            <select className={SELECT}>
+            <select className={SELECT} value={businessType} onChange={(e) => setBusinessType(e.target.value)}>
               <option value="">Select type</option>
               <option>Private Limited (Pvt. Ltd.)</option>
+              <option>Public Limited (Ltd.)</option>
               <option>Limited Liability Partnership (LLP)</option>
               <option>Sole Proprietorship</option>
               <option>Partnership Firm</option>
@@ -298,11 +361,11 @@ function Step1({ onNext, INPUT, LABEL, SELECT }) {
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
-            <label className={LABEL}>GST Number</label>
+            <label className={LABEL}>GST Number (if registered)</label>
             <input type="text" placeholder="22AAAAA0000A1Z5" className={INPUT} />
           </div>
           <div>
-            <label className={LABEL}>Company PAN</label>
+            <label className={LABEL}>{panLabel}</label>
             <input type="text" placeholder="AAAAA0000A" className={INPUT} />
           </div>
         </div>
@@ -331,7 +394,8 @@ function Step1({ onNext, INPUT, LABEL, SELECT }) {
 // STEP 2 — Legal Documents
 // ════════════════════════════════════════════════════════════════════════════
 
-function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1, drag2, setDrag2, onBack, onNext }) {
+function Step2({ typeDocs, gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1, drag2, setDrag2, onBack, onNext }) {
+  const { label: incorpLabel, hint: incorpHint, required: incorpRequired } = typeDocs.incorporation;
   return (
     <div>
       <StepHeader
@@ -342,12 +406,18 @@ function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-7 sm:p-8 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
 
-        {/* Upload Block 1: GST & PAN */}
+        {/* Upload Block 1: GST — always optional, every business type below
+            the turnover threshold legitimately has none. Kept separate
+            from PAN (previously bundled as one upload) so "optional"
+            actually reads as optional instead of implying both are
+            required together. */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-bold text-[#0A1128] dark:text-white text-sm">GST Certificate & Company PAN</h3>
-              <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">PDF or image · Max 10 MB each</p>
+              <h3 className="font-bold text-[#0A1128] dark:text-white text-sm">
+                GST Certificate <span className="font-normal text-slate-400 dark:text-slate-500">(optional — only if registered)</span>
+              </h3>
+              <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">PDF or image · Max 10 MB</p>
             </div>
             {gstFile && (
               <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
@@ -362,17 +432,26 @@ function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1
             dragging={drag1}
             setDragging={setDrag1}
             icon={<Upload className="w-6 h-6 text-slate-400" />}
-            label="Drag and drop your GST Certificate and Company PAN"
+            label="Drag and drop your GST Certificate"
             large
           />
         </div>
 
-        {/* Upload Block 2: Incorporation */}
+        {/* Upload Block 2: Incorporation proof — which document even
+            applies, and whether it's optional, depends entirely on
+            business type (see BUSINESS_TYPE_DOCS above): a Pvt Ltd/OPC/LLP
+            was actually incorporated with the MCA, a Partnership has a
+            Deed instead (most are legally unregistered), and a Sole
+            Proprietorship has nothing MCA-issued at all — Udyam/Shop &
+            Establishment is the closest optional alternative. */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-bold text-[#0A1128] dark:text-white text-sm">Certificate of Incorporation</h3>
-              <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">MCA-issued document · PDF preferred · Max 10 MB</p>
+              <h3 className="font-bold text-[#0A1128] dark:text-white text-sm">
+                {incorpLabel}
+                {!incorpRequired && <span className="font-normal text-slate-400 dark:text-slate-500"> (optional)</span>}
+              </h3>
+              <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5">{incorpHint}</p>
             </div>
             {incorpFile && (
               <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
@@ -387,7 +466,7 @@ function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1
             dragging={drag2}
             setDragging={setDrag2}
             icon={<FileText className="w-5 h-5 text-slate-400" />}
-            label="Drop your Certificate of Incorporation here"
+            label={`Drop your ${incorpLabel} here`}
             large={false}
           />
         </div>
@@ -405,9 +484,8 @@ function Step2({ gstFile, setGstFile, incorpFile, setIncorpFile, drag1, setDrag1
 // STEP 3 — Identity & Banking
 // ════════════════════════════════════════════════════════════════════════════
 
-function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SELECT }) {
+function Step3({ typeDocs, showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SELECT }) {
   const [idFile, setIdFile] = useState(null);
-  const [chequeFile, setChequeFile] = useState(null);
 
   return (
     <div>
@@ -419,13 +497,15 @@ function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SE
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-7 sm:p-8 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
 
-        {/* Director / Owner ID */}
+        {/* Owner ID — role label (Director / Designated Partner / Partner /
+            Proprietor) follows the selected business type; the underlying
+            requirement is the same natural person's ID either way. */}
         <div>
           <h3 className="font-bold text-[#0A1128] dark:text-white text-sm mb-4 flex items-center gap-2">
             <div className="w-5 h-5 bg-orange-50 border border-orange-100 rounded-full flex items-center justify-center flex-shrink-0 dark:bg-orange-500/10 dark:border-orange-900/40">
               <span className="text-[10px] font-bold text-[#FF6B2C]">1</span>
             </div>
-            Director / Owner Identity
+            {typeDocs.ownerRole} Identity
           </h3>
 
           <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
@@ -495,19 +575,10 @@ function Step3({ showAccNum, setShowAccNum, onBack, onComplete, INPUT, LABEL, SE
                 <input type="text" placeholder="HDFC0001234" className={INPUT} />
               </div>
             </div>
-
-            <div>
-              <label className={LABEL}>Cancelled Cheque or Bank Statement</label>
-              <DropZone
-                file={chequeFile}
-                setFile={setChequeFile}
-                dragging={false}
-                setDragging={() => {}}
-                icon={<Upload className="w-5 h-5 text-slate-400" />}
-                label="Upload a cancelled cheque for bank verification"
-                large={false}
-              />
-            </div>
+            {/* No cancelled-cheque/bank-statement upload here on purpose —
+                account number + IFSC above already identify the account;
+                a scanned cheque image adds friction without adding real
+                verification value beyond those two fields. */}
           </div>
         </div>
 
