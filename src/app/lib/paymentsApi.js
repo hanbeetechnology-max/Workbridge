@@ -1,11 +1,11 @@
-// Real CashFree Checkout + Route API calls — same apiFetch convention as
+// Real Cashfree Checkout + Route API calls — same apiFetch convention as
 // projectsApi.js/walletApi.js.
 import { apiFetch } from "./apiClient";
 
 // POST /api/projects/:id/checkout — server computes the amount
 // (budget + business_fee_pct), never trusted from the client. Idempotent:
 // calling this again on a project that's already PENDING_FUNDS via
-// CashFree just hands back the same order instead of erroring.
+// Cashfree just hands back the same order instead of erroring.
 export function createCheckoutOrder(projectId) {
   return apiFetch(`/api/projects/${projectId}/checkout`, { method: "POST" });
 }
@@ -14,7 +14,7 @@ export function createCheckoutOrder(projectId) {
 // signature now grants FUNDS_SECURED / confirms the subscription right away
 // (real HMAC proof, not just a client claim) — the server-to-server webhook
 // still runs independently afterwards as an idempotent backstop, so
-// CashFreeCheckoutTrigger's STATUS_CHANGED wait stays correct either way.
+// CashfreeCheckoutTrigger's STATUS_CHANGED wait stays correct either way.
 export function verifyPayment({ orderId, paymentId, signature }) {
   return apiFetch("/api/payments/verify", {
     method: "POST",
@@ -37,7 +37,7 @@ export function linkRouteAccount({ email, phone, beneficiaryName, legalBusinessN
 }
 
 // A worker's saved default payout destination (bank account+IFSC, or a UPI
-// VPA) — used to pay them directly via CashFreeX at project completion,
+// VPA) — used to pay them directly via Cashfree Payouts at project completion,
 // without needing the Route linked-account flow above (still blocked
 // pending RBI review). payoutMethod: "UPI" | "BANK_TRANSFER"; payoutDetails
 // is either the VPA string or "accountNumber · ifsc".

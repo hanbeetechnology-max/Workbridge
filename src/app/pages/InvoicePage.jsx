@@ -301,7 +301,7 @@ export default function InvoicePage() {
             <div className="flex items-center gap-2.5 border-t border-slate-100 bg-amber-50 p-6 sm:p-10 print:hidden">
               <ShieldCheck className="h-5 w-5 flex-shrink-0 text-amber-600" />
               <p className="text-sm font-semibold text-amber-800">
-                {project.funding_method === "CashFree"
+                {project.funding_method === "RAZORPAY"
                   ? "Confirming your payment with Cashfree — this updates automatically, usually within a few seconds."
                   : "Your transfer proof has been submitted — WorkBridge staff are verifying it now."}
               </p>
@@ -318,19 +318,19 @@ export default function InvoicePage() {
               worker viewing this invoice after a cancel-refund or a
               disputed refund saw a bare "Cancelled" badge with no mention
               of the money, no amount, nothing pointing at the real
-              CashFree_refund_id already stored on the project. */}
+              razorpay_refund_id already stored on the project. */}
           {project.status === "CANCELLED" && (isBusinessViewer || isWorkerViewer) && (
             <div className="border-t border-slate-100 bg-slate-50 p-6 sm:p-10">
               <div className="flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
                 <RotateCcw className="h-5 w-5 flex-shrink-0 text-slate-500" />
                 <div className="text-center">
                   <p className="text-sm font-bold text-slate-800">
-                    {isWorkerViewer ? "Project Cancelled" : project.CashFree_refund_id ? "Refunded" : "Project Cancelled"}
+                    {isWorkerViewer ? "Project Cancelled" : project.razorpay_refund_id ? "Refunded" : "Project Cancelled"}
                   </p>
                   <p className="text-xs text-slate-500">
                     {isWorkerViewer
                       ? `This project was cancelled — no payout occurs for it. Any secured funds were returned to ${project.business_name}.`
-                      : project.CashFree_refund_id
+                      : project.razorpay_refund_id
                         ? `${formatINR(budget)} was refunded to your original payment method. The ${businessFeePct}% platform fee is non-refundable, per our Terms.`
                         : `This project was cancelled before any funds were secured — nothing was charged.`}
                   </p>

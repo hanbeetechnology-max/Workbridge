@@ -27,7 +27,7 @@ import LockedCurrencyInput from "../common/LockedCurrencyInput";
 import VerificationFeesTable from "../shared/VerificationFeesTable";
 import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
 import { getSubscriptionStatus, getPayoutAccount, savePayoutDetails } from "../../lib/paymentsApi";
-// getRouteAccountStatus, linkRouteAccount — CashFree Route linked-account
+// getRouteAccountStatus, linkRouteAccount — Razorpay Route linked-account
 // feature, disabled (see the commented-out UI block further down this file).
 import { verifyPassword } from "../../lib/authApi";
 import { positiveCurrencySchema } from "../../utils/formValidation";
@@ -41,7 +41,7 @@ function formatINR(amount) {
 }
 
 // Password re-proof gate for CHANGING an already-saved payout destination
-// or linked CashFree account — a valid session (JWT) alone isn't treated as
+// or linked Razorpay account — a valid session (JWT) alone isn't treated as
 // enough for this specific action, since a shared/unlocked device would
 // have the session but not the password. Shown in place of the actual edit
 // form until verification succeeds; onVerified receives the short-lived
@@ -381,7 +381,7 @@ const withdrawalSchema = z.object({
 });
 
 // "Upgrade Subscription" tab commented out (not deleted) — subscriptions
-// are fully built and wired to real CashFree checkout (SubscriptionTab
+// are fully built and wired to real Cashfree checkout (SubscriptionTab
 // below), needed again later, just hidden from the UI for now per a
 // product decision to not surface or hint at subscription plans yet.
 const WALLET_TABS = [
@@ -423,7 +423,7 @@ export default function WorkerWallet() {
   const [showPayoutReverify, setShowPayoutReverify] = useState(false);
   const [payoutReverifyToken, setPayoutReverifyToken] = useState(null);
 
-  // CashFree Route linked-account fields — kept as plain controlled state
+  // Razorpay Route linked-account fields — kept as plain controlled state
   // (not react-hook-form) so each numeric/name field can filter its own
   // keystrokes as the worker types, rather than only rejecting on submit.
   const [routeAccount, setRouteAccount] = useState(null);
@@ -449,7 +449,7 @@ export default function WorkerWallet() {
         listProjects({ role: "worker", status: "COMPLETED" }),
         listWithdrawals(),
         getPayoutAccount(),
-        // getRouteAccountStatus() removed — the CashFree Route linked-account
+        // getRouteAccountStatus() removed — the Razorpay Route linked-account
         // feature it backed is disabled (see the commented-out UI block below).
       ]);
       setWallet(walletData);
@@ -506,7 +506,7 @@ export default function WorkerWallet() {
         bankIfsc: routeIfsc,
         reverifyToken: routeReverifyToken,
       });
-      setRouteAccount({ CashFreeAccountId: result.CashFreeAccountId, status: result.status });
+      setRouteAccount({ razorpayAccountId: result.razorpayAccountId, status: result.status });
       setShowRouteForm(false);
       setRouteReverifyToken(null);
     } catch (err) {
@@ -524,8 +524,8 @@ export default function WorkerWallet() {
   };
   const ROUTE_STATUS_LABELS = {
     ACTIVE: "Active — ready to receive automatic payouts",
-    PENDING: "Pending CashFree verification",
-    NEEDS_CLARIFICATION: "Needs additional documents — CashFree flagged this account",
+    PENDING: "Pending Razorpay verification",
+    NEEDS_CLARIFICATION: "Needs additional documents — Razorpay flagged this account",
     REJECTED: "Rejected — please link a different account",
   };
 
@@ -948,8 +948,8 @@ export default function WorkerWallet() {
         </AnimatePresence>
       </div>
 
-      {/* ── CashFree Linked Account (Route) UI — disabled. This was a
-          CashFree-specific "linked sub-account" concept (acc_XXXX) that
+      {/* ── Razorpay Linked Account (Route) UI — disabled. This was a
+          Razorpay-specific "linked sub-account" concept (acc_XXXX) that
           Cashfree has no equivalent for (confirmed: only Easy Split is
           Route-like, and neither worker nor business side needs it — see
           project_cashfree_master_verification_flow memory). It was also
@@ -969,7 +969,7 @@ export default function WorkerWallet() {
             {(!routeAccount || showRouteForm || showRouteReverify) && (
               <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 <Building2 className="h-3.5 w-3.5 text-[#1B3FAB] dark:text-blue-400" />
-                CashFree Linked Account
+                Razorpay Linked Account
               </p>
             )}
             {routeAccount ? (
@@ -979,7 +979,7 @@ export default function WorkerWallet() {
               </p>
             ) : (
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Link your bank account with CashFree so WorkBridge can automatically create a payout-ready account for you.
+                Link your bank account with Razorpay so WorkBridge can automatically create a payout-ready account for you.
               </p>
             )}
           </div>
@@ -997,7 +997,7 @@ export default function WorkerWallet() {
             className="flex min-h-[40px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             {showRouteForm || showRouteReverify ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-            {showRouteForm || showRouteReverify ? "Close" : routeAccount ? "Change" : "Link CashFree Account"}
+            {showRouteForm || showRouteReverify ? "Close" : routeAccount ? "Change" : "Link Razorpay Account"}
           </button>
         </div>
 
@@ -1120,7 +1120,7 @@ export default function WorkerWallet() {
                   {savingRoute ? "Linking…" : "Link Account"}
                 </button>
                 <p className="text-center text-xs text-slate-400 dark:text-slate-500">
-                  CashFree verifies this account (KYC) before it can receive automatic payouts — usually 24–48 hours.
+                  Razorpay verifies this account (KYC) before it can receive automatic payouts — usually 24–48 hours.
                 </p>
               </form>
             </motion.div>

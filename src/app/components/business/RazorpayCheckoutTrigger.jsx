@@ -4,9 +4,9 @@ import { Loader2, Zap } from "lucide-react";
 import { createCheckoutOrder, verifyPayment } from "../../lib/paymentsApi";
 import { getSocket } from "../../lib/socketClient";
 import { ApiError } from "../../lib/apiClient";
-import { loadCashFreeScript } from "../../lib/loadCashFreeScript";
+import { loadRazorpayScript } from "../../lib/loadRazorpayScript";
 
-// Real CashFree Checkout — the primary funding path (EscrowFundingDrawer
+// Real Razorpay Checkout — the primary funding path (EscrowFundingDrawer
 // stays as the manual bank-transfer fallback). This component owns the
 // full click-to-confirmed lifecycle, but is deliberately conservative
 // about what it trusts: the Checkout success `handler` callback is
@@ -16,7 +16,7 @@ import { loadCashFreeScript } from "../../lib/loadCashFreeScript";
 // component hears the resulting STATUS_CHANGED socket event. A payment
 // that captures but whose webhook is slow/misconfigured will sit in
 // "confirming" rather than falsely claiming success.
-export default function CashFreeCheckoutTrigger({ project, amount, businessName, businessEmail, businessPhone, onSecured }) {
+export default function RazorpayCheckoutTrigger({ project, amount, businessName, businessEmail, businessPhone, onSecured }) {
   const [phase, setPhase] = useState("idle"); // idle | loading | awaiting | confirmed
   const timeoutRef = useRef(null);
 
@@ -53,10 +53,10 @@ export default function CashFreeCheckoutTrigger({ project, amount, businessName,
   const handlePay = async () => {
     setPhase("loading");
     try {
-      await loadCashFreeScript();
+      await loadRazorpayScript();
       const order = await createCheckoutOrder(project.id);
 
-      const CashFree = new window.CashFree({
+      const razorpay = new window.Razorpay({
         key: order.keyId,
         amount: order.amountPaise,
         currency: order.currency,
@@ -69,9 +69,9 @@ export default function CashFreeCheckoutTrigger({ project, amount, businessName,
           setPhase("awaiting");
           try {
             const { verified } = await verifyPayment({
-              orderId: response.CashFree_order_id,
-              paymentId: response.CashFree_payment_id,
-              signature: response.CashFree_signature,
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
             });
             if (!verified) {
               // Doesn't roll anything back — the webhook is still the real
@@ -89,12 +89,12 @@ export default function CashFreeCheckoutTrigger({ project, amount, businessName,
         },
       });
 
-      CashFree.on("payment.failed", () => {
+      razorpay.on("payment.failed", () => {
         toast.error("Payment failed — you can try again.");
         setPhase("idle");
       });
 
-      CashFree.open();
+      razorpay.open();
       setPhase((p) => (p === "loading" ? "idle" : p));
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : err.message || "Could not start checkout.");
