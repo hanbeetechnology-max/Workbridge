@@ -720,7 +720,7 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
                 Funds in Process
               </h3>
               {heldProjects.length === 0 ? (
-                <p className="text-xs text-slate-600 dark:text-slate-400">No funds currently held in escrow.</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">No funds currently held as Secured Funds.</p>
               ) : (
                 <div className="space-y-4">
                   {heldProjects.map((p) => {

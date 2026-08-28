@@ -344,7 +344,7 @@ function PaymentApprovalModal({ project, isSubmitting, submitError, onClose, onC
                 <ShieldCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500 dark:text-blue-400" />
                 <p className="text-xs leading-relaxed text-blue-700 dark:text-blue-400" style={DATA_FONT}>
                   This tells WorkBridge to pay {project.worker_name} out of the funds you already
-                  secured in escrow — our team completes the transfer shortly after you confirm.
+                  secured — our team completes the transfer shortly after you confirm.
                 </p>
               </div>
 
@@ -1300,7 +1300,7 @@ export default function BusinessProjects({ onOpenChat }) {
       const updated = await apiRequestRelease(id);
       setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
       setPaymentProject(null);
-      toast.success("Release requested — WorkBridge will pay the worker out of escrow shortly.");
+      toast.success("Release requested — WorkBridge will pay the worker out of Secured Funds shortly.");
     } catch (err) {
       const message = err.message || "Release request failed — the project may not be in Files Submitted status yet.";
       setCompleteError(message);

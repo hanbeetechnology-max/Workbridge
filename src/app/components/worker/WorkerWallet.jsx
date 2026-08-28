@@ -847,7 +847,7 @@ export default function WorkerWallet() {
             ) : (
               <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-400">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                Action Required: link your payout destination to receive escrow disbursements.
+                Action Required: link your payout destination to receive Secured Funds disbursements.
               </p>
             )}
           </div>

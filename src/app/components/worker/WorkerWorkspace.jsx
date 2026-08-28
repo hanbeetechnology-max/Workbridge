@@ -704,7 +704,7 @@ export default function WorkerWorkspace() {
                   lockedMessage={
                     selectedTask.status === "FUNDS_SECURED"
                       ? 'Click "Start Work" above to begin — you can share deliverables once work is underway.'
-                      : "Waiting on the business to secure funds in escrow — you'll be able to start work once that's done."
+                      : "Waiting on the business to secure funds — you'll be able to start work once that's done."
                   }
                 />
               </motion.div>

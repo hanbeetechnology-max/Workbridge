@@ -404,7 +404,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
                   🔒 Fixed Price · Funds Secured Upfront
                 </div>
                 <p className="text-xs text-slate-400 dark:text-slate-500">
-                  WorkBridge is fixed-price only — the full budget below is held in escrow and released to the worker once you approve the delivered work. There's no hourly billing to switch to.
+                  WorkBridge is fixed-price only — the full budget below is held as Secured Funds and released to the worker once you approve the delivered work. There's no hourly billing to switch to.
                 </p>
 
                 <div className="grid grid-cols-2 gap-4">

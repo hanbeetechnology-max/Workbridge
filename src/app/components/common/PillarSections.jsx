@@ -42,7 +42,7 @@ const escrowLayers = [
   },
   {
     icon: ShieldCheck,
-    title: "Escrow Vault",
+    title: "Secured Vault",
     text: "Payment held safely with our Payment Partners until the business approves the delivered work.",
     accent: "#16A34A",
   },
@@ -247,7 +247,7 @@ export function HireTalentSection({ showLink = true, onSelect }) {
 export function EscrowSecuritySection() {
   return (
     <section className="wb-section" id="escrow-security">
-      <SectionHeader eyebrow="Escrow Security" title="Every rupee held safe until the work is done." />
+      <SectionHeader eyebrow="Secured Funds" title="Every rupee held safe until the work is done." />
 
       <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
         <ScrollReveal distance={20}>
