@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
     >
       <LegalSection id="introduction" title="1. Introduction">
         <p>
-          WorkBridge is a two-sided project marketplace connecting freelancers with businesses (the
+          WorkBridge is a two-sided project marketplace connecting Workers with businesses (the
           "<strong>Platform</strong>"), engineered, operated, and maintained by <strong>Hanbee Technologies</strong>
           ("<strong>Company</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>"). As the
           Platform's data controller and technology provider, Hanbee Technologies is responsible for collecting,

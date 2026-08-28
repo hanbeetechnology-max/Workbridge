@@ -102,7 +102,7 @@ export default function AdminDisputesTab() {
                 </div>
 
                 <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">
-                  <div className="flex items-center gap-1.5"><span className="text-slate-400 dark:text-slate-500 text-xs">Freelancer:</span><span className="font-medium text-slate-700 dark:text-slate-300 text-xs">{d.worker_name}</span></div>
+                  <div className="flex items-center gap-1.5"><span className="text-slate-400 dark:text-slate-500 text-xs">Worker:</span><span className="font-medium text-slate-700 dark:text-slate-300 text-xs">{d.worker_name}</span></div>
                   <span className="text-slate-200 dark:text-slate-700">·</span>
                   <div className="flex items-center gap-1.5"><span className="text-slate-400 dark:text-slate-500 text-xs">Business:</span><span className="font-medium text-slate-700 dark:text-slate-300 text-xs">{d.business_name}</span></div>
                 </div>
@@ -125,12 +125,12 @@ export default function AdminDisputesTab() {
                 {decision ? (
                   <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold mt-4">
                     <CheckCircle2 className="w-4 h-4" />
-                    {decision === "refund" ? "Refunded to business" : "Released to freelancer"}
+                    {decision === "refund" ? "Refunded to business" : "Released to Worker"}
                   </div>
                 ) : confirming?.id === d.id ? (
                   <div className="mt-4 space-y-2.5 rounded-lg border border-amber-200 bg-amber-50/60 p-3.5 dark:border-amber-900/40 dark:bg-amber-950/20">
                     <p className="text-xs font-semibold text-amber-800 dark:text-amber-400">
-                      Confirm: {confirming.resolution === "refund" ? `refund ${formatINR(d.budget)} to the business` : `release the payout to the freelancer`} — this moves real money and can't be undone.
+                      Confirm: {confirming.resolution === "refund" ? `refund ${formatINR(d.budget)} to the business` : `release the payout to the Worker`} — this moves real money and can't be undone.
                     </p>
                     <textarea
                       value={resolutionNote}

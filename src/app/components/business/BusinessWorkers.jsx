@@ -276,7 +276,7 @@ export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjec
                           </h3>
                           {w.verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 flex-shrink-0" />}
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{w.title || "Freelancer"}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{w.title || "Worker"}</p>
                         {w.rating != null && (
                           <div className="flex items-center gap-1 mt-1">
                             <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />

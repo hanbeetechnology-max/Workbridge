@@ -35,7 +35,7 @@ const TIERS = [
   {
     id: "pro",
     name: "Pro",
-    tagline: "For consistent freelancers",
+    tagline: "For consistent Workers",
     price: "₹299",
     period: "/mo",
     icon: Ticket,

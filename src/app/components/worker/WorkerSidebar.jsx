@@ -96,7 +96,7 @@ export default function WorkerSidebar({ tab, onTabChange, onLogout }) {
           {!isCollapsed && (
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{currentUser?.name || "—"}</p>
-              <p className="truncate text-xs text-slate-400">{currentUser?.title || "Freelancer"}</p>
+              <p className="truncate text-xs text-slate-400">{currentUser?.title || "Worker"}</p>
             </div>
           )}
         </div>

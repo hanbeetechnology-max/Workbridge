@@ -190,7 +190,7 @@ function WorkerDetailDrawer({ project, onClose, onOpenChat }) {
                     {project.worker_name}
                   </h2>
                   <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400" style={DATA_FONT}>
-                    {profile?.title ?? "Freelancer"}
+                    {profile?.title ?? "Worker"}
                   </p>
                   {profile?.rating != null && (
                     <div className="mt-1.5 flex items-center gap-1.5">
@@ -1388,7 +1388,7 @@ export default function BusinessProjects({ onOpenChat }) {
           )
         );
       }
-      toast.success(`Invitation sent to ${rehireProject.worker_name || "the freelancer"} for a new task.`);
+      toast.success(`Invitation sent to ${rehireProject.worker_name || "the Worker"} for a new task.`);
       setRehireProject(null);
       loadProjects();
     } catch (err) {
@@ -1404,7 +1404,7 @@ export default function BusinessProjects({ onOpenChat }) {
     setRehireError("");
     try {
       await inviteWorkerToProject(projectId, rehireProject.worker_id, message.trim() || undefined);
-      toast.success(`Invite sent to ${rehireProject.worker_name || "the freelancer"}.`);
+      toast.success(`Invite sent to ${rehireProject.worker_name || "the Worker"}.`);
       setRehireProject(null);
       loadProjects();
     } catch (err) {
@@ -1869,7 +1869,7 @@ export default function BusinessProjects({ onOpenChat }) {
                       <Avatar initials={getInitials(p.worker_name)} avatarUrl={p.worker_avatar_url} bg="bg-[#1B3FAB]" size="w-10 h-10" text="text-xs" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-[#0F172A] dark:text-white">{p.title}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">with {p.worker_name || "a freelancer"}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">with {p.worker_name || "a Worker"}</p>
                       </div>
                     </div>
                     {/* Cancelled projects never had funds secured or a
@@ -2045,9 +2045,9 @@ export default function BusinessProjects({ onOpenChat }) {
       {rehireProject && (
         <Suspense fallback={<SuspenseFallback fullScreen={false} />}>
           <InviteWorkerModal
-            worker={{ id: rehireProject.worker_id, name: rehireProject.worker_name || "this freelancer" }}
+            worker={{ id: rehireProject.worker_id, name: rehireProject.worker_name || "this Worker" }}
             openJobs={openJobsForRehire}
-            title={`Rehire ${rehireProject.worker_name || "this freelancer"}`}
+            title={`Rehire ${rehireProject.worker_name || "this Worker"}`}
             onClose={() => {
               setRehireProject(null);
               setRehireError("");

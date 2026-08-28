@@ -140,7 +140,7 @@ function BehaviorLevelBento({ behaviorScore, verified }) {
           <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
             Trust &amp; Behavior Level
             <EconomyInfoTooltip title="How Behavior Score works">
-              <p>Starts at 1000 and moves from your real conduct as a freelancer — not your skill or job outcomes.</p>
+              <p>Starts at 1000 and moves from your real conduct as a Worker — not your skill or job outcomes.</p>
               <ul className="mt-2 list-disc space-y-1 pl-4">
                 <li>+15 for answering the pre-application quiz honestly when you apply</li>
                 <li>-5 if you skip the quiz and apply directly instead</li>
@@ -520,7 +520,7 @@ export default function WorkerProfile() {
                   </label>
                   <div className="pb-1">
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">{currentUser?.name}</h1>
-                    <p className="mt-1 text-lg font-medium text-slate-500 dark:text-slate-400">{currentUser?.title || "Freelancer"}</p>
+                    <p className="mt-1 text-lg font-medium text-slate-500 dark:text-slate-400">{currentUser?.title || "Worker"}</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
                       {profile.location && (
                         <span className="inline-flex items-center gap-1.5">

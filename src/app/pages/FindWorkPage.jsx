@@ -38,9 +38,9 @@ export default function FindWorkPage({ onSelect }) {
   return (
     <PillarPageLayout
       seoTitle="Find Freelance Jobs with Instant Payment | WorkBridge"
-      seoDescription="Browse freelance jobs from verified clients and get paid instantly. WorkBridge protects every payment so freelancers get paid on time, every time."
+      seoDescription="Browse freelance jobs from verified clients and get paid instantly. WorkBridge protects every payment so Workers get paid on time, every time."
       seoKeywords="Freelance Jobs, Instant Payment Freelance, Freelance Marketplace, Get Paid Fast"
-      eyebrow="For Freelancers"
+      eyebrow="For Workers"
       title="Find Freelance Jobs. Get Paid Instantly."
       subtitle="Connect with Top Clients & Get Paid Fast—Stop Waiting Weeks for Your Money"
       heroContent={

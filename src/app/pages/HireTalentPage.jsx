@@ -5,12 +5,12 @@ const FEATURES = [
   {
     icon: Zap,
     title: "Instant Matching",
-    description: "Post a brief and get matched with qualified, available freelancers in minutes, not weeks.",
+    description: "Post a brief and get matched with qualified, available Workers in minutes, not weeks.",
   },
   {
     icon: ShieldCheck,
     title: "Behavior Score Verification",
-    description: "Know Who You're Hiring: Live Behavior Scores Built on Real Freelancer Track Records",
+    description: "Know Who You're Hiring: Live Behavior Scores Built on Real Worker Track Records",
   },
   {
     icon: CheckCircle2,
@@ -20,7 +20,7 @@ const FEATURES = [
   {
     icon: Code2,
     title: "Hire Software Developers & More",
-    description: "From full-stack developers to designers to SEO specialists — verified freelancers across every skill you need.",
+    description: "From full-stack developers to designers to SEO specialists — verified Workers across every skill you need.",
   },
   {
     icon: Lock,
@@ -37,9 +37,9 @@ const FEATURES = [
 export default function HireTalentPage({ onSelect }) {
   return (
     <PillarPageLayout
-      seoTitle="Hire Verified Freelancers & Software Developers | WorkBridge"
-      seoDescription="Hire verified freelancers and software developers with confidence. Instant matching, Behavior Score verification, and payment held until you approve the work."
-      seoKeywords="Verified Freelancers, Hire Software Developers, Hire Freelancers, Freelance Talent"
+      seoTitle="Hire Verified Workers & Software Developers | WorkBridge"
+      seoDescription="Hire verified Workers and software developers with confidence. Instant matching, Behavior Score verification, and payment held until you approve the work."
+      seoKeywords="Verified Workers, Hire Software Developers, Hire Workers, Freelance Talent"
       eyebrow="For Businesses"
       title="Hire Verified Talent. Instantly."
       subtitle="Match with Pre-Vetted Pros. Check Their Trust Score. Keep Your Funds Safe Until You're Happy."

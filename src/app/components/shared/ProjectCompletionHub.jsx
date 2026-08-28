@@ -39,7 +39,7 @@ export default function ProjectCompletionHub({
 }) {
   // A dummy/incompletely-linked project can come back with no joined name —
   // never show the literal word "undefined" to a user.
-  const counterpartName = rawCounterpartName || "this freelancer";
+  const counterpartName = rawCounterpartName || "this Worker";
   const [localReview, setLocalReview] = useState(review ?? null);
   const [rehired, setRehired] = useState(false);
   const copy = COPY[perspective];

@@ -11,7 +11,7 @@ function RoleBadge({ role }) {
     return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">Business</span>;
   }
   if (role === "worker") {
-    return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400">Freelancer</span>;
+    return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400">Worker</span>;
   }
   return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Admin</span>;
 }
@@ -151,7 +151,7 @@ export default function AdminUsersTab() {
 
   const filtered = users.filter((item) => {
     if (filter === "All") return true;
-    if (filter === "Freelancers") return item.role === "worker";
+    if (filter === "Workers") return item.role === "worker";
     if (filter === "Businesses") return item.role === "business";
     return item.role === "admin";
   });
@@ -164,7 +164,7 @@ export default function AdminUsersTab() {
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">{users.length} account{users.length === 1 ? "" : "s"} on the platform</p>
         </div>
         <div className="flex gap-2">
-          {["All", "Freelancers", "Businesses", "Admins"].map((f) => (
+          {["All", "Workers", "Businesses", "Admins"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}

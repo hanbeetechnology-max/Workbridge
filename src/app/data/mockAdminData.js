@@ -37,13 +37,13 @@ export const LIVE_FEED_TEMPLATE = [
   { text: "AppCraft Labs opened a dispute on Mobile App Development", tone: "slate" },
 ];
 
-// Pending business/freelancer verifications (Verification Center)
+// Pending business/Worker verifications (Verification Center)
 export const VERIFY_QUEUE = [
-  { id: 1, name: "Kiran Patel", type: "Freelancer", docs: ["Aadhaar Card", "PAN Card", "B.Tech Cert"], submitted: "2 hours ago", face: "Matched", status: "pending" },
+  { id: 1, name: "Kiran Patel", type: "Worker", docs: ["Aadhaar Card", "PAN Card", "B.Tech Cert"], submitted: "2 hours ago", face: "Matched", status: "pending" },
   { id: 2, name: "Bloom Digital Pvt Ltd", type: "Business", docs: ["GST Certificate", "Company PAN", "Director ID"], submitted: "4 hours ago", face: "N/A", status: "pending" },
-  { id: 3, name: "Sneha Joshi", type: "Freelancer", docs: ["Aadhaar Card", "Portfolio PDF"], submitted: "5 hours ago", face: "Matched", status: "pending" },
+  { id: 3, name: "Sneha Joshi", type: "Worker", docs: ["Aadhaar Card", "Portfolio PDF"], submitted: "5 hours ago", face: "Matched", status: "pending" },
   { id: 4, name: "MetaGrowth Agency", type: "Business", docs: ["GST Certificate", "Company PAN"], submitted: "7 hours ago", face: "N/A", status: "review" },
-  { id: 5, name: "Ravi Krishnan", type: "Freelancer", docs: ["Aadhaar Card", "PAN Card", "Diploma"], submitted: "Yesterday", face: "Mismatch", status: "flagged" },
+  { id: 5, name: "Ravi Krishnan", type: "Worker", docs: ["Aadhaar Card", "PAN Card", "Diploma"], submitted: "Yesterday", face: "Mismatch", status: "flagged" },
 ];
 
 // AI confidence score shown per verification row — mismatched/flagged

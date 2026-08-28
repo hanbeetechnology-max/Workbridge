@@ -295,7 +295,7 @@ function AppRoutes() {
       <CelebrationOverlay
         variant="verified"
         title="Your business is verified"
-        message="Your company now carries the Verified badge across WorkBridge. Job posting is unlocked — freelancers can trust every brief you publish."
+        message="Your company now carries the Verified badge across WorkBridge. Job posting is unlocked — Workers can trust every brief you publish."
         primaryLabel="Post your first job"
         onPrimary={() => setShowVerifiedCelebration(false)}
         onClose={() => setShowVerifiedCelebration(false)}

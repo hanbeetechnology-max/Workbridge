@@ -9,7 +9,7 @@ import { getFeaturedReviews } from "../lib/reviewsApi";
 import { getInitials } from "../utils/formValidation";
 import { ApiError } from "../lib/apiClient";
 
-const ROLE_LABEL = { business: "Verified Business", worker: "Top Rated Freelancer" };
+const ROLE_LABEL = { business: "Verified Business", worker: "Top Rated Worker" };
 
 function WallOfLoveCard({ review }) {
   const roleLabel = ROLE_LABEL[review.reviewer_role] ?? review.reviewer_role;

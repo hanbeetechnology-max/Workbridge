@@ -236,7 +236,7 @@ export default function BusinessVerification({ onComplete, onExit }) {
         <div className="mt-12 flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/8">
           <Lock className="w-4 h-4 text-[#FF6B2C] flex-shrink-0 mt-0.5" />
           <p className="text-slate-400 text-xs leading-relaxed">
-            All submitted data is encrypted and reviewed only by our compliance team. Never shared with freelancers.
+            All submitted data is encrypted and reviewed only by our compliance team. Never shared with Workers.
           </p>
         </div>
 
@@ -837,7 +837,7 @@ function SecurityNote() {
       </div>
       <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">
         Your documents are encrypted and reviewed only by our compliance team. They are never
-        shared with freelancers or third parties.
+        shared with Workers or third parties.
       </p>
     </div>
   );

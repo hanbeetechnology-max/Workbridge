@@ -70,7 +70,7 @@ const PERKS = [
   {
     id: "featured-employer",
     name: "Featured Employer Spotlight",
-    description: "Puts your Company Profile in front of active freelancers",
+    description: "Puts your Company Profile in front of active Workers",
     icon: Star,
     color: "violet",
     tiers: [

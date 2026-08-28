@@ -87,7 +87,7 @@ export default function BusinessShareableProfile({ business }) {
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
           <div className="space-y-8">
             <section className="rounded-lg bg-white dark:bg-slate-900 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">Reviews from Freelancers</h2>
+              <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">Reviews from Workers</h2>
               <div className="mt-5">
                 {reviewsLoading ? (
                   <div className="flex justify-center py-6">

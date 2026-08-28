@@ -55,7 +55,7 @@ function RoleModal({ onSelect, onClose }) {
               <Briefcase className="w-[18px] h-[18px] text-[#FF6B2C]" />
             </div>
             <div>
-              <div className="font-bold text-[#0A1128] dark:text-white text-sm">Freelancer</div>
+              <div className="font-bold text-[#0A1128] dark:text-white text-sm">Worker</div>
               <div className="text-slate-400 text-xs">Find Freelance Work · Protected Payouts</div>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-300 ml-auto group-hover:text-[#FF6B2C] transition-colors" />

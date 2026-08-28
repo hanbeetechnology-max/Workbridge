@@ -115,7 +115,7 @@ export default function WorkerShareableProfile({ worker }) {
                 </div>
                 <div className="pb-1">
                   <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] sm:text-4xl dark:text-white">{worker.name}</h1>
-                  <p className="mt-2 text-lg font-semibold text-slate-700 dark:text-slate-300">{worker.title || "Freelancer"}</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-700 dark:text-slate-300">{worker.title || "Worker"}</p>
                   <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
                     {profile.location && (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-slate-800">

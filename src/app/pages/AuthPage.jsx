@@ -27,7 +27,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 const USER_CONFIG = {
-  worker: { label: "Freelancer", Icon: Briefcase, bg: "bg-[#FF6B2C]", shadow: "shadow-[#FF6B2C]/30" },
+  worker: { label: "Worker", Icon: Briefcase, bg: "bg-[#FF6B2C]", shadow: "shadow-[#FF6B2C]/30" },
   business: { label: "Business", Icon: Building2, bg: "bg-[#1B3FAB]", shadow: "shadow-[#1B3FAB]/30" },
   admin: { label: "Admin", Icon: Shield, bg: "bg-slate-700", shadow: "shadow-slate-500/20" },
 };
@@ -52,7 +52,7 @@ const REGISTER_BENEFITS = {
     "Get paid once your work is approved — funds are secured upfront",
   ],
   business: [
-    "Post real jobs and browse verified freelancer profiles",
+    "Post real jobs and browse verified Worker profiles",
     "Secure project funds upfront — pay only when you approve the work",
     "Track every project from application to payout in one place",
   ],

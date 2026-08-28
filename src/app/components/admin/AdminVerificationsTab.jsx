@@ -23,7 +23,7 @@ export default function AdminVerificationsTab() {
 
   const filtered = items.filter((item) => {
     if (filter === "All") return true;
-    if (filter === "Freelancers") return item.role === "worker";
+    if (filter === "Workers") return item.role === "worker";
     return item.role === "business";
   });
 
@@ -49,7 +49,7 @@ export default function AdminVerificationsTab() {
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">{items.length} account{items.length === 1 ? "" : "s"} awaiting verification</p>
         </div>
         <div className="flex gap-2">
-          {["All", "Freelancers", "Businesses"].map((f) => (
+          {["All", "Workers", "Businesses"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -107,7 +107,7 @@ export default function AdminVerificationsTab() {
                     </td>
                     <td className="px-5 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${item.role === "worker" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400"}`}>
-                        {item.role === "worker" ? "Freelancer" : "Business"}
+                        {item.role === "worker" ? "Worker" : "Business"}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{item.title || "—"}</td>

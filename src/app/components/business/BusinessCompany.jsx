@@ -47,7 +47,7 @@ const INITIAL_PROFILE = {
   email: "hr@retailx.in",
   bio: "RetailX is India's fastest-growing D2C e-commerce enabler, powering 500+ brands with end-to-end technology solutions — from inventory management and payment processing to last-mile logistics. We work with brands across fashion, food, electronics, and lifestyle at every stage from seed to Series C.",
   culture:
-    "We move fast, ship often, and believe in outcome-driven work. Our team spans 12 cities across India — remote-first, async-friendly, and deeply collaborative. Freelancers are embedded into our squads and treated as core team members for the full duration of the project.",
+    "We move fast, ship often, and believe in outcome-driven work. Our team spans 12 cities across India — remote-first, async-friendly, and deeply collaborative. Workers are embedded into our squads and treated as core team members for the full duration of the project.",
 };
 
 const COMPANY_JOBS = [

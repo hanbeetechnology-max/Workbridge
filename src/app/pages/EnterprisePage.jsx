@@ -39,7 +39,7 @@ export default function EnterprisePage({ onSelect }) {
     <PillarPageLayout
       seoTitle="Enterprise Freelance Solutions | Scale Your Team with WorkBridge"
       seoDescription="Scale your team with WorkBridge Enterprise — dedicated account management, bulk hiring, and Service Level Agreements built for organizations."
-      seoKeywords="Enterprise Freelance Solutions, Scale Team, Bulk Hiring, Enterprise Freelancers"
+      seoKeywords="Enterprise Freelance Solutions, Scale Team, Bulk Hiring, Enterprise Workers"
       eyebrow="For Enterprise"
       title="Scale Your Team with Enterprise Freelance Solutions"
       subtitle="Enterprise-Grade Hiring: Bulk Tools, Dedicated Support & Custom SLAs for Scaling Teams"

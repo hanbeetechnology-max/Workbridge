@@ -105,7 +105,7 @@ function InvoicesTab({ projects, loading, loadError }) {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-slate-900 dark:text-white">{r.project}</p>
               <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                with {r.worker || "a freelancer"} · {new Date(r.at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+                with {r.worker || "a Worker"} · {new Date(r.at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
               </p>
             </div>
             <span className={`inline-flex flex-shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-bold ${TONE_PILL[meta.tone]}`}>
@@ -364,7 +364,7 @@ function TrustTab({ isVerified }) {
           </p>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {isVerified
-              ? "Your company carries the Verified badge across WorkBridge — freelancers can trust every brief you publish."
+              ? "Your company carries the Verified badge across WorkBridge — Workers can trust every brief you publish."
               : 'Use "Get Business Verified" in the sidebar to start — the badges below build on top of that.'}
           </p>
         </div>

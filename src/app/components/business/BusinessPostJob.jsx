@@ -813,14 +813,14 @@ function PostJobGate({ onVerify }) {
       </h2>
       <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mb-8 leading-relaxed">
         You need to verify your business before you can post jobs on WorkBridge.
-        It's a <strong className="text-slate-700 dark:text-slate-200">one-time process</strong> that protects freelancers
+        It's a <strong className="text-slate-700 dark:text-slate-200">one-time process</strong> that protects Workers
         and keeps the platform limited to real, legitimate companies.
       </p>
 
       <div className="bg-white border border-slate-100 rounded-2xl p-6 max-w-sm w-full mb-8 shadow-sm text-left space-y-3 dark:bg-slate-900 dark:border-slate-800">
         {[
           { emoji: "Shield", text: "Keeps fake and fraudulent job listings off the platform" },
-          { emoji: "Trust", text: "Gives freelancers a reason to trust your listing" },
+          { emoji: "Trust", text: "Gives Workers a reason to trust your listing" },
           { emoji: "Launch", text: "Lets you post as many jobs as you want" },
           { emoji: "Fast", text: "One-time check, done in minutes" },
         ].map(({ emoji, text }, i) => (
