@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Info, Plus, Settings2, ShieldAlert, Lock, ShieldX, Trash2, X } from "lucide-react";
-import { INITIAL_TEAM } from "../../data/mockAdminData";
+import { AlertCircle, Loader2, Plus, Settings2, ShieldAlert, ShieldCheck, Trash2, X } from "lucide-react";
+import { listTeam, addTeamMember, removeTeamMember, updateAdminPermissions } from "../../lib/adminApi";
+import { ApiError } from "../../lib/apiClient";
 
-const ROLE_BADGE = {
-  "Super Admin": "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
-  "Tier 1 Support": "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-  "Dispute Specialist": "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400",
-};
+// A "Super Admin" is just the real full-permission state — can_ban_users
+// AND can_release_funds both true, the default for every new admin. No
+// separate role value exists in the DB; this UI mirrors that instead of
+// pretending there's a richer role system (Tier 1 Support / Dispute
+// Specialist) than the two real flags updateAdminPermissions actually
+// controls — the previous version of this screen promised 7 granular
+// toggles when only 2 were ever real.
+function isSuperAdmin(member) {
+  return Boolean(member.can_ban_users && member.can_release_funds);
+}
 
-function ToggleSwitch({ checked, onChange, disabled, dimmed }) {
+function ToggleSwitch({ checked, onChange, disabled }) {
   return (
     <div
       role="switch"
@@ -22,12 +28,12 @@ function ToggleSwitch({ checked, onChange, disabled, dimmed }) {
         event.preventDefault();
         onChange();
       }}
-      className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ease-in-out ${
-        disabled ? "cursor-not-allowed" : "cursor-pointer"
-      } ${dimmed ? "opacity-60 grayscale" : ""} ${checked ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"}`}
+      className={`flex h-6 w-12 items-center rounded-full p-1 transition-colors duration-300 ease-in-out ${
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+      } ${checked ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"}`}
     >
       <div
-        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
+        className={`h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-in-out ${
           checked ? "translate-x-6" : "translate-x-0"
         }`}
       />
@@ -35,37 +41,26 @@ function ToggleSwitch({ checked, onChange, disabled, dimmed }) {
   );
 }
 
-// The Access Control Matrix — unchanged real logic from before this
-// redesign, just moved from a permanent second column into a modal opened
-// per-row via the table's "Manage" action, so the table itself can stay a
-// clean 4-column RBAC list without losing this detail.
-function PermissionsModal({ member, onClose, onTogglePermission }) {
+function PermissionsModal({ member, busy, error, onClose, onToggle }) {
   if (!member) return null;
-  const isSuper = member.role === "Super Admin";
-  const isSupport = member.role === "Tier 1 Support" || member.name.toLowerCase().includes("support");
+  const isSuper = isSuperAdmin(member);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="wb-scroll-clean max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/70 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        className="w-full max-w-md overflow-hidden rounded-2xl border border-white/70 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
           <div>
-            <h2 className="text-lg font-extrabold text-[#0A1128] dark:text-white font-display">
-              Access Control Matrix
-            </h2>
+            <h2 className="text-lg font-extrabold text-[#0A1128] dark:text-white">Permissions</h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Permissions for <span className="font-semibold text-slate-700 dark:text-slate-300">{member.name}</span>
-              {" — "}
-              <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[member.role] ?? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"}`}>
-                {member.role}
-              </span>
+              For <span className="font-semibold text-slate-700 dark:text-slate-300">{member.name}</span>
             </p>
             {isSuper && (
               <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400">
                 <ShieldAlert className="h-3.5 w-3.5" />
-                Super Admins have full access — none of these permissions can be turned off for this role.
+                Super Admin — full access
               </span>
             )}
           </div>
@@ -74,63 +69,34 @@ function PermissionsModal({ member, onClose, onTogglePermission }) {
           </button>
         </div>
 
-        <div className="space-y-4 p-6">
-          <div className="rounded-2xl border border-slate-200 p-5 dark:border-slate-700">
-            <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">Content Moderation</h3>
-            {[
-              { key: "viewChats", label: "View Chats" },
-              { key: "redactMessages", label: "Redact Messages" },
-              { key: "sendWarnings", label: "Send Warnings" },
-            ].map(({ key, label }) => {
-              const checked = isSuper ? true : member.permissions[key];
-              return (
-                <div key={key} className="flex items-center justify-between border-b border-slate-100 py-3 last:border-0 dark:border-slate-800">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{label}</span>
-                  <ToggleSwitch checked={checked} disabled={isSuper} onChange={() => onTogglePermission(member.id, key)} />
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="rounded-2xl border border-red-200 p-5 dark:border-red-900/40">
-            <div className="mb-1 flex items-center gap-2">
-              <h3 className="text-sm font-extrabold text-red-600 dark:text-red-400">Financial Escrow</h3>
-              <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:border-red-900/40 dark:bg-red-500/10 dark:text-red-400">HIGH RISK</span>
+        <div className="space-y-3 p-6">
+          {error && (
+            <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-xs text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+              <span>{error}</span>
             </div>
-            <div className={isSupport ? "rounded-xl bg-slate-50/80 dark:bg-slate-800/50" : "rounded-xl"}>
-              {[
-                { key: "refundEscrow", label: "Refund Escrow" },
-                { key: "forceRelease", label: "Force Release Escrow" },
-              ].map(({ key, label }) => {
-                const checked = isSuper ? true : member.permissions[key];
-                return (
-                  <div key={key} className={`flex items-center justify-between border-b border-slate-100 px-3 py-3 last:border-0 dark:border-slate-800 ${isSupport ? "opacity-60 grayscale" : ""}`}>
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300">{label}</span>
-                    {isSupport ? (
-                      <Lock size={20} className="text-slate-400 dark:text-slate-500" />
-                    ) : (
-                      <ToggleSwitch checked={checked} disabled={isSuper} dimmed={!isSuper} onChange={() => onTogglePermission(member.id, key)} />
-                    )}
-                  </div>
-                );
-              })}
+          )}
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3.5 dark:border-slate-700">
+            <div>
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Ban Users</p>
+              <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">Security Monitor's ban/warn actions</p>
             </div>
+            {busy === "canBanUsers" ? (
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            ) : (
+              <ToggleSwitch checked={member.can_ban_users} onChange={() => onToggle(member, "canBanUsers")} />
+            )}
           </div>
-
-          <div className="rounded-2xl border border-slate-200 p-5 dark:border-slate-700">
-            <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">User Management</h3>
-            {[
-              { key: "approveKyc", label: "Approve KYC" },
-              { key: "banUsers", label: "Ban Users" },
-            ].map(({ key, label }) => {
-              const checked = isSuper ? true : member.permissions[key];
-              return (
-                <div key={key} className="flex items-center justify-between border-b border-slate-100 py-3 last:border-0 dark:border-slate-800">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{label}</span>
-                  <ToggleSwitch checked={checked} disabled={isSuper} onChange={() => onTogglePermission(member.id, key)} />
-                </div>
-              );
-            })}
+          <div className="flex items-center justify-between rounded-xl border border-red-200 px-4 py-3.5 dark:border-red-900/40">
+            <div>
+              <p className="text-sm font-bold text-red-700 dark:text-red-400">Force Release Escrow</p>
+              <p className="mt-0.5 text-xs text-red-500/80 dark:text-red-400/70">Refund/release real held funds — high risk</p>
+            </div>
+            {busy === "canReleaseFunds" ? (
+              <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+            ) : (
+              <ToggleSwitch checked={member.can_release_funds} onChange={() => onToggle(member, "canReleaseFunds")} />
+            )}
           </div>
         </div>
       </div>
@@ -139,62 +105,88 @@ function PermissionsModal({ member, onClose, onTogglePermission }) {
 }
 
 export default function AdminTeamTab() {
-  const [team, setTeam] = useState(INITIAL_TEAM);
+  const [team, setTeam] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [managingMemberId, setManagingMemberId] = useState(null);
+  const [permissionBusy, setPermissionBusy] = useState(null);
+  const [permissionError, setPermissionError] = useState("");
+  const [removingId, setRemovingId] = useState(null);
+  const [actionError, setActionError] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addBusy, setAddBusy] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  const load = () => {
+    listTeam()
+      .then(setTeam)
+      .catch((err) => setLoadError(err instanceof ApiError ? err.message : "Could not load the admin team."))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
 
   const managingMember = team.find((m) => m.id === managingMemberId) ?? null;
 
-  const togglePermission = (memberId, key) => {
-    setTeam((current) =>
-      current.map((member) =>
-        member.id === memberId
-          ? { ...member, permissions: { ...member.permissions, [key]: !member.permissions[key] } }
-          : member
-      )
-    );
+  const handleTogglePermission = async (member, key) => {
+    setPermissionBusy(key);
+    setPermissionError("");
+    try {
+      const updated = await updateAdminPermissions(member.id, { [key]: !member[key === "canBanUsers" ? "can_ban_users" : "can_release_funds"] });
+      setTeam((current) => current.map((m) => (m.id === member.id ? { ...m, ...updated } : m)));
+    } catch (err) {
+      setPermissionError(err instanceof ApiError ? err.message : "Could not update this permission.");
+    } finally {
+      setPermissionBusy(null);
+    }
   };
 
-  const revokeAccess = (member) => {
-    setTeam((current) => current.filter((m) => m.id !== member.id));
-    toast.success(`${member.name} removed from the roster — local change only, not yet persisted.`);
+  const handleRemove = async (member) => {
+    setRemovingId(member.id);
+    setActionError("");
+    try {
+      const updated = await removeTeamMember(member.id);
+      setTeam((current) => current.map((m) => (m.id === member.id ? { ...m, ...updated } : m)));
+      toast.success(`${member.name} removed from the admin team.`);
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : "Could not remove this team member.");
+    } finally {
+      setRemovingId(null);
+    }
   };
 
-  const handleAddMember = (event) => {
+  const handleAddMember = async (event) => {
     event.preventDefault();
-
     const formData = new FormData(event.currentTarget);
     const role = formData.get("role");
-    const name = formData.get("fullName");
-    const newMember = {
-      id: Date.now(),
-      name,
-      role,
-      status: "Active",
-      permissions: {
-        viewChats: true,
-        redactMessages: role === "Super Admin" || role === "Dispute Specialist",
-        sendWarnings: true,
-        refundEscrow: role === "Super Admin",
-        forceRelease: role === "Super Admin",
-        approveKyc: role === "Super Admin" || role === "Dispute Specialist",
-        banUsers: role === "Super Admin",
-      },
-    };
-
-    setTeam((current) => [...current, newMember]);
-    setIsAddModalOpen(false);
-    toast.success(`${name} added as ${role} — local change only, not yet persisted.`);
+    setAddBusy(true);
+    setAddError("");
+    try {
+      const created = await addTeamMember({
+        name: formData.get("fullName"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+        canBanUsers: true,
+        canReleaseFunds: role === "Super Admin",
+      });
+      setTeam((current) => [created, ...current]);
+      setIsAddModalOpen(false);
+      toast.success(`${created.name} added to the admin team.`);
+    } catch (err) {
+      setAddError(err instanceof ApiError ? err.message : "Could not add this team member.");
+    } finally {
+      setAddBusy(false);
+    }
   };
 
   return (
     <div className="p-7">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-[#0A1128] dark:text-white font-display">
-            Team Access
-          </h1>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Role-based permissions. Only Super Admins can touch escrow.</p>
+          <h1 className="font-display text-xl font-extrabold text-[#0A1128] dark:text-white">Team Access</h1>
+          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+            Real admin accounts. Only a Super Admin can add or remove team members — and can't remove another Super Admin.
+          </p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
@@ -205,85 +197,98 @@ export default function AdminTeamTab() {
         </button>
       </div>
 
-      <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-400">
-        <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-        <span>Changes here are local to this session — team management isn't wired to a backend yet, so a refresh resets the roster to its starting state.</span>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50">
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Member</th>
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Role</th>
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</th>
-                <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {team.map((member) => {
-                const initials = member.name
-                  .split(" ")
-                  .map((word) => word[0])
-                  .slice(0, 2)
-                  .join("")
-                  .toUpperCase();
-                const isSuper = member.role === "Super Admin";
-
-                return (
-                  <tr key={member.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white">
-                          {initials}
-                        </div>
-                        <p className="truncate text-sm font-bold text-[#0A1128] dark:text-white">{member.name}</p>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-block rounded-md px-2.5 py-1 text-xs font-bold ${ROLE_BADGE[member.role] ?? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"}`}>
-                        {member.role}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                        {member.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setManagingMemberId(member.id)}
-                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          <Settings2 className="h-3.5 w-3.5" />
-                          Manage
-                        </button>
-                        {!isSuper && (
-                          <button
-                            onClick={() => revokeAccess(member)}
-                            className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/40 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {actionError && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>{actionError}</span>
         </div>
-      </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#FF6B35] dark:border-slate-700" />
+        </div>
+      ) : loadError ? (
+        <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>{loadError}</span>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50">
+                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Member</th>
+                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Access</th>
+                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</th>
+                  <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {team.map((member) => {
+                  const initials = member.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+                  const isSuper = isSuperAdmin(member);
+                  return (
+                    <tr key={member.id} className={`transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40 ${!member.is_active ? "opacity-50" : ""}`}>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white">{initials}</div>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-[#0A1128] dark:text-white">{member.name}</p>
+                            <p className="truncate text-xs text-slate-400 dark:text-slate-500">{member.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold ${isSuper ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"}`}>
+                          {isSuper && <ShieldCheck className="h-3 w-3" />}
+                          {isSuper ? "Super Admin" : "Limited Admin"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${member.is_active ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"}`}>
+                          <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${member.is_active ? "bg-emerald-500" : "bg-slate-400"}`} />
+                          {member.is_active ? "Active" : "Removed"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => { setManagingMemberId(member.id); setPermissionError(""); }}
+                            disabled={!member.is_active}
+                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                          >
+                            <Settings2 className="h-3.5 w-3.5" />
+                            Manage
+                          </button>
+                          {member.is_active && !isSuper && (
+                            <button
+                              onClick={() => handleRemove(member)}
+                              disabled={removingId === member.id}
+                              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/40 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                            >
+                              {removingId === member.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <PermissionsModal
         member={managingMember}
+        busy={permissionBusy}
+        error={permissionError}
         onClose={() => setManagingMemberId(null)}
-        onTogglePermission={togglePermission}
+        onToggle={handleTogglePermission}
       />
 
       {isAddModalOpen && (
@@ -291,62 +296,47 @@ export default function AdminTeamTab() {
           <form onSubmit={handleAddMember} className="w-full max-w-md overflow-hidden rounded-2xl border border-white/70 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
               <h2 className="text-lg font-bold text-slate-950 dark:text-white">Add New Team Member</h2>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-                aria-label="Close add member modal"
-              >
+              <button type="button" onClick={() => setIsAddModalOpen(false)} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300" aria-label="Close">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="flex flex-col gap-4 p-6">
+              {addError && (
+                <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-xs text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                  <span>{addError}</span>
+                </div>
+              )}
               <label className="flex flex-col gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
                 Full Name
-                <input
-                  name="fullName"
-                  required
-                  className="rounded-lg border border-slate-300 p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
-                  placeholder="Enter full name"
-                />
+                <input name="fullName" required disabled={addBusy} className="rounded-lg border border-slate-300 p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400" placeholder="Enter full name" />
               </label>
-
               <label className="flex flex-col gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
                 Email Address
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  className="rounded-lg border border-slate-300 p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
-                  placeholder="name@company.com"
-                />
+                <input name="email" type="email" required disabled={addBusy} className="rounded-lg border border-slate-300 p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400" placeholder="name@company.com" />
               </label>
-
               <label className="flex flex-col gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
-                Role
-                <select
-                  name="role"
-                  required
-                  defaultValue="Tier 1 Support"
-                  className="rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-400 dark:focus:ring-slate-400"
-                >
-                  <option>Tier 1 Support</option>
-                  <option>Dispute Specialist</option>
+                Temporary Password
+                <input name="password" type="password" required minLength={8} disabled={addBusy} className="rounded-lg border border-slate-300 p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400" placeholder="Minimum 8 characters" />
+                <span className="font-normal text-xs text-slate-400 dark:text-slate-500">Share this with them directly — they can change it after signing in.</span>
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                Access Level
+                <select name="role" required defaultValue="Limited Admin" className="rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-400 dark:focus:ring-slate-400">
+                  <option>Limited Admin</option>
                   <option>Super Admin</option>
                 </select>
+                <span className="font-normal text-xs text-slate-400 dark:text-slate-500">Limited Admin can ban users but not touch escrow funds — fine-tune later via Manage.</span>
               </label>
             </div>
 
             <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700"
-              >
+              <button type="button" onClick={() => setIsAddModalOpen(false)} disabled={addBusy} className="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200 disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-700">
                 Cancel
               </button>
-              <button type="submit" className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-black dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+              <button type="submit" disabled={addBusy} className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+                {addBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Add Member
               </button>
             </div>

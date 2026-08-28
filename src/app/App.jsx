@@ -32,6 +32,7 @@ const WorkerDashboard = lazy(() => import("./pages/WorkerDashboard"));
 const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
 const BusinessVerification = lazy(() => import("./pages/BusinessVerification"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const AdminSignupPage = lazy(() => import("./pages/AdminSignupPage"));
 const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 
 function RouteFallback() {
@@ -210,6 +211,26 @@ function AppRoutes() {
           />
         }
       />
+      {/* Deliberately not linked from anywhere in the public UI (no landing-page
+          button ever calls handleSelect("admin")) — staff get this URL directly,
+          not discovered by browsing. Same AuthPage the /auth route above uses,
+          just pinned to admin mode instead of depending on userType state that
+          nothing before now ever set to "admin". */}
+      <Route
+        path="/admin-login"
+        element={
+          <AuthPage
+            userType="admin"
+            onSuccess={handleAuthSuccess}
+            onBack={() => navigate("/")}
+          />
+        }
+      />
+      {/* Also not linked anywhere — a distinct URL from /admin-login on
+          purpose, so a Tier-1 hire only ever gets the "create my own
+          account" link, never the sign-in one meant for people who already
+          have credentials. See AdminSignupPage.jsx's own comment. */}
+      <Route path="/admin/join" element={<AdminSignupPage />} />
       <Route
         path="/worker"
         element={

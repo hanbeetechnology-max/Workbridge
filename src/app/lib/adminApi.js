@@ -151,3 +151,21 @@ export function updateAdminPermissions(userId, { canBanUsers, canReleaseFunds } 
     body: { canBanUsers, canReleaseFunds },
   });
 }
+
+// Team Access (AdminTeamTab.jsx) — real roster, add, and remove. Only a
+// Super Admin (full permissions) can add/remove; removeTeamMember rejects
+// targeting another Super Admin server-side (see admin.controller.js).
+export function listTeam() {
+  return apiFetch("/api/admin/team");
+}
+
+export function addTeamMember({ name, email, password, phone, canBanUsers, canReleaseFunds }) {
+  return apiFetch("/api/admin/team", {
+    method: "POST",
+    body: { name, email, password, phone, canBanUsers, canReleaseFunds },
+  });
+}
+
+export function removeTeamMember(id) {
+  return apiFetch(`/api/admin/team/${id}`, { method: "DELETE" });
+}

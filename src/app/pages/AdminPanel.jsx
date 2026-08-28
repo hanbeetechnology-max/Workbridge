@@ -124,7 +124,9 @@ export default function AdminPanel({ onLogout }) {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">{currentUser?.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Super Administrator</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {currentUser?.can_ban_users && currentUser?.can_release_funds ? "Super Administrator" : "Admin"}
+              </p>
             </div>
             {currentUser?.avatar_url ? (
               <img src={currentUser.avatar_url} alt={currentUser.name} className="h-9 w-9 rounded-full object-cover" />
