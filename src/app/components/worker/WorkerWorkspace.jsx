@@ -9,6 +9,8 @@ import TimelineTracker from "../shared/TimelineTracker";
 import ProjectCompletionHub from "../shared/ProjectCompletionHub";
 import DeliverablesPanel from "../shared/DeliverablesPanel";
 import DeadlineCountdown from "../shared/DeadlineCountdown";
+import DisputeStatusCard from "../shared/DisputeStatusCard";
+import DisputeEvidenceUpload from "../shared/DisputeEvidenceUpload";
 import Avatar from "../shared/Avatar";
 import { useAuth } from "../../context/AuthContext";
 import { listProjects, updateProjectStatus } from "../../lib/projectsApi";
@@ -20,7 +22,10 @@ import { ApiError } from "../../lib/apiClient";
 import { getSocket } from "../../lib/socketClient";
 import { getInitials } from "../../utils/formValidation";
 
-const ACTIVE_STATUSES = new Set(["ACCEPTED", "PENDING_FUNDS", "FUNDS_SECURED", "WORK_IN_PROGRESS", "FILES_SUBMITTED", "PENDING_RELEASE"]);
+// DISPUTED stays in "active" (not history) — it's the one status where the
+// worker still has something to do (respond, see DisputeStatusCard) rather
+// than nothing left to act on.
+const ACTIVE_STATUSES = new Set(["ACCEPTED", "PENDING_FUNDS", "FUNDS_SECURED", "WORK_IN_PROGRESS", "FILES_SUBMITTED", "PENDING_RELEASE", "DISPUTED"]);
 
 // Deliverables are the worker's actual finished (or in-progress) work —
 // sharing one before Start Work has even been clicked doesn't match the
@@ -78,6 +83,11 @@ export default function WorkerWorkspace() {
   const [actionError, setActionError] = useState("");
   const [existingReview, setExistingReview] = useState(undefined);
   const [reviewError, setReviewError] = useState("");
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeEvidence, setDisputeEvidence] = useState([]);
+  const [disputing, setDisputing] = useState(false);
+  const [disputeError, setDisputeError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -333,6 +343,27 @@ export default function WorkerWorkspace() {
       setActionError(err instanceof ApiError ? err.message : "Could not update this project.");
     } finally {
       setAdvancing(false);
+    }
+  };
+
+  // Worker's counterpart to BusinessProjects.jsx's DisputeConfirmModal —
+  // same underlying PATCH /api/projects/:id {status:"DISPUTED", note}, just
+  // reachable from this side too so a business ghosting on approval/release
+  // isn't a dead end for the worker the way it was before this existed.
+  const handleRaiseDispute = async () => {
+    if (!selectedTask || disputing || !disputeReason.trim()) return;
+    setDisputing(true);
+    setDisputeError("");
+    try {
+      const updated = await updateProjectStatus(selectedTask.id, "DISPUTED", disputeReason.trim(), disputeEvidence);
+      patchProject(updated);
+      setDisputeOpen(false);
+      setDisputeReason("");
+      setDisputeEvidence([]);
+    } catch (err) {
+      setDisputeError(err instanceof ApiError ? err.message : "Could not raise a dispute — try again.");
+    } finally {
+      setDisputing(false);
     }
   };
 
@@ -660,6 +691,14 @@ export default function WorkerWorkspace() {
                       )}
                     </button>
                   )}
+                  {!["DISPUTED", "CANCELLED", "COMPLETED"].includes(selectedTask.status) && (
+                    <button
+                      onClick={() => setDisputeOpen(true)}
+                      className="text-xs font-semibold text-slate-400 underline-offset-2 transition-colors hover:text-red-600 hover:underline dark:text-slate-500 dark:hover:text-red-400"
+                    >
+                      Raise a Dispute
+                    </button>
+                  )}
                 </div>
             </header>
 
@@ -670,6 +709,7 @@ export default function WorkerWorkspace() {
                   <span>{actionError}</span>
                 </div>
               )}
+              <DisputeStatusCard project={selectedTask} currentUserId={currentUser?.id} onUpdated={patchProject} />
               <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -760,6 +800,64 @@ export default function WorkerWorkspace() {
           onPrimary={() => dismissCelebration()}
           onClose={() => dismissCelebration()}
         />
+      )}
+
+      {disputeOpen && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+          onClick={() => { if (!disputing) { setDisputeOpen(false); setDisputeError(""); } }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50 dark:border-red-900/40 dark:bg-red-500/10">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Raise a Dispute</h3>
+            </div>
+            <p className="mb-4 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
+              This pauses the project and hands it to WorkBridge for review — funds stay held until an admin resolves it.
+            </p>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              What's the issue?
+            </label>
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              rows={3}
+              maxLength={1000}
+              placeholder="e.g. Delivered files were approved days ago but the business still hasn't released payment."
+              disabled={disputing}
+              className="mb-3 w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-red-400 focus:ring-4 focus:ring-red-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+            />
+            <div className="mb-4">
+              <DisputeEvidenceUpload items={disputeEvidence} onChange={setDisputeEvidence} disabled={disputing} />
+            </div>
+            {disputeError && (
+              <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3.5 text-xs font-semibold text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+                {disputeError}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setDisputeOpen(false); setDisputeError(""); }}
+                disabled={disputing}
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRaiseDispute}
+                disabled={disputing || !disputeReason.trim()}
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-bold text-white shadow-md shadow-red-500/20 transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-600/60"
+              >
+                {disputing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Raise Dispute"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>

@@ -30,12 +30,28 @@ export function listDisputes() {
   return apiFetch("/api/admin/disputes");
 }
 
-export function resolveDispute(id, resolution, note) {
-  return apiFetch(`/api/admin/disputes/${id}/resolve`, { method: "POST", body: { resolution, note } });
+// workerAmount/businessRefundAmount only apply for resolution: "split" —
+// see admin.controller.js's resolveDispute.
+export function resolveDispute(id, resolution, note, workerAmount, businessRefundAmount) {
+  return apiFetch(`/api/admin/disputes/${id}/resolve`, {
+    method: "POST",
+    body: { resolution, note, workerAmount, businessRefundAmount },
+  });
 }
 
 export function listTransactions() {
   return apiFetch("/api/admin/transactions");
+}
+
+// "Who do I owe money to" — PAYOUT transactions that fell back to an
+// in-app wallet credit because Cashfree Payouts was unavailable/failed at
+// completion time, still needing a manual NEFT/RTGS transfer.
+export function listManualPayouts() {
+  return apiFetch("/api/admin/manual-payouts");
+}
+
+export function completeManualPayout(id, note) {
+  return apiFetch(`/api/admin/manual-payouts/${id}/complete`, { method: "POST", body: { note } });
 }
 
 // Fund Releases — projects a business has requested release for

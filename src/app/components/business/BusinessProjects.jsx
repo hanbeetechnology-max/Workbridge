@@ -59,6 +59,8 @@ import { getSocket } from "../../lib/socketClient";
 import { ApiError } from "../../lib/apiClient";
 import { motion, AnimatePresence } from "motion/react";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import DisputeEvidenceUpload from "../shared/DisputeEvidenceUpload";
+import DisputeStatusCard from "../shared/DisputeStatusCard";
 
 const HEADING_FONT = { fontFamily: "'Lexend', sans-serif" };
 const DATA_FONT = { fontFamily: "'Inter', sans-serif" };
@@ -493,7 +495,7 @@ function RequestRevisionModal({ project, note, onNoteChange, isSubmitting, submi
 }
 
 // ─── Raise dispute confirm modal ──────────────────────────────────────────────
-function DisputeConfirmModal({ project, isSubmitting, submitError, onClose, onConfirm }) {
+function DisputeConfirmModal({ project, reason, onReasonChange, evidence, onEvidenceChange, isSubmitting, submitError, onClose, onConfirm }) {
   // Portaled to document.body — see WorkerDetailDrawer's comment above for why.
   return createPortal(
     <AnimatePresence>
@@ -537,10 +539,27 @@ function DisputeConfirmModal({ project, isSubmitting, submitError, onClose, onCo
                 )}
               </div>
 
-              <p className="mb-5 text-[13px] leading-relaxed text-slate-700 dark:text-slate-300" style={DATA_FONT}>
+              <p className="mb-4 text-[13px] leading-relaxed text-slate-700 dark:text-slate-300" style={DATA_FONT}>
                 This pauses the project and hands it to WorkBridge for review — funds stay held until
                 an admin resolves the dispute. Use this only when a revision request isn't enough.
               </p>
+
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                What's the issue?
+              </label>
+              <textarea
+                value={reason}
+                onChange={(e) => onReasonChange(e.target.value)}
+                rows={3}
+                maxLength={1000}
+                placeholder="e.g. Delivered work doesn't match the agreed brief and the worker hasn't responded to two revision requests."
+                disabled={isSubmitting}
+                className="mb-3 w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-red-400 focus:ring-4 focus:ring-red-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+              />
+
+              <div className="mb-5">
+                <DisputeEvidenceUpload items={evidence} onChange={onEvidenceChange} disabled={isSubmitting} />
+              </div>
 
               {submitError && (
                 <div
@@ -561,7 +580,7 @@ function DisputeConfirmModal({ project, isSubmitting, submitError, onClose, onCo
                 </button>
                 <button
                   onClick={onConfirm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !reason.trim()}
                   className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-bold text-white shadow-md shadow-red-500/20 transition-all active:scale-[0.98] hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-600/60"
                 >
                   {isSubmitting ? (
@@ -1023,6 +1042,8 @@ export default function BusinessProjects({ onOpenChat }) {
   const [submittingRevisionId, setSubmittingRevisionId] = useState(null);
   const [revisionError, setRevisionError] = useState(null);
   const [disputeProject, setDisputeProject] = useState(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeEvidence, setDisputeEvidence] = useState([]);
   const [submittingDisputeId, setSubmittingDisputeId] = useState(null);
   const [disputeError, setDisputeError] = useState(null);
   const [refundProject, setRefundProject] = useState(null);
@@ -1254,14 +1275,21 @@ export default function BusinessProjects({ onOpenChat }) {
   };
 
   const handleConfirmDispute = async () => {
-    if (!disputeProject || submittingDisputeId) return;
+    if (!disputeProject || submittingDisputeId || !disputeReason.trim()) return;
     const id = disputeProject.id;
     setSubmittingDisputeId(id);
     setDisputeError(null);
     try {
-      const updated = await apiUpdateProjectStatus(id, "DISPUTED");
-      setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      const updated = await apiUpdateProjectStatus(id, "DISPUTED", disputeReason.trim(), disputeEvidence);
+      // Merge, don't replace — updateProjectStatus returns a bare `RETURNING *`
+      // row (see projects.repository.js's raiseDispute), missing the
+      // worker_name/business_name/avatar fields only the joined list query
+      // provides. A plain replace here wiped those, breaking DisputeStatusCard's
+      // "who raised this" attribution and the card's own name/avatar.
+      setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...updated } : p)));
       setDisputeProject(null);
+      setDisputeReason("");
+      setDisputeEvidence([]);
     } catch (err) {
       setDisputeError(err.message || "Couldn't raise a dispute — try again.");
     } finally {
@@ -1607,11 +1635,12 @@ export default function BusinessProjects({ onOpenChat }) {
                     }`}
                   >
                     {isDisputed && (
-                      <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-5 py-2.5 dark:border-red-900/40 dark:bg-red-950/30">
-                        <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-red-500 dark:text-red-400" />
-                        <p className="text-xs font-bold text-red-600 dark:text-red-400">
-                          Dispute raised · Funds stay held until WorkBridge reviews this project.
-                        </p>
+                      <div className="border-b border-red-100 bg-red-50/40 p-4 dark:border-red-900/40 dark:bg-red-950/10">
+                        <DisputeStatusCard
+                          project={p}
+                          currentUserId={currentUser?.id}
+                          onUpdated={(updated) => setProjects((prev) => prev.map((row) => (row.id === updated.id ? { ...row, ...updated } : row)))}
+                        />
                       </div>
                     )}
 
@@ -2004,12 +2033,18 @@ export default function BusinessProjects({ onOpenChat }) {
 
       <DisputeConfirmModal
         project={disputeProject}
+        reason={disputeReason}
+        onReasonChange={setDisputeReason}
+        evidence={disputeEvidence}
+        onEvidenceChange={setDisputeEvidence}
         isSubmitting={submittingDisputeId === disputeProject?.id}
         submitError={disputeError}
         onClose={() => {
           if (submittingDisputeId) return;
           setDisputeProject(null);
           setDisputeError(null);
+          setDisputeReason("");
+          setDisputeEvidence([]);
         }}
         onConfirm={handleConfirmDispute}
       />

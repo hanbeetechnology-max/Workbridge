@@ -95,8 +95,19 @@ export function createProject({
 // Non-terminal FSM steps only — INVITED->ACCEPTED (worker),
 // ACCEPTED->WORK_IN_PROGRESS/FILES_SUBMITTED (worker), CANCELLED/DISPUTED.
 // FUNDS_SECURED and COMPLETED go through their own atomic endpoints below.
-export function updateProjectStatus(id, status, note) {
-  return apiFetch(`/api/projects/${id}`, { method: "PATCH", body: note ? { status, note } : { status } });
+export function updateProjectStatus(id, status, note, evidence) {
+  const body = { status };
+  if (note) body.note = note;
+  if (evidence?.length) body.evidence = evidence;
+  return apiFetch(`/api/projects/${id}`, { method: "PATCH", body });
+}
+
+// The accused party's one-shot structured response to a dispute — see
+// projects.controller.js's raiseDisputeRebuttal.
+export function submitDisputeRebuttal(id, statement, evidence) {
+  const body = { statement };
+  if (evidence?.length) body.evidence = evidence;
+  return apiFetch(`/api/projects/${id}/dispute/rebuttal`, { method: "POST", body });
 }
 
 // The business's real transfer proof — UTR/transaction ID + a screenshot
