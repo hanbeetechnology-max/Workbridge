@@ -8,9 +8,9 @@ import { loadCashfreeScript, getCashfreeMode } from "../../lib/loadCashfreeScrip
 
 // Real Cashfree Checkout — the primary funding path (EscrowFundingDrawer
 // stays as the manual bank-transfer fallback). Same trust boundary as the
-// Razorpay version this replaced: opening the checkout modal and it
+// CashFree version this replaced: opening the checkout modal and it
 // closing without an error is NOT proof of payment — Cashfree has no
-// client-side signature to verify the way Razorpay's Checkout handler
+// client-side signature to verify the way CashFree's Checkout handler
 // callback did, so this component is even more strictly webhook-only now.
 // The project only actually becomes FUNDS_SECURED when the server-to-
 // server webhook fires (cashfreeWebhook.controller.js) and this component

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
+  CornerUpLeft,
   ExternalLink,
   Image as ImageIcon,
   Link2,
@@ -182,13 +183,43 @@ function SystemNoticeRow({ message }) {
   );
 }
 
-function MessageRow({ message, isMine, onPreview }) {
+// The quoted strip a reply carries at the top of its own bubble — same
+// idea as WhatsApp's reply preview, just rendered inline instead of a
+// separate scroll-to-original interaction (the merged thread can span many
+// projects/weeks, so "jump to it" is a bigger feature than this needed to
+// be for a first pass).
+function ReplyPreview({ message, isMine }) {
+  if (!message.reply_to_message_id) return null;
+  const snippet = message.reply_to_is_attachment ? "📎 Attachment" : message.reply_to_body;
+  return (
+    <div
+      className={`mb-1.5 w-[220px] max-w-[60vw] rounded-lg border-l-2 px-2.5 py-1.5 text-xs ${
+        isMine ? "border-white/50 bg-white/10 text-white/80" : "border-[#1B3FAB]/40 bg-slate-100 text-slate-500 dark:border-blue-400/40 dark:bg-slate-700/60 dark:text-slate-400"
+      }`}
+    >
+      <p className="truncate font-bold">{message.reply_to_sender_name ?? "Deleted message"}</p>
+      <p className="truncate">{snippet ?? "Message unavailable"}</p>
+    </div>
+  );
+}
+
+function MessageRow({ message, isMine, onPreview, onReply }) {
   const time = new Date(message.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 
   if (message.is_system_notice) return <SystemNoticeRow message={message} />;
 
   return (
-    <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+    <div className={`group flex items-center gap-1.5 ${isMine ? "justify-end" : "justify-start"}`}>
+      {!isMine && (
+        <button
+          type="button"
+          onClick={() => onReply(message)}
+          aria-label="Reply"
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-500 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+        >
+          <CornerUpLeft className="h-3.5 w-3.5" />
+        </button>
+      )}
       <div className={`flex max-w-[78%] flex-col gap-1 ${isMine ? "items-end" : "items-start"}`}>
         {message.submission_id ? (
           <AttachmentBubble message={message} isMine={isMine} onPreview={onPreview} />
@@ -198,11 +229,22 @@ function MessageRow({ message, isMine, onPreview }) {
               isMine ? "rounded-br-lg bg-[#1B3FAB] text-white" : "rounded-bl-lg border border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             }`}
           >
+            <ReplyPreview message={message} isMine={isMine} />
             {message.body}
           </div>
         )}
         <span className="px-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500">{time}</span>
       </div>
+      {isMine && (
+        <button
+          type="button"
+          onClick={() => onReply(message)}
+          aria-label="Reply"
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-500 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+        >
+          <CornerUpLeft className="h-3.5 w-3.5" />
+        </button>
+      )}
     </div>
   );
 }
@@ -210,7 +252,7 @@ function MessageRow({ message, isMine, onPreview }) {
 // Walks the chronological message list once and threads a day divider in
 // wherever the calendar date changes — messages themselves are never
 // reordered or re-grouped, this only inserts markers between them.
-function renderMessageRows(messages, currentUserId, onPreview) {
+function renderMessageRows(messages, currentUserId, onPreview, onReply) {
   const rows = [];
   let lastDay = null;
   for (const message of messages) {
@@ -220,7 +262,7 @@ function renderMessageRows(messages, currentUserId, onPreview) {
       lastDay = day;
     }
     rows.push(
-      <MessageRow key={message.id} message={message} isMine={message.sender_id === currentUserId} onPreview={onPreview} />
+      <MessageRow key={message.id} message={message} isMine={message.sender_id === currentUserId} onPreview={onPreview} onReply={onReply} />
     );
   }
   return rows;
@@ -279,6 +321,8 @@ export default function ChatThread({
   const [attachCaption, setAttachCaption] = useState("");
   const [attachImageFile, setAttachImageFile] = useState(null);
   const [previewSrc, setPreviewSrc] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const draftInputRef = useRef(null);
   const feedRef = useRef(null);
   const isInitialScrollRef = useRef(true);
 
@@ -304,6 +348,7 @@ export default function ChatThread({
     isInitialScrollRef.current = true;
     setLoading(true);
     setLoadError("");
+    setReplyingTo(null);
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId]);
@@ -349,14 +394,24 @@ export default function ChatThread({
     setSendError("");
     setSending(true);
     try {
-      await sendThreadMessage(threadId, body);
+      await sendThreadMessage(threadId, body, replyingTo?.id);
       setDraft("");
+      setReplyingTo(null);
       load();
     } catch (err) {
       setSendError(err instanceof ApiError ? err.message : "Could not send that message.");
     } finally {
       setSending(false);
     }
+  };
+
+  const handleReply = (message) => {
+    setReplyingTo({
+      id: message.id,
+      senderName: message.sender_id === currentUser?.id ? "You" : message.sender_name,
+      preview: message.submission_id ? "📎 Attachment" : message.body,
+    });
+    draftInputRef.current?.focus();
   };
 
   const handleImagePick = (event) => {
@@ -438,7 +493,7 @@ export default function ChatThread({
         ) : messages.length === 0 ? (
           <p className="py-4 text-center text-xs text-slate-400 dark:text-slate-500">No messages yet — say hello.</p>
         ) : (
-          renderMessageRows(messages, currentUser?.id, setPreviewSrc)
+          renderMessageRows(messages, currentUser?.id, setPreviewSrc, handleReply)
         )}
       </div>
 
@@ -557,6 +612,22 @@ export default function ChatThread({
         </div>
       ) : (
         <form onSubmit={handleSend} className="flex-shrink-0 border-t border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
+          {replyingTo && (
+            <div className="mb-2 flex items-center gap-2 rounded-xl border-l-2 border-[#1B3FAB] bg-slate-50 py-2 pl-3 pr-2 dark:bg-slate-800/60">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-[#1B3FAB] dark:text-blue-400">Replying to {replyingTo.senderName}</p>
+                <p className="truncate text-xs text-slate-500 dark:text-slate-400">{replyingTo.preview}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReplyingTo(null)}
+                aria-label="Cancel reply"
+                className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:text-slate-500 dark:hover:bg-slate-700"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 p-2 shadow-sm focus-within:border-[#1B3FAB] focus-within:ring-4 focus-within:ring-[#1B3FAB]/10 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:ring-blue-500/10">
             <button
               type="button"
@@ -571,6 +642,7 @@ export default function ChatThread({
               <Paperclip className="h-4 w-4" />
             </button>
             <input
+              ref={draftInputRef}
               value={draft}
               onChange={(event) => { setDraft(event.target.value); setSendError(""); }}
               placeholder="Write a message..."

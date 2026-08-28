@@ -10,7 +10,7 @@ const MAX_SCREENSHOT_BYTES = 3 * 1024 * 1024;
 // on purpose (not fabricated-but-realistic-looking placeholder digits,
 // which reads exactly like a phishing page and risks real money going to
 // a fake account). While this is null, the drawer shows an honest "not
-// configured yet, use Razorpay Checkout instead" state below rather than
+// configured yet, use CashFree Checkout instead" state below rather than
 // display fake account details as if they were real.
 const ESCROW_ACCOUNT = null;
 // Example of what to set once WorkBridge's real account exists:
@@ -192,7 +192,7 @@ export default function EscrowFundingDrawer({ project, onClose, onFunded }) {
                     <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400 dark:text-slate-500" />
                     <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                       Bank transfer details aren't set up yet — for instant, automatically verified funding, close
-                      this and use <span className="font-semibold text-slate-700 dark:text-slate-300">Pay via Razorpay</span> instead.
+                      this and use <span className="font-semibold text-slate-700 dark:text-slate-300">Pay via CashFree</span> instead.
                     </p>
                   </div>
                 )}

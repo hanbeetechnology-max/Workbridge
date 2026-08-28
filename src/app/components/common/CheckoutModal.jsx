@@ -16,7 +16,7 @@ const PAYMENT_METHODS = [
 ];
 
 /**
- * Premium, Stripe/Razorpay-style checkout modal. Fully presentational for
+ * Premium, Stripe/CashFree-style checkout modal. Fully presentational for
  * payment mechanics — parent decides what "success" means via onSuccess.
  */
 export default function CheckoutModal({

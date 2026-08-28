@@ -25,6 +25,7 @@ import { adminAuthSchema, authSchema, signupSchema, forgotPasswordSchema } from 
 import { apiFetch } from "../lib/apiClient";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { nameFilter, phoneFilter } from "../utils/inputGuards";
 
 const USER_CONFIG = {
   worker: { label: "Worker", Icon: Briefcase, bg: "bg-[#FF6B2C]", shadow: "shadow-[#FF6B2C]/30" },
@@ -124,6 +125,7 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(activeSchema),
@@ -776,6 +778,7 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                           autoComplete="name"
                           placeholder="Your full name"
                           {...register("fullName")}
+                          onChange={(e) => setValue("fullName", nameFilter(e.target.value), { shouldValidate: true })}
                           className={AUTH_INPUT_CLASS}
                         />
                       </Field>
@@ -807,6 +810,7 @@ export default function AuthPage({ userType, onSuccess, onBack }) {
                             maxLength={10}
                             placeholder="XXXXXXXXXX"
                             {...register("phone", { setValueAs: (value) => value.replace(/\D/g, "") })}
+                            onChange={(e) => setValue("phone", phoneFilter(e.target.value), { shouldValidate: true })}
                             className={AUTH_INPUT_CLASS}
                           />
                         </div>

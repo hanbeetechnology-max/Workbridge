@@ -36,7 +36,7 @@ against the real Node.js/PostgreSQL backend in `backend/`:
 
 ## Deliberately deferred (not a gap to "fix" — a scoped-out phase)
 
-- **Real payment gateway** (Razorpay/Stripe/UPI) — `secure-funds` and
+- **Real payment gateway** (CashFree/Stripe/UPI) — `secure-funds` and
   `complete` remain internal-ledger-only; no external money actually moves
   yet. This is the only item left on this list — the next major phase once
   a gateway is chosen. Blocked on the user deciding a provider, not on code.

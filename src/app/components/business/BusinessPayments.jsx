@@ -19,7 +19,7 @@ function formatINR(amount) {
 }
 
 // "Subscription Plans" tab commented out (not deleted) — subscriptions are
-// fully built and wired to real Razorpay checkout (SubscriptionTab below),
+// fully built and wired to real CashFree checkout (SubscriptionTab below),
 // needed again later, just hidden from the UI for now per a product
 // decision to not surface or hint at subscription plans yet. Uncomment the
 // line below (and the matching render line further down) to bring it back.

@@ -27,6 +27,7 @@ import { updateOwnProfile } from "../../lib/profilesApi";
 import { ApiError } from "../../lib/apiClient";
 import { INDIAN_CITIES } from "../../lib/indianCities";
 import { getInitials } from "../../utils/formValidation";
+import { yearFilter, businessNameFilter } from "../../utils/inputGuards";
 
 // ── Static data ───────────────────────────────────────────────────────────────
 // name/initials here are only the fallback for a business that hasn't set a
@@ -535,7 +536,7 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
               <p className="mb-1.5 -mt-1 text-xs text-slate-400 dark:text-slate-500">
                 Shown to workers everywhere your job posts appear — separate from your own account name.
               </p>
-              <input value={draft.name ?? ""} onChange={(e) => onChange("name", e.target.value)}
+              <input value={draft.name ?? ""} onChange={(e) => onChange("name", businessNameFilter(e.target.value))}
                 placeholder="e.g. RetailX Pvt Ltd"
                 className="w-full px-4 py-2.5 bg-[#F4F6FF] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 focus:border-[#1B3FAB]" />
             </Field>
@@ -578,7 +579,8 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
                 { key: "founded",  label: "Founded Year" },
               ].map(({ key, label }) => (
                 <Field key={key} label={label}>
-                  <input value={draft[key] ?? ""} onChange={(e) => onChange(key, e.target.value)}
+                  <input value={draft[key] ?? ""} onChange={(e) => onChange(key, key === "founded" ? yearFilter(e.target.value) : e.target.value)}
+                    inputMode={key === "founded" ? "numeric" : undefined}
                     list={key === "location" ? "business-location-suggestions" : undefined}
                     className="w-full px-4 py-2.5 bg-[#F4F6FF] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3FAB]/20 focus:border-[#1B3FAB]" />
                 </Field>

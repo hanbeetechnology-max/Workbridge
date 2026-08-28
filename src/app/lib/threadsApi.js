@@ -12,10 +12,10 @@ export function listThreadMessages(threadId) {
   return apiFetch(`/api/threads/${threadId}/messages`);
 }
 
-export function sendThreadMessage(threadId, body) {
+export function sendThreadMessage(threadId, body, replyToMessageId) {
   return apiFetch(`/api/threads/${threadId}/messages`, {
     method: "POST",
-    body: { body },
+    body: replyToMessageId ? { body, replyToMessageId } : { body },
   });
 }
 

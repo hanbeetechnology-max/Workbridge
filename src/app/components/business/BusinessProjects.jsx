@@ -1762,7 +1762,7 @@ export default function BusinessProjects({ onOpenChat }) {
                         )}
 
                         {p.status === "PENDING_FUNDS" && (
-                          // funding_method distinguishes a real-time Razorpay
+                          // funding_method distinguishes a real-time CashFree
                           // payment (resolves in seconds via webhook/verify,
                           // no staff action needed — "Awaiting WorkBridge
                           // Verification" was misleading here, it implies a
@@ -1771,7 +1771,7 @@ export default function BusinessProjects({ onOpenChat }) {
                           // wait on staff to confirm a submitted UTR).
                           <span className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-2 text-xs font-bold text-amber-700 sm:ml-auto sm:w-auto sm:justify-start dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400">
                             <ShieldCheck className="h-3.5 w-3.5" />
-                            {p.funding_method === "RAZORPAY" ? "Processing Payment…" : "Awaiting WorkBridge Verification"}
+                            {p.funding_method === "CashFree" ? "Processing Payment…" : "Awaiting WorkBridge Verification"}
                           </span>
                         )}
 

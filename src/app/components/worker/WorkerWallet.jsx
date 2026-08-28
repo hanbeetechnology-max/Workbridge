@@ -26,7 +26,9 @@ import { motion, AnimatePresence } from "motion/react";
 import LockedCurrencyInput from "../common/LockedCurrencyInput";
 import VerificationFeesTable from "../shared/VerificationFeesTable";
 import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
-import { getSubscriptionStatus, getPayoutAccount, savePayoutDetails, getRouteAccountStatus, linkRouteAccount } from "../../lib/paymentsApi";
+import { getSubscriptionStatus, getPayoutAccount, savePayoutDetails } from "../../lib/paymentsApi";
+// getRouteAccountStatus, linkRouteAccount — CashFree Route linked-account
+// feature, disabled (see the commented-out UI block further down this file).
 import { verifyPassword } from "../../lib/authApi";
 import { positiveCurrencySchema } from "../../utils/formValidation";
 import { getWallet, withdraw, listWithdrawals } from "../../lib/walletApi";
@@ -39,7 +41,7 @@ function formatINR(amount) {
 }
 
 // Password re-proof gate for CHANGING an already-saved payout destination
-// or linked Razorpay account — a valid session (JWT) alone isn't treated as
+// or linked CashFree account — a valid session (JWT) alone isn't treated as
 // enough for this specific action, since a shared/unlocked device would
 // have the session but not the password. Shown in place of the actual edit
 // form until verification succeeds; onVerified receives the short-lived
@@ -379,7 +381,7 @@ const withdrawalSchema = z.object({
 });
 
 // "Upgrade Subscription" tab commented out (not deleted) — subscriptions
-// are fully built and wired to real Razorpay checkout (SubscriptionTab
+// are fully built and wired to real CashFree checkout (SubscriptionTab
 // below), needed again later, just hidden from the UI for now per a
 // product decision to not surface or hint at subscription plans yet.
 const WALLET_TABS = [
@@ -421,7 +423,7 @@ export default function WorkerWallet() {
   const [showPayoutReverify, setShowPayoutReverify] = useState(false);
   const [payoutReverifyToken, setPayoutReverifyToken] = useState(null);
 
-  // Razorpay Route linked-account fields — kept as plain controlled state
+  // CashFree Route linked-account fields — kept as plain controlled state
   // (not react-hook-form) so each numeric/name field can filter its own
   // keystrokes as the worker types, rather than only rejecting on submit.
   const [routeAccount, setRouteAccount] = useState(null);
@@ -441,13 +443,14 @@ export default function WorkerWallet() {
     setLoading(true);
     setLoadError("");
     try {
-      const [walletData, projects, completed, withdrawals, payout, route] = await Promise.all([
+      const [walletData, projects, completed, withdrawals, payout] = await Promise.all([
         getWallet(),
         listProjects({ role: "worker" }),
         listProjects({ role: "worker", status: "COMPLETED" }),
         listWithdrawals(),
         getPayoutAccount(),
-        getRouteAccountStatus(),
+        // getRouteAccountStatus() removed — the CashFree Route linked-account
+        // feature it backed is disabled (see the commented-out UI block below).
       ]);
       setWallet(walletData);
       setHeldSecurely(
@@ -459,7 +462,6 @@ export default function WorkerWallet() {
       setPendingWithdrawals(withdrawals.filter((w) => w.status === "PENDING"));
       setPayoutAccount(payout?.payoutDetails ? payout : null);
       if (payout?.payoutMethod) setPayoutMethodInput(payout.payoutMethod);
-      setRouteAccount(route?.razorpayAccountId ? route : null);
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : "Could not load your wallet.");
     } finally {
@@ -504,7 +506,7 @@ export default function WorkerWallet() {
         bankIfsc: routeIfsc,
         reverifyToken: routeReverifyToken,
       });
-      setRouteAccount({ razorpayAccountId: result.razorpayAccountId, status: result.status });
+      setRouteAccount({ CashFreeAccountId: result.CashFreeAccountId, status: result.status });
       setShowRouteForm(false);
       setRouteReverifyToken(null);
     } catch (err) {
@@ -522,8 +524,8 @@ export default function WorkerWallet() {
   };
   const ROUTE_STATUS_LABELS = {
     ACTIVE: "Active — ready to receive automatic payouts",
-    PENDING: "Pending Razorpay verification",
-    NEEDS_CLARIFICATION: "Needs additional documents — Razorpay flagged this account",
+    PENDING: "Pending CashFree verification",
+    NEEDS_CLARIFICATION: "Needs additional documents — CashFree flagged this account",
     REJECTED: "Rejected — please link a different account",
   };
 
@@ -946,12 +948,16 @@ export default function WorkerWallet() {
         </AnimatePresence>
       </div>
 
-      {/* ── Razorpay Linked Account (Route) — a real linked sub-account at
-          Razorpay (acc_XXXX), distinct from the Payout Destination above:
-          this one lets Razorpay itself move money to the worker directly
-          off a project's payment (once Route is enabled on the merchant
-          account), rather than WorkBridge triggering a RazorpayX payout
-          from its own settled balance. */}
+      {/* ── CashFree Linked Account (Route) UI — disabled. This was a
+          CashFree-specific "linked sub-account" concept (acc_XXXX) that
+          Cashfree has no equivalent for (confirmed: only Easy Split is
+          Route-like, and neither worker nor business side needs it — see
+          project_cashfree_master_verification_flow memory). It was also
+          already gated "blocked pending RBI review" before this migration,
+          so nothing live is lost by disabling it. Kept here commented out,
+          not deleted, in case Route-style direct-from-payment transfers are
+          revisited later.
+
       <div
         className={`mt-6 rounded-3xl border border-white/70 bg-white/50 shadow-xl shadow-slate-200/50 backdrop-blur-2xl wb-card-enter dark:border-slate-800 dark:bg-slate-900/50 ${
           routeAccount && !showRouteForm && !showRouteReverify ? "p-4" : "p-6"
@@ -963,7 +969,7 @@ export default function WorkerWallet() {
             {(!routeAccount || showRouteForm || showRouteReverify) && (
               <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 <Building2 className="h-3.5 w-3.5 text-[#1B3FAB] dark:text-blue-400" />
-                Razorpay Linked Account
+                CashFree Linked Account
               </p>
             )}
             {routeAccount ? (
@@ -973,7 +979,7 @@ export default function WorkerWallet() {
               </p>
             ) : (
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Link your bank account with Razorpay so WorkBridge can automatically create a payout-ready account for you.
+                Link your bank account with CashFree so WorkBridge can automatically create a payout-ready account for you.
               </p>
             )}
           </div>
@@ -991,7 +997,7 @@ export default function WorkerWallet() {
             className="flex min-h-[40px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             {showRouteForm || showRouteReverify ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-            {showRouteForm || showRouteReverify ? "Close" : routeAccount ? "Change" : "Link Razorpay Account"}
+            {showRouteForm || showRouteReverify ? "Close" : routeAccount ? "Change" : "Link CashFree Account"}
           </button>
         </div>
 
@@ -1114,13 +1120,14 @@ export default function WorkerWallet() {
                   {savingRoute ? "Linking…" : "Link Account"}
                 </button>
                 <p className="text-center text-xs text-slate-400 dark:text-slate-500">
-                  Razorpay verifies this account (KYC) before it can receive automatic payouts — usually 24–48 hours.
+                  CashFree verifies this account (KYC) before it can receive automatic payouts — usually 24–48 hours.
                 </p>
               </form>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+      */}
 
       {/* ── Transactions / Invoices split view ── */}
       <div className="mt-6 wb-card-enter" style={{ animationDelay: "160ms" }}>

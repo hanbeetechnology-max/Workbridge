@@ -29,6 +29,7 @@ import { INDIAN_CITIES } from "../../lib/indianCities";
 import { listReviewsFor } from "../../lib/reviewsApi";
 import { getMyProfileAudits } from "../../lib/perksApi";
 import { getInitials } from "../../utils/formValidation";
+import { phoneFilter } from "../../utils/inputGuards";
 import { calculateLevel, calculateProgressBar, getNextTier, getTierData } from "../../utils/gamification";
 import PinnedBadgeOverlay from "../shared/PinnedBadgeOverlay";
 import EconomyInfoTooltip from "../shared/EconomyInfoTooltip";
@@ -241,6 +242,7 @@ export default function WorkerProfile() {
   const [coverUploading, setCoverUploading] = useState(false);
   const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
   const [avatarCropFile, setAvatarCropFile] = useState(null);
+  const [certPreview, setCertPreview] = useState(null); // { url, name } | null
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -651,14 +653,21 @@ export default function WorkerProfile() {
                         <p className="text-sm font-bold text-slate-900 dark:text-white">{c.name}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">{[c.issuer, c.year].filter(Boolean).join(" · ")}</p>
                         {c.fileUrl && (
-                          <a
-                            href={c.fileUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                          // Not a plain <a target="_blank"> on purpose — the
+                          // uploaded file is a data: URI (no real file
+                          // server behind this yet), and Chrome blocks
+                          // top-level navigation to a data: URL opened via
+                          // target="_blank" as a security restriction,
+                          // which is exactly the blank "Untitled" tab this
+                          // used to open. An inline preview isn't subject
+                          // to that restriction.
+                          <button
+                            type="button"
+                            onClick={() => setCertPreview({ url: c.fileUrl, name: c.fileName || c.name })}
                             className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-[#1B3FAB] dark:text-blue-400 hover:underline"
                           >
                             View certificate <ExternalLink className="h-3 w-3" />
-                          </a>
+                          </button>
                         )}
                       </div>
                     ))}
@@ -794,9 +803,8 @@ export default function WorkerProfile() {
                       <input
                         type="tel"
                         inputMode="numeric"
-                        maxLength={10}
                         value={draft.phone}
-                        onChange={(e) => setDraft((d) => ({ ...d, phone: e.target.value.replace(/\D/g, "") }))}
+                        onChange={(e) => setDraft((d) => ({ ...d, phone: phoneFilter(e.target.value) }))}
                         placeholder="XXXXXXXXXX"
                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-[#1B3FAB] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800"
                       />
@@ -1031,6 +1039,40 @@ export default function WorkerProfile() {
           alt={`${currentUser.name} profile`}
           onClose={() => setAvatarPreviewOpen(false)}
         />
+      )}
+
+      {certPreview && (
+        certPreview.url.startsWith("data:application/pdf") || /\.pdf$/i.test(certPreview.name || "") ? (
+          // <embed>/<iframe> loading a data: URI is a sub-resource load,
+          // not the restricted top-level navigation an <a target="_blank">
+          // hits — this renders fine using the browser's built-in PDF
+          // viewer instead of opening a blank tab.
+          <div
+            className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/80 p-4 backdrop-blur-sm"
+            onClick={() => setCertPreview(null)}
+          >
+            <button
+              type="button"
+              onClick={() => setCertPreview(null)}
+              aria-label="Close preview"
+              className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <embed
+              src={certPreview.url}
+              type="application/pdf"
+              onClick={(event) => event.stopPropagation()}
+              className="h-[90vh] w-[92vw] rounded-2xl bg-white shadow-2xl sm:w-[80vw]"
+            />
+          </div>
+        ) : (
+          <ImageLightbox
+            src={certPreview.url}
+            alt={certPreview.name || "Certificate"}
+            onClose={() => setCertPreview(null)}
+          />
+        )
       )}
 
       {avatarCropFile && (

@@ -3,6 +3,10 @@ import {
   Zap, Building2, FileText, CreditCard, Upload, Shield,
   CheckCircle2, ArrowRight, ChevronRight, X, Lock, Eye, EyeOff,
 } from "lucide-react";
+import {
+  businessNameFilter, yearFilter, gstFilter, panFilter,
+  idNumberFilter, accountNumberFilter, ifscFilter,
+} from "../utils/inputGuards";
 
 // ── Step definitions ──────────────────────────────────────────────────────
 const STEPS = [
@@ -394,7 +398,7 @@ function Step1({
           <label className={LABEL}>Registered Company Name</label>
           <input
             type="text" placeholder="RetailX Pvt. Ltd." className={fieldClass(!companyName.trim())}
-            value={companyName} onChange={(e) => setCompanyName(e.target.value)}
+            value={companyName} onChange={(e) => setCompanyName(businessNameFilter(e.target.value))}
           />
         </div>
 
@@ -417,8 +421,8 @@ function Step1({
           <div>
             <label className={LABEL}>Year Established</label>
             <input
-              type="text" placeholder="e.g. 2019" className={fieldClass(!yearEstablished.trim())}
-              value={yearEstablished} onChange={(e) => setYearEstablished(e.target.value)}
+              type="text" inputMode="numeric" placeholder="e.g. 2019" className={fieldClass(!yearEstablished.trim())}
+              value={yearEstablished} onChange={(e) => setYearEstablished(yearFilter(e.target.value))}
             />
           </div>
         </div>
@@ -428,14 +432,14 @@ function Step1({
             <label className={LABEL}>GST Number (if registered)</label>
             <input
               type="text" placeholder="22AAAAA0000A1Z5" className={INPUT}
-              value={gstNumber} onChange={(e) => setGstNumber(e.target.value)}
+              value={gstNumber} onChange={(e) => setGstNumber(gstFilter(e.target.value))}
             />
           </div>
           <div>
             <label className={LABEL}>{panLabel}</label>
             <input
               type="text" placeholder="AAAAA0000A" className={fieldClass(!pan.trim())}
-              value={pan} onChange={(e) => setPan(e.target.value)}
+              value={pan} onChange={(e) => setPan(panFilter(e.target.value))}
             />
           </div>
         </div>
@@ -634,7 +638,7 @@ function Step3({
               <label className={LABEL}>ID Number</label>
               <input
                 type="text" placeholder="XXXX XXXX XXXX" className={fieldClass(!idNumber.trim())}
-                value={idNumber} onChange={(e) => setIdNumber(e.target.value)}
+                value={idNumber} onChange={(e) => setIdNumber(idNumberFilter(e.target.value))}
               />
             </div>
           </div>
@@ -667,7 +671,7 @@ function Step3({
               <label className={LABEL}>Bank Name</label>
               <input
                 type="text" placeholder="HDFC Bank" className={fieldClass(!bankName.trim())}
-                value={bankName} onChange={(e) => setBankName(e.target.value)}
+                value={bankName} onChange={(e) => setBankName(businessNameFilter(e.target.value, 60))}
               />
             </div>
 
@@ -690,7 +694,7 @@ function Step3({
                     placeholder="••••••••••4521"
                     className={fieldClass(!accountNumber.trim())}
                     style={showAccNum ? undefined : { WebkitTextSecurity: "disc", textSecurity: "disc" }}
-                    value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)}
+                    value={accountNumber} onChange={(e) => setAccountNumber(accountNumberFilter(e.target.value))}
                   />
                   <button
                     type="button"
@@ -705,7 +709,7 @@ function Step3({
                 <label className={LABEL}>IFSC Code</label>
                 <input
                   type="text" placeholder="HDFC0001234" className={fieldClass(!ifscCode.trim())}
-                  value={ifscCode} onChange={(e) => setIfscCode(e.target.value)}
+                  value={ifscCode} onChange={(e) => setIfscCode(ifscFilter(e.target.value))}
                 />
               </div>
             </div>

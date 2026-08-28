@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertCircle,
@@ -24,6 +24,8 @@ import { updateNotificationPrefs } from "../lib/authApi";
 import SupportChat from "../components/shared/SupportChat";
 import ThemeToggle from "../components/shared/ThemeToggle";
 import AvatarCropModal from "../components/shared/AvatarCropModal";
+import { nameFilter, phoneFilter } from "../utils/inputGuards";
+import ImageLightbox from "../components/shared/ImageLightbox";
 
 const MAX_AVATAR_BYTES = 1.5 * 1024 * 1024;
 
@@ -54,6 +56,7 @@ function GeneralProfileTab() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [avatarCropFile, setAvatarCropFile] = useState(null);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
 
   const handleSave = async (event) => {
     event.preventDefault();
@@ -126,7 +129,17 @@ function GeneralProfileTab() {
       <div className="mb-6 flex items-center gap-4">
         <label className="relative flex-shrink-0 cursor-pointer">
           {currentUser?.avatar_url ? (
-            <img src={currentUser.avatar_url} alt="" className="h-16 w-16 rounded-full object-cover" />
+            <img
+              src={currentUser.avatar_url}
+              alt=""
+              // preventDefault stops this click from bubbling into the
+              // parent <label>'s default action (opening the file picker) —
+              // clicking the photo itself views it full-size first; the
+              // camera badge below (untouched) is still what triggers a
+              // new upload. Same pattern already proven in WorkerProfile.jsx.
+              onClick={(e) => { e.preventDefault(); setAvatarPreviewOpen(true); }}
+              className="h-16 w-16 rounded-full object-cover"
+            />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1B3FAB] text-lg font-bold text-white">
               {getInitials(currentUser?.name)}
@@ -149,7 +162,7 @@ function GeneralProfileTab() {
           <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">Name</label>
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(nameFilter(e.target.value))}
             className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
           />
         </div>
@@ -157,7 +170,8 @@ function GeneralProfileTab() {
           <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">Phone</label>
           <input
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(phoneFilter(e.target.value))}
+            inputMode="numeric"
             placeholder="10-digit number"
             className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
           />
@@ -194,6 +208,14 @@ function GeneralProfileTab() {
         </div>
       </form>
     </SectionCard>
+
+    {avatarPreviewOpen && currentUser?.avatar_url && (
+      <ImageLightbox
+        src={currentUser.avatar_url}
+        alt={`${currentUser?.name} profile`}
+        onClose={() => setAvatarPreviewOpen(false)}
+      />
+    )}
 
     {avatarCropFile && (
       <AvatarCropModal
@@ -375,8 +397,19 @@ function NotificationsTab() {
   const [status, setStatus] = useState("checking");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // A ref, not state — disabled={busy-from-state} doesn't close the race
+  // where a fast double-click/double-tap fires a second click before
+  // React has re-rendered the button as disabled, sending the opposite
+  // value right behind the first and netting out to "it turned itself
+  // back on." A ref updates synchronously within the same click, so this
+  // guard actually blocks the second click instead of racing it.
+  const togglingRef = useRef(false);
+  const pushTogglingRef = useRef(false);
 
   const handlePrefToggle = async (key) => {
+    if (togglingRef.current) return;
+    togglingRef.current = true;
+
     const next = !prefs[key];
     setPrefs((p) => ({ ...p, [key]: next }));
     setSavingKey(key);
@@ -387,6 +420,7 @@ function NotificationsTab() {
       setPrefs((p) => ({ ...p, [key]: !next }));
     } finally {
       setSavingKey(null);
+      togglingRef.current = false;
     }
   };
 
@@ -399,6 +433,11 @@ function NotificationsTab() {
   useEffect(refreshStatus, []);
 
   const handleToggle = async () => {
+    // Same race as handlePrefToggle above — disabled={busy} alone doesn't
+    // block a second click that fires before the re-render commits.
+    if (pushTogglingRef.current) return;
+    pushTogglingRef.current = true;
+
     setBusy(true);
     setError("");
     try {
@@ -416,6 +455,7 @@ function NotificationsTab() {
       setError(err.message || "Could not update your notification settings.");
     } finally {
       setBusy(false);
+      pushTogglingRef.current = false;
     }
   };
 
