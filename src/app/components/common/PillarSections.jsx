@@ -273,7 +273,7 @@ export function EnterpriseSection({ showLink = true, onSelect }) {
   return (
     <section className="wb-section" id="enterprise">
       <div className="wb-section-split-head">
-        <SectionHeader eyebrow="Enterprise" title="Onboard Fully Vetted Talent in Hours, Not Weeks" />
+        <SectionHeader eyebrow="Enterprise" title="Onboard Fully Verified Talent in Hours, Not Weeks" />
         <SectionAction
           showLink={showLink}
           to="/enterprise"

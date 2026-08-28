@@ -39,7 +39,17 @@ export const businessNameFilter = (value, maxLen = 120) => {
   return maxLen ? cleaned.slice(0, maxLen) : cleaned;
 };
 
-// Government ID numbers (Aadhaar/Passport/Voter ID) — alphanumeric, no
-// spaces or symbols, case preserved as typed except forced uppercase since
-// PAN-as-ID and Passport numbers are conventionally uppercase.
+// Government ID numbers — the correct shape depends on which ID type is
+// selected, not one generic length for all of them. Aadhaar is exactly 12
+// digits (nothing else is ever valid, so digitsOnly beats alnum here);
+// Passport and Driving Licence are alphanumeric with looser real-world
+// length variance, so those get a generous cap rather than a strict format.
+export const idNumberFilterFor = (idType, value) => {
+  if (idType === "Aadhaar Card") return digitsOnly(value, 12);
+  if (idType === "Passport") return alnumUpper(value, 9);
+  return alnumUpper(value, 16); // Driving Licence
+};
+
+// Generic fallback (no idType context available) — alphanumeric, no spaces
+// or symbols, forced uppercase.
 export const idNumberFilter = (value, maxLen = 20) => alnumUpper(value, maxLen);

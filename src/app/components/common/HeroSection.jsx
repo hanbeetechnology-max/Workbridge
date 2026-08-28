@@ -15,7 +15,7 @@ const heroWordVariants = {
   show: { opacity: 1, y: 0, filter: "blur(0px)" },
 };
 
-const trustItems = ["Vetted.", "Seamless.", "Secure."];
+const trustItems = ["Verified.", "Seamless.", "Secure."];
 
 // AI Core badge — TEMPORARILY DISABLED (idea approved, UI/placement not
 // good enough yet — revisit design before re-enabling). See the commented
@@ -158,7 +158,7 @@ export function HeroSection({ onSelect }) {
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search open gigs by skill…"
+            placeholder="Search open jobs by skill…"
           />
           <MagneticButton strength={0.3}>
             <Button type="submit">

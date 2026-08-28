@@ -66,7 +66,7 @@ function TrustBar({ score }) {
 // name, avatar_url, title, verified, behavior_score, rating, reviews_count,
 // profile{skills,bio,hourlyRate,location}), fetched via listWorkers()/
 // getPublicProfile(). Used from BusinessWorkers.jsx's profile portal.
-export default function WorkerShareableProfile({ worker }) {
+export default function WorkerShareableProfile({ worker, onMessage, messageBusy = false }) {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
 
@@ -300,9 +300,14 @@ export default function WorkerShareableProfile({ worker }) {
                 <Clock3 className="h-4 w-4 text-[#FF6B35]" />
                 Available this week
               </div>
-              <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#FF6B35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#e95c25]">
+              <button
+                type="button"
+                onClick={onMessage}
+                disabled={!onMessage || messageBusy}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#FF6B35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#e95c25] disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 <Send className="h-4 w-4" />
-                Start a Contract
+                {messageBusy ? "Opening…" : "Message"}
               </button>
             </section>
           </aside>

@@ -22,6 +22,7 @@ import { listWorkers } from "../../lib/profilesApi";
 import { listProjects, createProject } from "../../lib/projectsApi";
 import { submitLink } from "../../lib/submissionsApi";
 import { getPendingInvitedWorkerIds, inviteWorkerToProject } from "../../lib/candidatesApi";
+import { startThreadWithWorker } from "../../lib/threadsApi";
 import { getInitials } from "../../utils/formValidation";
 import { ApiError } from "../../lib/apiClient";
 
@@ -42,7 +43,7 @@ const scoreTone = (score) => {
   return "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-900/40";
 };
 
-export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjects, isVerified = false, onVerify }) {
+export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjects, isVerified = false, onVerify, onMessageWorker }) {
   const [workers, setWorkers] = useState([]);
   const [invitedWorkerIds, setInvitedWorkerIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -53,6 +54,22 @@ export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjec
   const [inviteError, setInviteError] = useState("");
   const [toast, setToast] = useState("");
   const [openJobs, setOpenJobs] = useState([]);
+  const [messagingBusy, setMessagingBusy] = useState(false);
+  const [messagingError, setMessagingError] = useState("");
+
+  const handleMessageWorker = async (worker) => {
+    setMessagingError("");
+    setMessagingBusy(true);
+    try {
+      const thread = await startThreadWithWorker(worker.id);
+      setSelectedWorker(null);
+      onMessageWorker?.(thread.id);
+    } catch (err) {
+      setMessagingError(err instanceof ApiError ? err.message : "Could not start that conversation.");
+    } finally {
+      setMessagingBusy(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -375,7 +392,17 @@ export default function BusinessWorkers({ pendingJob, onInviteSent, onViewProjec
             className="wb-scroll-clean relative w-[95vw] h-[90vh] max-w-6xl bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-y-auto shadow-2xl wb-panel-enter"
             onClick={(event) => event.stopPropagation()}
           >
-            <WorkerShareableProfile worker={selectedWorker} />
+            {messagingError && (
+              <div className="sticky top-0 z-10 flex items-center gap-2 bg-red-50 px-5 py-2.5 text-xs font-semibold text-red-600 dark:bg-red-950/40 dark:text-red-400">
+                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                {messagingError}
+              </div>
+            )}
+            <WorkerShareableProfile
+              worker={selectedWorker}
+              onMessage={() => handleMessageWorker(selectedWorker)}
+              messageBusy={messagingBusy}
+            />
           </div>
         </div>
       )}

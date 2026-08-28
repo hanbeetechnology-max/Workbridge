@@ -126,7 +126,7 @@ export default function BusinessPostJob({ onVerify, isVerified, onJobPosted }) {
       brief: "",
       skills: [],
       durationDays: 14,
-      budget: 30000,
+      budget: 0,
       applicationWindow: 7,
       minExperienceYears: "",
       maxExperienceYears: "",

@@ -42,7 +42,7 @@ export default function HireTalentPage({ onSelect }) {
       seoKeywords="Verified Workers, Hire Software Developers, Hire Workers, Freelance Talent"
       eyebrow="For Businesses"
       title="Hire Verified Talent. Instantly."
-      subtitle="Match with Pre-Vetted Pros. Check Their Trust Score. Keep Your Funds Safe Until You're Happy."
+      subtitle="Match with Pre-Verified Pros. Check Their Trust Score. Keep Your Funds Safe Until You're Happy."
       heroContent={
         <div className="flex flex-wrap items-center justify-center gap-2">
           {["Instant Matching", "Behavior Score Verification", "Quality Assurance"].map((pill) => (

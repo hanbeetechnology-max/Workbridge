@@ -20,7 +20,7 @@ const FEATURES = [
   {
     icon: Briefcase,
     title: "Thousands of Freelance Jobs",
-    description: "From Code to Copy: Fresh Freelance Gigs Posted Hourly Across All Industries",
+    description: "From Code to Copy: Fresh Freelance Jobs Posted Hourly Across All Industries",
   },
   {
     icon: Eye,

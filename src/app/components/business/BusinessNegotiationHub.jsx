@@ -576,7 +576,7 @@ function FocusHub({ thread, projects, onViewContractTerms, onProjectUpdated }) {
   );
 }
 
-export default function BusinessNegotiationHub({ onFindTalent, onViewContractTerms, initialProjectId }) {
+export default function BusinessNegotiationHub({ onFindTalent, onViewContractTerms, initialProjectId, initialThreadId }) {
   const [threads, setThreads] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -596,6 +596,7 @@ export default function BusinessNegotiationHub({ onFindTalent, onViewContractTer
         setProjects(projectsData);
         setSelectedThreadId((current) => {
           if (current) return current;
+          if (initialThreadId && threadsData.some((t) => t.id === initialThreadId)) return initialThreadId;
           const initialProject = projectsData.find((p) => p.id === initialProjectId);
           const preferred =
             (initialProject && threadsData.find((t) => t.other_user_id === initialProject.worker_id)) ??
@@ -613,7 +614,7 @@ export default function BusinessNegotiationHub({ onFindTalent, onViewContractTer
     return () => {
       cancelled = true;
     };
-  }, [initialProjectId]);
+  }, [initialProjectId, initialThreadId]);
 
   useEffect(() => {
     const socket = getSocket();

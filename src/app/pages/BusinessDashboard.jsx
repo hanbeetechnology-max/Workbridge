@@ -121,6 +121,7 @@ export default function BusinessDashboard({ onLogout, onVerify, isVerified = fal
   // thread is already focused when BusinessNegotiationHub mounts — Projects
   // no longer embeds its own chat, per the permanent-chat-history upgrade.
   const [negotiationFocusId, setNegotiationFocusId] = useState(null);
+  const [negotiationThreadFocusId, setNegotiationThreadFocusId] = useState(null);
   // MASTER_ECONOMY_PLAN.md's business-side Ledger reuses the same
   // xp/current_level/bridge_tokens columns as the worker track (no
   // separate schema exists yet — see migrations/012_gamification_foundation.sql's
@@ -299,6 +300,10 @@ export default function BusinessDashboard({ onLogout, onVerify, isVerified = fal
               onViewProjects={() => setTab("projects")}
               isVerified={isVerified}
               onVerify={onVerify}
+              onMessageWorker={(threadId) => {
+                setNegotiationThreadFocusId(threadId);
+                setTab("negotiations");
+              }}
             />
           )}
           {tab === "projects" && (
@@ -312,6 +317,7 @@ export default function BusinessDashboard({ onLogout, onVerify, isVerified = fal
           {tab === "negotiations" && (
             <BusinessNegotiationHub
               initialProjectId={negotiationFocusId}
+              initialThreadId={negotiationThreadFocusId}
               onFindTalent={() => setTab("workers")}
               onViewContractTerms={() => setTab("projects")}
             />

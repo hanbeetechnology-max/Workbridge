@@ -8,6 +8,12 @@ export function listThreads() {
   return apiFetch(`/api/threads`);
 }
 
+// Business-only — starts (or resumes) a conversation with a worker who has
+// no project relationship yet, e.g. messaging from their profile view.
+export function startThreadWithWorker(workerId) {
+  return apiFetch(`/api/threads/with/${workerId}`, { method: "POST" });
+}
+
 export function listThreadMessages(threadId) {
   return apiFetch(`/api/threads/${threadId}/messages`);
 }

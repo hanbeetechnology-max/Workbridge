@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import {
   businessNameFilter, yearFilter, gstFilter, panFilter,
-  idNumberFilter, accountNumberFilter, ifscFilter,
+  idNumberFilterFor, accountNumberFilter, ifscFilter,
 } from "../utils/inputGuards";
 
 // ── Step definitions ──────────────────────────────────────────────────────
@@ -373,7 +373,10 @@ function Step1({
   if (!companyName.trim()) missing.push("Registered Company Name");
   if (!businessType) missing.push("Business Type");
   if (!yearEstablished.trim()) missing.push("Year Established");
+  else if (yearEstablished.trim().length !== 4) missing.push("Year Established (4 digits)");
   if (!pan.trim()) missing.push(panLabel);
+  else if (pan.trim().length !== 10) missing.push(`${panLabel} (10 characters)`);
+  if (gstNumber.trim() && gstNumber.trim().length !== 15) missing.push("GSTIN (15 characters)");
   if (!address.trim()) missing.push("Registered Business Address");
 
   const handleNext = () => {
@@ -591,10 +594,13 @@ function Step3({
 
   const missing = [];
   if (!idNumber.trim()) missing.push("ID Number");
+  else if (idType === "Aadhaar Card" && idNumber.trim().length !== 12) missing.push("ID Number (Aadhaar is 12 digits)");
   if (!idFile) missing.push(`${typeDocs.ownerRole} ID document`);
   if (!bankName.trim()) missing.push("Bank Name");
   if (!accountNumber.trim()) missing.push("Account Number");
+  else if (accountNumber.trim().length < 9) missing.push("Account Number (at least 9 digits)");
   if (!ifscCode.trim()) missing.push("IFSC Code");
+  else if (ifscCode.trim().length !== 11) missing.push("IFSC Code (11 characters)");
 
   const handleComplete = () => {
     setAttempted(true);
@@ -628,7 +634,10 @@ function Step3({
           <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
             <div>
               <label className={LABEL}>ID Type</label>
-              <select className={SELECT} value={idType} onChange={(e) => setIdType(e.target.value)}>
+              <select
+                className={SELECT} value={idType}
+                onChange={(e) => { setIdType(e.target.value); setIdNumber((v) => idNumberFilterFor(e.target.value, v)); }}
+              >
                 <option>Aadhaar Card</option>
                 <option>Passport</option>
                 <option>Driving Licence</option>
@@ -637,8 +646,10 @@ function Step3({
             <div>
               <label className={LABEL}>ID Number</label>
               <input
-                type="text" placeholder="XXXX XXXX XXXX" className={fieldClass(!idNumber.trim())}
-                value={idNumber} onChange={(e) => setIdNumber(idNumberFilter(e.target.value))}
+                type="text" inputMode={idType === "Aadhaar Card" ? "numeric" : "text"}
+                placeholder={idType === "Aadhaar Card" ? "XXXXXXXXXXXX (12 digits)" : idType === "Passport" ? "A1234567" : "DL1420110012345"}
+                className={fieldClass(!idNumber.trim())}
+                value={idNumber} onChange={(e) => setIdNumber(idNumberFilterFor(idType, e.target.value))}
               />
             </div>
           </div>
