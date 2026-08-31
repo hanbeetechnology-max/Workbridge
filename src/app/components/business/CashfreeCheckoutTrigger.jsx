@@ -56,7 +56,14 @@ export default function CashfreeCheckoutTrigger({ project, amount, onSecured }) 
       const order = await createCheckoutOrder(project.id);
       if (!order.paymentSessionId) throw new Error("Could not start checkout — no payment session returned.");
 
-      const cashfree = window.Cashfree({ mode: getCashfreeMode() });
+      // The backend knows which Cashfree environment it actually created
+      // this session in (from its own CASHFREE_APP_ID) — trust that over
+      // this build's own VITE_CASHFREE_MODE flag, which can silently drift
+      // out of sync with the backend and cause a real "payment_session_id
+      // is not present or is invalid" error (mismatched sandbox/production
+      // SDK vs session). Fall back to the build flag only for older
+      // backend deploys that don't send `environment` yet.
+      const cashfree = window.Cashfree({ mode: order.environment || getCashfreeMode() });
       const result = await cashfree.checkout({
         paymentSessionId: order.paymentSessionId,
         redirectTarget: "_modal",
