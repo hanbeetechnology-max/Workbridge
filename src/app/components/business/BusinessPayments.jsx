@@ -120,14 +120,14 @@ function InvoicesTab({ projects, loading, loadError }) {
 
 // ── Subscription Plans ───────────────────────────────────────────────────────
 // Real tiers/pricing, wired to real Cashfree checkout (SubscriptionTab
-// below) and to real server-side enforcement — the post-count limits here
-// exactly match projects.controller.js's MONTHLY_POST_LIMIT, checked on
-// every job post/invite, not just decorative copy. Business verification
-// itself stays free for every business regardless of tier (same as any
-// other marketplace's KYC) — what a paid tier buys is capacity (more posts)
-// and, at Enterprise, the Trust Badge: a second, distinct badge shown next
-// to the free "Verified" one on your profile and job posts, signaling
-// you're not just KYC'd but an active paying customer in good standing.
+// below). Job-post limits (2/20/unlimited), verification-is-free, and the
+// Enterprise Trust Badge are all backend-enforced/real — see
+// projects.controller.js's MONTHLY_POST_LIMIT. The rest of each tier's perk
+// list (Worker Database search, Custom Screening Questions, Boosted
+// Visibility, Multi-User Access, Smart Candidate Matching, dedicated
+// support) is marketing copy for features not built yet — covered by the
+// "still being rolled out" disclaimer under the cards below, same as
+// before this list was expanded.
 const BUSINESS_TIERS = [
   {
     id: "free",
@@ -135,7 +135,15 @@ const BUSINESS_TIERS = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     icon: ShieldCheck,
-    perks: ["Free business verification", "2 job posts/month"],
+    tagline: "Great for small businesses hiring occasionally.",
+    perks: [
+      "2 Job Posts per month",
+      "Free Business Verification",
+      "Standard Company Profile",
+      "Basic Applicant Tracking Dashboard",
+      "Standard visibility in job search results",
+      "Email Support",
+    ],
   },
   {
     id: "growth",
@@ -144,7 +152,16 @@ const BUSINESS_TIERS = [
     yearlyPrice: 4999,
     icon: TrendingUp,
     highlight: true,
-    perks: ["20 job posts/month", "Invite workers directly, no post limit on that"],
+    tagline: "Perfect for growing teams actively recruiting.",
+    includesNote: "Includes all Free features, plus:",
+    perks: [
+      "20 Job Posts per month",
+      "Unlimited Direct Worker Invites",
+      "Access to Worker Database — search & filter candidate profiles",
+      "Custom Screening Questions on applications",
+      "Boosted Visibility — ranks above Free posts in search",
+      "Priority Chat & Email Support",
+    ],
   },
   {
     id: "enterprise",
@@ -153,7 +170,16 @@ const BUSINESS_TIERS = [
     yearlyPrice: 14999,
     icon: Building2,
     premium: true,
-    perks: ["Unlimited job posts", "Bulk hiring & compliance support", "Trust Badge on your profile & posts"],
+    tagline: "For high-volume hiring and complete recruitment control.",
+    includesNote: "Includes all Growth features, plus:",
+    perks: [
+      "Unlimited Job Posts",
+      "Bulk Hiring & Compliance Support",
+      "Verified Trust Badge on your profile & posts",
+      "Multi-User Access for your HR team",
+      "Smart Candidate Matching",
+      "Dedicated Account Manager",
+    ],
   },
 ];
 
@@ -299,8 +325,18 @@ function SubscriptionTab({ isVerified }) {
                 </span>
                 <span className={`text-xs font-semibold ${tier.premium ? "text-slate-400" : "text-slate-400 dark:text-slate-500"}`}>{period}</span>
               </p>
+              {tier.tagline && (
+                <p className={`mt-2 text-xs leading-5 ${tier.premium ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>
+                  {tier.tagline}
+                </p>
+              )}
+              {tier.includesNote && (
+                <p className={`mt-3 text-[11px] font-bold uppercase tracking-wide ${tier.premium ? "text-[#FF6B35]/90" : "text-[#1B3FAB] dark:text-blue-400"}`}>
+                  {tier.includesNote}
+                </p>
+              )}
 
-              <ul className="mt-4 flex-1 space-y-2">
+              <ul className={`${tier.includesNote ? "mt-2" : "mt-4"} flex-1 space-y-2`}>
                 {tier.perks.map((perk) => (
                   <li key={perk} className="flex items-start gap-2 text-xs leading-5">
                     <span
