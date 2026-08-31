@@ -18,14 +18,9 @@ function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 }
 
-// "Subscription Plans" tab commented out (not deleted) — subscriptions are
-// fully built and wired to real Cashfree checkout (SubscriptionTab below),
-// needed again later, just hidden from the UI for now per a product
-// decision to not surface or hint at subscription plans yet. Uncomment the
-// line below (and the matching render line further down) to bring it back.
 const SUB_TABS = [
   { id: "invoices", label: "Invoices & Payments" },
-  // { id: "subscription", label: "Subscription Plans" },
+  { id: "subscription", label: "Subscription Plans" },
   { id: "trust", label: "Coming Soon" },
 ];
 
@@ -127,10 +122,15 @@ function InvoicesTab({ projects, loading, loadError }) {
 }
 
 // ── Subscription Plans ───────────────────────────────────────────────────────
-// Real tiers/pricing, moved as-is from SettingsPage.jsx's old Billing &
-// Subscriptions tab — "Free" stays the one real current-plan state since no
-// paid tier can actually be bought yet (every paid button below is honestly
-// disabled, not wired to a fabricated "upgrade" that doesn't exist).
+// Real tiers/pricing, wired to real Cashfree checkout (SubscriptionTab
+// below) and to real server-side enforcement — the post-count limits here
+// exactly match projects.controller.js's MONTHLY_POST_LIMIT, checked on
+// every job post/invite, not just decorative copy. Business verification
+// itself stays free for every business regardless of tier (same as any
+// other marketplace's KYC) — what a paid tier buys is capacity (more posts)
+// and, at Enterprise, the Trust Badge: a second, distinct badge shown next
+// to the free "Verified" one on your profile and job posts, signaling
+// you're not just KYC'd but an active paying customer in good standing.
 const BUSINESS_TIERS = [
   {
     id: "free",
@@ -138,7 +138,7 @@ const BUSINESS_TIERS = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     icon: ShieldCheck,
-    perks: ["2 job posts/month", "Standard matching"],
+    perks: ["Free business verification", "2 job posts/month"],
   },
   {
     id: "growth",
@@ -147,7 +147,7 @@ const BUSINESS_TIERS = [
     yearlyPrice: 4999,
     icon: TrendingUp,
     highlight: true,
-    perks: ["20 posts/month", "Smart matching", "Dashboard"],
+    perks: ["20 job posts/month", "Invite workers directly, no post limit on that"],
   },
   {
     id: "enterprise",
@@ -156,7 +156,7 @@ const BUSINESS_TIERS = [
     yearlyPrice: 14999,
     icon: Building2,
     premium: true,
-    perks: ["Unlimited posts", "Bulk hiring", "Dedicated manager"],
+    perks: ["Unlimited job posts", "Bulk hiring & compliance support", "Trust Badge on your profile & posts"],
   },
 ];
 
@@ -432,7 +432,7 @@ export default function BusinessPayments({ isVerified }) {
       </div>
 
       {subTab === "invoices" && <InvoicesTab projects={projects} loading={loading} loadError={loadError} />}
-      {/* {subTab === "subscription" && <SubscriptionTab />} */}
+      {subTab === "subscription" && <SubscriptionTab />}
       {subTab === "trust" && (
         <ComingSoonOverlay
           title="Coming Soon"
