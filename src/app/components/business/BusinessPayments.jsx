@@ -11,6 +11,7 @@ import { getSubscriptionStatus } from "../../lib/paymentsApi";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { ApiError } from "../../lib/apiClient";
 import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
+import BusinessTeamTab from "./BusinessTeamTab";
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
@@ -19,6 +20,7 @@ function formatINR(amount) {
 const SUB_TABS = [
   { id: "invoices", label: "Invoices & Payments" },
   { id: "subscription", label: "Subscription Plans" },
+  { id: "team", label: "Team Access" },
 ];
 
 // ── Invoices & Escrow ───────────────────────────────────────────────────────
@@ -454,6 +456,7 @@ export default function BusinessPayments({ isVerified }) {
 
       {subTab === "invoices" && <InvoicesTab projects={projects} loading={loading} loadError={loadError} />}
       {subTab === "subscription" && <SubscriptionTab isVerified={isVerified} />}
+      {subTab === "team" && <BusinessTeamTab />}
     </div>
   );
 }
