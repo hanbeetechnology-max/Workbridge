@@ -268,8 +268,8 @@ function SubscriptionTab({ isVerified }) {
           </p>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {isVerified
-              ? "Your company carries the free Verified badge across WorkBridge — Workers can trust every brief you publish. The Trust Badge below is a separate, paid signal on top of this."
-              : 'Use "Get Business Verified" in the sidebar to start — it\'s free on every plan. The Trust Badge below is a separate, paid signal on top of verification.'}
+              ? "Your company carries the free Verified badge across WorkBridge — Workers can trust every brief you publish. The Trust Badge is included at no extra cost with the Enterprise plan below."
+              : 'Use "Get Business Verified" in the sidebar to start — it\'s free on every plan. The Trust Badge is included at no extra cost with the Enterprise plan below.'}
           </p>
         </div>
       </div>
