@@ -508,14 +508,14 @@ export default function BusinessOverview({ onPostJob, onViewProjects, isVerified
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">Stand out to top talent</h3>
                   <p className="mt-0.5 truncate text-xs text-slate-600 dark:text-slate-300">
-                    Unlock your Verified Company Frame and build trust.
+                    Get your free Verified badge — Workers trust every brief you publish.
                   </p>
                 </div>
                 <button
-                  onClick={() => goToPayments("trust")}
+                  onClick={() => navigate("/verify")}
                   className="flex-shrink-0 rounded-xl bg-[#FF6B35] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
                 >
-                  Get Verified — ₹399
+                  Get Verified — Free
                 </button>
               </div>
             </motion.div>

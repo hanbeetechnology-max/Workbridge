@@ -10,8 +10,6 @@ import { listProjects } from "../../lib/projectsApi";
 import { getSubscriptionStatus } from "../../lib/paymentsApi";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { ApiError } from "../../lib/apiClient";
-import VerificationFeesTable from "../shared/VerificationFeesTable";
-import ComingSoonOverlay from "../shared/ComingSoonOverlay";
 import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
 
 function formatINR(amount) {
@@ -21,7 +19,6 @@ function formatINR(amount) {
 const SUB_TABS = [
   { id: "invoices", label: "Invoices & Payments" },
   { id: "subscription", label: "Subscription Plans" },
-  { id: "trust", label: "Coming Soon" },
 ];
 
 // ── Invoices & Escrow ───────────────────────────────────────────────────────
@@ -201,7 +198,7 @@ function BillingToggle({ isYearly, onChange }) {
   );
 }
 
-function SubscriptionTab() {
+function SubscriptionTab({ isVerified }) {
   const [isYearly, setIsYearly] = useState(false);
   const [currentTier, setCurrentTier] = useState(null);
   const [expiresAt, setExpiresAt] = useState(null);
@@ -221,6 +218,36 @@ function SubscriptionTab() {
 
   return (
     <div className="space-y-6">
+      {/* Verification is free for every business regardless of tier — shown
+          here rather than as a separate tab, since it's the same story as
+          the tier cards below: what's free (verification) vs what's paid
+          (capacity + Trust Badge at Enterprise). */}
+      <div
+        className={`flex items-center gap-4 rounded-2xl border p-6 ${
+          isVerified
+            ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20"
+            : "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60"
+        }`}
+      >
+        <span
+          className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${
+            isVerified ? "bg-emerald-500 text-white" : "bg-white text-slate-400 dark:bg-slate-900 dark:text-slate-500"
+          }`}
+        >
+          {isVerified ? <CheckCircle2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
+        </span>
+        <div>
+          <p className="text-sm font-bold text-slate-900 dark:text-white">
+            {isVerified ? "Your business is Verified" : "Not verified yet"}
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            {isVerified
+              ? "Your company carries the free Verified badge across WorkBridge — Workers can trust every brief you publish. The Trust Badge below is a separate, paid signal on top of this."
+              : 'Use "Get Business Verified" in the sidebar to start — it\'s free on every plan. The Trust Badge below is a separate, paid signal on top of verification.'}
+          </p>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6 dark:border-slate-800 dark:from-slate-800/60 dark:to-slate-900">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Current Plan</p>
@@ -333,48 +360,6 @@ function SubscriptionTab() {
   );
 }
 
-// ── Trust & Verification ─────────────────────────────────────────────────────
-// The actual "Get Business Verified" action already lives in the sidebar
-// (BusinessSidebar.jsx) and the Growth Hub (BusinessOverview.jsx) — both
-// route to the real /verify wizard. This tab doesn't repeat that button
-// (a duplicate CTA for the same real flow, right next to VerificationFeesTable's
-// own honestly-disabled preview button for the identical tier, would just
-// read as two different answers to "how do I verify"); it shows status plus
-// the same real fee table used elsewhere.
-function TrustTab({ isVerified }) {
-  return (
-    <div className="space-y-6">
-      <div
-        className={`flex items-center gap-4 rounded-2xl border p-6 ${
-          isVerified
-            ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-            : "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60"
-        }`}
-      >
-        <span
-          className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${
-            isVerified ? "bg-emerald-500 text-white" : "bg-white text-slate-400 dark:bg-slate-900 dark:text-slate-500"
-          }`}
-        >
-          {isVerified ? <CheckCircle2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
-        </span>
-        <div>
-          <p className="text-sm font-bold text-slate-900 dark:text-white">
-            {isVerified ? "Your business is Verified" : "Not verified yet"}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            {isVerified
-              ? "Your company carries the Verified badge across WorkBridge — Workers can trust every brief you publish."
-              : 'Use "Get Business Verified" in the sidebar to start — the badges below build on top of that.'}
-          </p>
-        </div>
-      </div>
-
-      <VerificationFeesTable />
-    </div>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 export default function BusinessPayments({ isVerified }) {
   useDocumentTitle("Billing & Payments — WorkBridge");
@@ -410,7 +395,7 @@ export default function BusinessPayments({ isVerified }) {
           Billing & Payments
         </h1>
         <p className="mt-1 text-sm text-slate-300">
-          Every invoice, subscription plan, and verification payment for your business, in one place.
+          Every invoice and subscription plan for your business, in one place.
         </p>
       </div>
 
@@ -432,15 +417,7 @@ export default function BusinessPayments({ isVerified }) {
       </div>
 
       {subTab === "invoices" && <InvoicesTab projects={projects} loading={loading} loadError={loadError} />}
-      {subTab === "subscription" && <SubscriptionTab />}
-      {subTab === "trust" && (
-        <ComingSoonOverlay
-          title="Coming Soon"
-          message="These paid trust badges need real payment processing, which isn't live yet. Your business verification itself is unaffected — that's still real and free."
-        >
-          <TrustTab isVerified={isVerified} />
-        </ComingSoonOverlay>
-      )}
+      {subTab === "subscription" && <SubscriptionTab isVerified={isVerified} />}
     </div>
   );
 }
