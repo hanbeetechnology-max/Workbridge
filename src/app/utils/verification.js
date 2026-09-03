@@ -11,8 +11,7 @@
 //   orange  ("Enterprise — Signature Glow") — spare/default, brand-primary fallback.
 //
 // Applied wherever a call site has a REAL verified flag — never on mock/
-// preview data (e.g. BusinessCompany.jsx's still-local-only company logo,
-// which already labels itself "(Preview)").
+// preview data.
 const VARIANTS = {
   emerald: "ring-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.15),0_0_16px_rgba(16,185,129,0.45)]",
   // ring-slate-200 was nearly invisible against a white card (same tone as

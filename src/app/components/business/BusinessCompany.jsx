@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
-  Award,
   Briefcase,
   Building2,
   Calendar,
@@ -16,7 +15,6 @@ import {
   Send,
   ShieldCheck,
   Star,
-  TrendingUp,
   Users,
 } from "lucide-react";
 import Avatar from "../shared/Avatar";
@@ -24,76 +22,35 @@ import EditableCoverPhoto from "../shared/EditableCoverPhoto";
 import ShareProfileButton from "../shared/ShareProfileButton";
 import { useAuth } from "../../context/AuthContext";
 import { updateOwnProfile } from "../../lib/profilesApi";
+import { listProjects } from "../../lib/projectsApi";
+import { listReviewsFor } from "../../lib/reviewsApi";
 import { ApiError } from "../../lib/apiClient";
 import { INDIAN_CITIES } from "../../lib/indianCities";
 import { getInitials } from "../../utils/formValidation";
 import { yearFilter, businessNameFilter } from "../../utils/inputGuards";
 
-// ── Static data ───────────────────────────────────────────────────────────────
-// name/initials here are only the fallback for a business that hasn't set a
-// real company name yet (see updateOwnProfile's profilePatch.companyName
-// below) — everything else on this page (tagline/industry/bio/culture/etc.)
-// is still local-only mock content, unconnected to any real account.
+function formatINR(amount) {
+  return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
+}
 
-const INITIAL_PROFILE = {
-  name: "RetailX Pvt Ltd",
-  initials: "RX",
-  coverImage: "",
-  tagline: "India's fastest-growing D2C e-commerce enabler",
-  industry: "E-Commerce Technology",
-  location: "Mumbai, India",
-  size: "51–200 employees",
-  founded: "2019",
-  website: "https://retailx.in",
-  email: "hr@retailx.in",
-  bio: "RetailX is India's fastest-growing D2C e-commerce enabler, powering 500+ brands with end-to-end technology solutions — from inventory management and payment processing to last-mile logistics. We work with brands across fashion, food, electronics, and lifestyle at every stage from seed to Series C.",
-  culture:
-    "We move fast, ship often, and believe in outcome-driven work. Our team spans 12 cities across India — remote-first, async-friendly, and deeply collaborative. Workers are embedded into our squads and treated as core team members for the full duration of the project.",
-};
+function timeAgo(dateString) {
+  const ms = Date.now() - new Date(dateString).getTime();
+  const days = Math.floor(ms / 86400000);
+  if (days < 1) return "today";
+  if (days === 1) return "1 day ago";
+  if (days < 7) return `${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+  const months = Math.floor(days / 30);
+  return months <= 1 ? "1 month ago" : `${months} months ago`;
+}
 
-const COMPANY_JOBS = [
-  { id: "j1", title: "AI Chatbot for Customer Support", tier: "Professional", budget: "₹22,000", workload: "Full-time · 1 month", urgent: true, posted: "2 days ago" },
-  { id: "j2", title: "React Analytics Dashboard", tier: "Standard", budget: "₹12,000", workload: "Part-time · 2 weeks", urgent: false, posted: "5 days ago" },
-  { id: "j3", title: "SEO Audit & Content Strategy", tier: "Micro", budget: "₹5,000", workload: "Flexible · 1 week", urgent: false, posted: "1 week ago" },
-];
+// Matches BusinessOverview.jsx's exact definitions so this page's numbers
+// never disagree with the real dashboard's — see that file for the reasoning
+// behind each status set (why INVITED counts as active, why PENDING_FUNDS
+// isn't "held", etc.).
+const ACTIVE_STATUSES = new Set(["INVITED", "ACCEPTED", "PENDING_FUNDS", "FUNDS_SECURED", "WORK_IN_PROGRESS", "FILES_SUBMITTED", "PENDING_RELEASE", "DISPUTED"]);
 
-const WORKER_REVIEWS = [
-  {
-    id: 1, name: "Priya Sharma", initials: "PS", bg: "bg-[#1B3FAB]", rating: 5,
-    role: "Full-Stack Developer", project: "E-Commerce Platform Dev",
-    text: "RetailX were excellent communicators throughout — clear requirements, fast approvals, and payment released within hours of delivery. One of the best clients on WorkBridge.",
-    date: "Jun 28, 2026",
-  },
-  {
-    id: 2, name: "Arjun Mehta", initials: "AM", bg: "bg-[#1B3FAB]", rating: 5,
-    role: "UI/UX Designer", project: "Brand Identity Design",
-    text: "Smooth experience from brief to delivery. They knew exactly what they wanted and gave clear feedback at every milestone. Would happily work with them again.",
-    date: "Jul 1, 2026",
-  },
-  {
-    id: 3, name: "Rohit Verma", initials: "RV", bg: "bg-emerald-600", rating: 4,
-    role: "Content & SEO Specialist", project: "SEO Content – 20 Articles",
-    text: "Great brief, quick responses. Scope was crystal-clear from day one. Minor delay in milestone approvals but overall a solid, professional client.",
-    date: "Jul 2, 2026",
-  },
-];
-
-const VERIFICATIONS = [
-  { label: "GST Certificate",      ok: true  },
-  { label: "Company PAN",          ok: true  },
-  { label: "Director Aadhaar",     ok: true  },
-  { label: "Premium Membership",   ok: true  },
-  { label: "Business Bank Account", ok: false },
-];
-
-const STATS = [
-  { label: "Jobs Posted",    value: "42",   Icon: Briefcase,  color: "text-[#1B3FAB] dark:text-blue-400",   bg: "bg-[#F4F6FF] dark:bg-[#1B3FAB]/10"  },
-  { label: "Workers Hired",  value: "28",   Icon: Users,      color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
-  { label: "Avg. Rating",    value: "4.7",  Icon: Star,       color: "text-amber-600 dark:text-amber-400",   bg: "bg-amber-50 dark:bg-amber-500/10"   },
-  { label: "Success Rate",   value: "94%",  Icon: TrendingUp, color: "text-[#FF6B35]",   bg: "bg-orange-50 dark:bg-orange-500/10"  },
-];
-
-const CULTURE_TAGS = ["Remote-First", "Async-Friendly", "Outcome-Driven", "Fast-Paced", "Collaborative"];
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
@@ -112,8 +69,9 @@ function RatingBar({ label, value, total = 28 }) {
 
 // ── Profile view ─────────────────────────────────────────────────────────────
 
-function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverError }) {
+function ProfileView({ profile, isVerified, stats, openProjects, reviews, reviewsLoading, avgRating, reviewsCount, onEdit, onCoverUpload, coverUploading, coverError }) {
   const shareUrl = typeof window !== "undefined" ? window.location.href : undefined;
+  const ratingCounts = [5, 4, 3, 2, 1].map((n) => reviews.filter((r) => Math.round(r.rating) === n).length);
 
   return (
     <div className="bg-slate-50 wb-tab-enter dark:bg-slate-950">
@@ -167,24 +125,24 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
                   >
                     {profile.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-full border border-amber-200 flex-shrink-0 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40">
-                    <Award className="w-3 h-3" /> Premium (Preview)
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-200 flex-shrink-0 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40">
-                    <ShieldCheck className="w-3 h-3" /> GST Verified (Preview)
-                  </span>
+                  {isVerified && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-200 flex-shrink-0 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40">
+                      <ShieldCheck className="w-3 h-3" /> Verified
+                    </span>
+                  )}
                 </div>
 
-                <p className="text-slate-500 dark:text-slate-400 text-sm italic mb-2">{profile.tagline}</p>
+                {profile.tagline && <p className="text-slate-500 dark:text-slate-400 text-sm italic mb-2">{profile.tagline}</p>}
 
-                {/* Meta chips */}
+                {/* Meta chips — each only shows once the business has
+                    actually filled it in via Edit Profile. */}
                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
                   {[
                     { Icon: Building2, val: profile.industry },
                     { Icon: MapPin,    val: profile.location  },
                     { Icon: Users,     val: profile.size      },
-                    { Icon: Calendar,  val: `Est. ${profile.founded}` },
-                  ].map(({ Icon, val }) => (
+                    { Icon: Calendar,  val: profile.founded ? `Est. ${profile.founded}` : "" },
+                  ].filter(({ val }) => val).map(({ Icon, val }) => (
                     <span key={val} className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                       <Icon className="w-3 h-3 flex-shrink-0" />
                       {val}
@@ -206,7 +164,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
 
                 {/* Bio, merged into the header — no separate "About" card
                     further down the page for HR visitors to hunt for. */}
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">{profile.bio}</p>
+                {profile.bio && <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">{profile.bio}</p>}
               </div>
             </div>
 
@@ -239,21 +197,11 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
       {/* ── Body ──────────────────────────────────────────────────────────── */}
       <div className="px-7 py-6 w-full">
 
-        {/* STATS/VERIFICATIONS below are illustrative sample data, not yet
-            pulled from real activity (job-post counts, real hires, the real
-            review-based rating already live via reviewsApi) — honestly
-            labeled per the same "real data or clearly-labeled preview"
-            rule the rest of this app follows. */}
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400">
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-          <span>
-            Preview mode — the stats and badges below are examples, not your real account data.
-          </span>
-        </div>
-
-        {/* KPI row */}
+        {/* KPI row — real, computed from this business's actual projects
+            (same source/formulas as BusinessOverview.jsx's dashboard tiles,
+            so the two pages never disagree). */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {STATS.map(({ label, value, Icon, color, bg }, i) => (
+          {stats.map(({ label, value, Icon, color, bg }, i) => (
             <div
               key={label}
               className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-5 flex items-center gap-3 wb-card-enter"
@@ -263,12 +211,7 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
               <div>
-                <div className={`text-2xl font-extrabold ${color} leading-none font-display`}>
-                  {label === "Avg. Rating"
-                    ? <span className="flex items-center gap-1">{value}<Star className="w-4 h-4 fill-amber-400 text-amber-400" /></span>
-                    : value
-                  }
-                </div>
+                <div className={`text-2xl font-extrabold ${color} leading-none font-display`}>{value}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</div>
               </div>
             </div>
@@ -281,98 +224,115 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
           {/* LEFT – main content (2/3) */}
           <div className="lg:col-span-2 space-y-5">
 
-            {/* Culture */}
-            <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
-              <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 font-display">Culture &amp; Work Style</h2>
-              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">{profile.culture}</p>
-              <div className="flex flex-wrap gap-2">
-                {CULTURE_TAGS.map((tag) => (
-                  <span key={tag} className="px-3 py-1 bg-[#F4F6FF] dark:bg-[#1B3FAB]/10 text-[#1B3FAB] dark:text-blue-400 text-xs font-semibold rounded-full border border-[#1B3FAB]/10">
-                    {tag}
-                  </span>
-                ))}
+            {/* Culture — real, persisted field (profile.culture); no tag
+                pills anymore, those were decorative fixed labels with no
+                real data behind them. */}
+            {profile.culture && (
+              <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 font-display">Culture &amp; Work Style</h2>
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{profile.culture}</p>
               </div>
-            </div>
+            )}
 
-            {/* Current Openings */}
+            {/* Current Openings — real OPEN job-board posts. */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-display">Current Openings (Preview)</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-display">Current Openings</h2>
                 <span className="text-xs font-bold text-[#1B3FAB] dark:text-blue-400 bg-[#F4F6FF] dark:bg-[#1B3FAB]/10 px-2.5 py-1 rounded-full border border-[#1B3FAB]/10">
-                  {COMPANY_JOBS.length} Open
+                  {openProjects.length} Open
                 </span>
               </div>
-              <div className="space-y-3">
-                {COMPANY_JOBS.map((job) => (
-                  <div
-                    key={job.id}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-[#F4F6FF] hover:border-[#1B3FAB]/20 transition-all group cursor-pointer dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-[#1B3FAB]/10"
-                  >
-                    <div className="w-10 h-10 bg-[#1B3FAB] rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 font-display">
-                      {profile.initials}
+              {openProjects.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-400 dark:text-slate-500">No open job posts right now.</p>
+              ) : (
+                <div className="space-y-3">
+                  {openProjects.map((job) => (
+                    <div
+                      key={job.id}
+                      className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-[#F4F6FF] hover:border-[#1B3FAB]/20 transition-all group dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-[#1B3FAB]/10"
+                    >
+                      <div className="w-10 h-10 bg-[#1B3FAB] rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 font-display">
+                        {profile.initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-[#0F172A] dark:text-white truncate group-hover:text-[#1B3FAB] dark:group-hover:text-blue-400 transition-colors">{job.title}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{formatINR(job.budget)} · Posted {timeAgo(job.created_at)}</p>
+                      </div>
+                      {job.is_urgent && (
+                        <span className="flex-shrink-0 text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full dark:text-red-400 dark:bg-red-500/10 dark:border-red-900/40">
+                          Urgent
+                        </span>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-[#0F172A] dark:text-white truncate group-hover:text-[#1B3FAB] dark:group-hover:text-blue-400 transition-colors">{job.title}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{job.tier} · {job.workload} · Posted {job.posted}</p>
-                    </div>
-                    {job.urgent && (
-                      <span className="flex-shrink-0 text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full dark:text-red-400 dark:bg-red-500/10 dark:border-red-900/40">
-                        Urgent
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Worker Reviews */}
+            {/* Worker Reviews — real reviews left by workers after a
+                completed project (reviewsApi.listReviewsFor), same source
+                as the public profile page. */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-6">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-display">Worker Reviews (Preview)</h2>
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5">
-                    {[1,2,3,4,5].map((n) => (
-                      <Star key={n} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-display">Worker Reviews</h2>
+                {reviewsCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`} />
+                      ))}
+                    </div>
+                    <span className="text-sm font-extrabold text-[#0F172A] dark:text-white">{avgRating.toFixed(1)}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">({reviewsCount})</span>
+                  </div>
+                )}
+              </div>
+
+              {reviewsLoading ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-5 w-5 animate-spin text-slate-300 dark:text-slate-600" />
+                </div>
+              ) : reviews.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-400 dark:text-slate-500">No reviews yet — they'll show up here once a worker reviews a completed project.</p>
+              ) : (
+                <>
+                  {/* Rating breakdown — real counts from the reviews above. */}
+                  <div className="bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 rounded-xl p-4 mb-5 space-y-2.5">
+                    {[5, 4, 3, 2, 1].map((n, i) => (
+                      <RatingBar key={n} label={`${n} ★`} value={ratingCounts[i]} total={reviews.length} />
                     ))}
                   </div>
-                  <span className="text-sm font-extrabold text-[#0F172A] dark:text-white">4.7</span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">(sample)</span>
-                </div>
-              </div>
 
-              {/* Rating breakdown */}
-              <div className="bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 rounded-xl p-4 mb-5 space-y-2.5">
-                <RatingBar label="5 ★" value={22} />
-                <RatingBar label="4 ★" value={4}  />
-                <RatingBar label="3 ★" value={1}  />
-                <RatingBar label="2 ★" value={1}  />
-                <RatingBar label="1 ★" value={0}  />
-              </div>
-
-              {/* Review cards */}
-              <div className="space-y-4">
-                {WORKER_REVIEWS.map((rev) => (
-                  <div key={rev.id} className="p-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <Avatar initials={rev.initials} bg={rev.bg} size="w-9 h-9" text="text-xs" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                          <span className="font-bold text-[#0F172A] dark:text-white text-sm">{rev.name}</span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500">{rev.role}</span>
-                          <div className="ml-auto flex gap-0.5 flex-shrink-0">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star key={i} className={`w-3 h-3 ${i < rev.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`} />
-                            ))}
+                  {/* Review cards */}
+                  <div className="space-y-4">
+                    {reviews.slice(0, 10).map((rev) => (
+                      <div key={rev.id} className="p-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 rounded-xl">
+                        <div className="flex items-start gap-3">
+                          <Avatar
+                            initials={getInitials(rev.reviewer_name)}
+                            avatarUrl={rev.reviewer_avatar_url}
+                            bg="bg-[#1B3FAB]"
+                            size="w-9 h-9"
+                            text="text-xs"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                              <span className="font-bold text-[#0F172A] dark:text-white text-sm">{rev.reviewer_name}</span>
+                              <div className="ml-auto flex gap-0.5 flex-shrink-0">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star key={i} className={`w-3 h-3 ${i < rev.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`} />
+                                ))}
+                              </div>
+                            </div>
+                            {rev.feedback && <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{rev.feedback}</p>}
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">{timeAgo(rev.created_at)}</p>
                           </div>
                         </div>
-                        <p className="text-[11px] font-bold text-[#1B3FAB] dark:text-blue-400 mb-1.5">{rev.project}</p>
-                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{rev.text}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">{rev.date}</p>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -428,55 +388,31 @@ function ProfileView({ profile, onEdit, onCoverUpload, coverUploading, coverErro
               </div>
             </div>
 
-            {/* Trust & Verification */}
+            {/* Trust & Verification — the one real signal that exists
+                (currentUser.verified), no fabricated per-document
+                checklist (GST/PAN/Aadhaar aren't tracked as separate
+                booleans anywhere in the schema). */}
             <div className="bg-white rounded-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-5">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 font-display">Trust &amp; Verification (Preview)</h3>
-              <div className="space-y-3">
-                {VERIFICATIONS.map(({ label, ok }) => (
-                  <div key={label} className="flex items-center gap-2.5">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${ok ? "bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-900/40" : "bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:border-slate-700"}`}>
-                      <CheckCircle2 className={`w-3 h-3 ${ok ? "text-emerald-500" : "text-slate-300 dark:text-slate-600"}`} />
-                    </div>
-                    <span className={`text-sm flex-1 ${ok ? "font-semibold text-[#0F172A] dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
-                      {label}
-                    </span>
-                    {!ok && (
-                      <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-900/40">
-                        Pending
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Verified &amp; trusted employer</span>
-              </div>
-            </div>
-
-            {/* Premium benefits */}
-            <div className="rounded-2xl overflow-hidden border border-amber-200 dark:border-amber-900/40">
-              <div className="bg-gradient-to-r from-amber-500 to-[#FF6B35] px-5 py-3.5 flex items-center gap-2">
-                <Award className="w-4 h-4 text-white flex-shrink-0" />
-                <span className="font-extrabold text-white text-sm font-display">
-                  Premium Employer
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 font-display">Trust &amp; Verification</h3>
+              <div className="flex items-center gap-2.5">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${isVerified ? "bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-900/40" : "bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:border-slate-700"}`}>
+                  <CheckCircle2 className={`w-3 h-3 ${isVerified ? "text-emerald-500" : "text-slate-300 dark:text-slate-600"}`} />
+                </div>
+                <span className={`text-sm flex-1 ${isVerified ? "font-semibold text-[#0F172A] dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
+                  Business Verified
                 </span>
+                {!isVerified && (
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-900/40">
+                    Pending
+                  </span>
+                )}
               </div>
-              <div className="bg-amber-50 dark:bg-amber-950/20 px-5 py-4">
-                <ul className="space-y-2.5">
-                  {[
-                    "Priority listing on worker job feed",
-                    "Early access to top-rated talent",
-                    "Dedicated account manager",
-                    "Analytics dashboard access",
-                  ].map((b) => (
-                    <li key={b} className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-xs text-amber-800 dark:text-amber-400">{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {isVerified && (
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Verified &amp; trusted employer</span>
+                </div>
+              )}
             </div>
 
             {/* Edit CTA */}
@@ -612,7 +548,7 @@ function EditForm({ draft, onChange, onSave, onCancel, saving, saveError }) {
               </Field>
             ) : (
               <p className="text-sm text-slate-400 dark:text-slate-500">
-                Get Business Verified to unlock a frame around your avatar — see the Trust & Verification tab under Billing & Payments.
+                Get Business Verified to unlock a frame around your avatar — use "Get Business Verified" in the sidebar to start.
               </p>
             )}
           </EditFormSection>
@@ -667,31 +603,85 @@ function Field({ label, children }) {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
+// Every field here is real and persisted in users.profile (JSONB) via
+// updateOwnProfile's profilePatch merge — companyName/coverUrl were
+// already wired; tagline/industry/location/size/founded/bio/culture/
+// website/email are fixed here to actually save too (previously typed but
+// silently dropped on every Save — see handleSave below).
+function seedProfile(currentUser) {
+  const p = currentUser?.profile ?? {};
+  const companyName = p.companyName || currentUser?.name || "";
+  return {
+    name: companyName,
+    initials: companyName ? getInitials(companyName) : "",
+    coverImage: p.coverUrl || "",
+    tagline: p.tagline || "",
+    industry: p.industry || "",
+    location: p.location || "",
+    size: p.size || "",
+    founded: p.founded || "",
+    website: p.website || "",
+    email: p.email || "",
+    bio: p.bio || "",
+    culture: p.culture || "",
+  };
+}
+
 export default function BusinessCompany() {
   const { currentUser, updateCurrentUser } = useAuth();
-  // Only name/initials are real — everything else in INITIAL_PROFILE stays
-  // local mock content. Falls back to the account's own name (same rule
-  // BusinessPostJob.jsx's preview and the real business_name the backend
-  // returns everywhere else already use) rather than the mock "RetailX Pvt
-  // Ltd" default — otherwise this one page shows a different name for the
-  // same business than every other page does.
-  const seedProfile = () => {
-    const companyName = currentUser?.profile?.companyName || currentUser?.name;
-    // coverImage is the one other real, persisted field here — the rest of
-    // INITIAL_PROFILE stays local mock content until a real save exists.
-    const coverImage = currentUser?.profile?.coverUrl || INITIAL_PROFILE.coverImage;
-    return companyName
-      ? { ...INITIAL_PROFILE, name: companyName, initials: getInitials(companyName), coverImage }
-      : { ...INITIAL_PROFILE, coverImage };
-  };
+  const isVerified = Boolean(currentUser?.verified);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState(seedProfile);
-  const [draft, setDraft]     = useState(seedProfile);
+  const [profile, setProfile] = useState(() => seedProfile(currentUser));
+  const [draft, setDraft]     = useState(() => seedProfile(currentUser));
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+
+  // Real activity data — same source BusinessOverview.jsx's dashboard
+  // tiles use, so this page's numbers can never drift out of sync with it.
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    listProjects({ role: "business" })
+      .then((data) => { if (!cancelled) setProjects(data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setProjectsLoading(false); });
+    if (currentUser?.id) {
+      listReviewsFor(currentUser.id)
+        .then((data) => { if (!cancelled) setReviews(data); })
+        .catch(() => {})
+        .finally(() => { if (!cancelled) setReviewsLoading(false); });
+    } else {
+      setReviewsLoading(false);
+    }
+    return () => { cancelled = true; };
+  }, [currentUser?.id]);
+
+  const openProjects = useMemo(() => projects.filter((p) => p.status === "OPEN"), [projects]);
+  const workersHired = useMemo(
+    () => new Set(projects.filter((p) => p.status !== "INVITED").map((p) => p.worker_id)).size,
+    [projects]
+  );
+  const activeCount = useMemo(() => projects.filter((p) => ACTIVE_STATUSES.has(p.status)).length, [projects]);
+  const fundsDelivered = useMemo(
+    () => projects.filter((p) => p.status === "COMPLETED").reduce((s, p) => s + Number(p.budget), 0),
+    [projects]
+  );
+
+  const stats = projectsLoading
+    ? []
+    : [
+        { label: "Jobs Posted",      value: String(projects.length),      Icon: Briefcase,  color: "text-[#1B3FAB] dark:text-blue-400",      bg: "bg-[#F4F6FF] dark:bg-[#1B3FAB]/10" },
+        { label: "Workers Hired",    value: String(workersHired),         Icon: Users,      color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+        { label: "Active Projects",  value: String(activeCount),          Icon: ShieldCheck, color: "text-[#FF6B35]",                        bg: "bg-orange-50 dark:bg-orange-500/10" },
+        { label: "Funds Delivered",  value: formatINR(fundsDelivered),    Icon: CheckCircle2, color: "text-purple-600 dark:text-purple-400",  bg: "bg-purple-50 dark:bg-purple-500/10" },
+      ];
 
   const handleChange  = (key, val) => setDraft((p) => ({ ...p, [key]: val }));
 
@@ -699,21 +689,26 @@ export default function BusinessCompany() {
     setSaving(true);
     setSaveError("");
     try {
-      // draft.coverImage was previously dropped here — the Edit Profile
-      // modal's own cover upload (onChange("coverImage", dataUrl)) only
-      // ever touched local draft state; Save never included it in the
-      // profilePatch, so a cover changed inside the modal silently
-      // reverted to the old one on the next reload. Same real
-      // profile.coverUrl field the standalone cover-upload button
-      // (handleCoverUpload below) already persists correctly.
       const updatedUser = await updateOwnProfile({
-        profilePatch: { companyName: draft.name.trim(), coverUrl: draft.coverImage },
+        profilePatch: {
+          companyName: draft.name.trim(),
+          coverUrl: draft.coverImage,
+          tagline: draft.tagline?.trim() ?? "",
+          industry: draft.industry?.trim() ?? "",
+          location: draft.location?.trim() ?? "",
+          size: draft.size?.trim() ?? "",
+          founded: draft.founded?.trim() ?? "",
+          website: draft.website?.trim() ?? "",
+          email: draft.email?.trim() ?? "",
+          bio: draft.bio?.trim() ?? "",
+          culture: draft.culture?.trim() ?? "",
+        },
       });
       updateCurrentUser(updatedUser);
       setProfile(draft);
       setIsEditing(false);
     } catch (err) {
-      setSaveError(err.message || "Could not save your company name — everything else here still isn't persisted yet.");
+      setSaveError(err instanceof ApiError ? err.message : "Could not save your company profile.");
     } finally {
       setSaving(false);
     }
@@ -722,9 +717,7 @@ export default function BusinessCompany() {
   const handleCancel  = () => { setDraft(profile); setIsEditing(false); };
 
   // Same real profile.coverUrl field WorkerProfile.jsx's cover upload
-  // already persists to — previously this only ever set local component
-  // state, so the image looked like it saved but silently reverted on the
-  // next reload/navigation (never actually reached the backend).
+  // already persists to.
   const handleCoverUpload = async (dataUrl) => {
     setCoverError("");
     setCoverUploading(true);
@@ -745,6 +738,13 @@ export default function BusinessCompany() {
     : (
       <ProfileView
         profile={profile}
+        isVerified={isVerified}
+        stats={stats}
+        openProjects={openProjects}
+        reviews={reviews}
+        reviewsLoading={reviewsLoading}
+        avgRating={Number(currentUser?.rating) || 0}
+        reviewsCount={currentUser?.reviews_count || 0}
         onEdit={() => setIsEditing(true)}
         onCoverUpload={handleCoverUpload}
         coverUploading={coverUploading}

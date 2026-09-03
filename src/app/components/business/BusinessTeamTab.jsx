@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertCircle, Loader2, Lock, Plus, Trash2, Users, X } from "lucide-react";
+import { AlertCircle, Loader2, Plus, Trash2, Users, X } from "lucide-react"; // Lock is only used by the commented-out Enterprise lock above
 import { listTeam, addTeamMember, removeTeamMember } from "../../lib/businessTeamApi";
-import { getSubscriptionStatus } from "../../lib/paymentsApi";
+// import { getSubscriptionStatus } from "../../lib/paymentsApi"; // only used by the commented-out Enterprise lock below
 import { ApiError } from "../../lib/apiClient";
 import { useAuth } from "../../context/AuthContext";
 
@@ -17,7 +17,6 @@ export default function BusinessTeamTab() {
   const { currentUser } = useAuth();
   const isOwner = !currentUser?.isTeamMember;
 
-  const [tier, setTier] = useState(null);
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -28,16 +27,17 @@ export default function BusinessTeamTab() {
   const [addError, setAddError] = useState("");
 
   useEffect(() => {
-    Promise.all([getSubscriptionStatus(), listTeam()])
-      .then(([status, members]) => {
-        setTier(status.tier);
-        setTeam(members);
-      })
+    listTeam()
+      .then(setTeam)
       .catch((err) => setLoadError(err instanceof ApiError ? err.message : "Could not load your team."))
       .finally(() => setLoading(false));
   }, []);
 
-  const enterpriseActive = tier === "ENTERPRISE";
+  // Subscription plans are hidden for now — Team Access is unrestricted
+  // (see business_team.controller.js) until they come back. Un-comment
+  // this together with the lock screen below and the backend gate to
+  // restore the Enterprise-only restriction.
+  // const enterpriseActive = tier === "ENTERPRISE";
 
   const handleRemove = async (member) => {
     setRemovingId(member.id);
@@ -92,6 +92,7 @@ export default function BusinessTeamTab() {
     );
   }
 
+  /*
   if (!enterpriseActive) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center dark:border-slate-700 dark:bg-slate-800/40">
@@ -105,6 +106,7 @@ export default function BusinessTeamTab() {
       </div>
     );
   }
+  */
 
   return (
     <div className="space-y-4">

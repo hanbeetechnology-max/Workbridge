@@ -1,25 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+// import { motion } from "motion/react"; // only used by the commented-out Subscription Plans tab below
 import {
-  Building2, Check, CheckCircle2, FileText, Loader2, RotateCcw,
-  ShieldCheck, TrendingUp,
+  CheckCircle2, FileText, Loader2, RotateCcw, ShieldCheck,
+  // Building2, Check, TrendingUp, // only used by the commented-out Subscription Plans tab below
 } from "lucide-react";
 import { listProjects } from "../../lib/projectsApi";
-import { getSubscriptionStatus } from "../../lib/paymentsApi";
+// import { getSubscriptionStatus } from "../../lib/paymentsApi"; // only used by the commented-out Subscription Plans tab below
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { ApiError } from "../../lib/apiClient";
-import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton";
+// import SubscriptionCheckoutButton from "../shared/SubscriptionCheckoutButton"; // only used by the commented-out Subscription Plans tab below
 import BusinessTeamTab from "./BusinessTeamTab";
 
 function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 }
 
+// Subscription Plans hidden for now — Team Access stays, unrestricted
+// (see business_team.controller.js). Un-comment the "subscription" entry
+// below together with the block comment further down to restore it.
 const SUB_TABS = [
   { id: "invoices", label: "Invoices & Payments" },
-  { id: "subscription", label: "Subscription Plans" },
+  // { id: "subscription", label: "Subscription Plans" },
   { id: "team", label: "Team Access" },
 ];
 
@@ -120,16 +123,15 @@ function InvoicesTab({ projects, loading, loadError }) {
   );
 }
 
-// ── Subscription Plans ───────────────────────────────────────────────────────
-// Real tiers/pricing, wired to real Cashfree checkout (SubscriptionTab
-// below). Job-post limits (2/20/unlimited), verification-is-free, and the
-// Enterprise Trust Badge are all backend-enforced/real — see
-// projects.controller.js's MONTHLY_POST_LIMIT. The rest of each tier's perk
-// list (Worker Database search, Custom Screening Questions, Boosted
-// Visibility, Multi-User Access, Smart Candidate Matching, dedicated
-// support) is marketing copy for features not built yet — covered by the
-// "still being rolled out" disclaimer under the cards below, same as
-// before this list was expanded.
+// ── Subscription Plans (hidden — commented out, not deleted) ─────────────────
+// Subscriptions are paused for now: every business gets unlimited job
+// posts and free Team Access until this comes back (see the matching
+// commented-out limits in projects.controller.js's createProject and
+// business_team.controller.js's assertEnterpriseActive). To restore: un-
+// comment this whole block, the "subscription" entry in SUB_TABS below, and
+// its render line near the bottom of this file, then un-comment the
+// backend gates too.
+/*
 const BUSINESS_TIERS = [
   {
     id: "free",
@@ -246,10 +248,6 @@ function SubscriptionTab({ isVerified }) {
 
   return (
     <div className="space-y-6">
-      {/* Verification is free for every business regardless of tier — shown
-          here rather than as a separate tab, since it's the same story as
-          the tier cards below: what's free (verification) vs what's paid
-          (capacity + Trust Badge at Enterprise). */}
       <div
         className={`flex items-center gap-4 rounded-2xl border p-6 ${
           isVerified
@@ -397,6 +395,7 @@ function SubscriptionTab({ isVerified }) {
     </div>
   );
 }
+*/
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function BusinessPayments({ isVerified }) {
@@ -433,7 +432,7 @@ export default function BusinessPayments({ isVerified }) {
           Billing & Payments
         </h1>
         <p className="mt-1 text-sm text-slate-300">
-          Every invoice and subscription plan for your business, in one place.
+          Every invoice for your business, in one place.
         </p>
       </div>
 
@@ -455,7 +454,7 @@ export default function BusinessPayments({ isVerified }) {
       </div>
 
       {subTab === "invoices" && <InvoicesTab projects={projects} loading={loading} loadError={loadError} />}
-      {subTab === "subscription" && <SubscriptionTab isVerified={isVerified} />}
+      {/* {subTab === "subscription" && <SubscriptionTab isVerified={isVerified} />} */}
       {subTab === "team" && <BusinessTeamTab />}
     </div>
   );
