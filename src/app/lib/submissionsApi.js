@@ -32,6 +32,14 @@ export function listReviewedSubmissions() {
   return apiFetch("/api/admin/submissions/history");
 }
 
+// Still PENDING_REVIEW, but the project it belonged to was cancelled
+// before an admin got to it — separated out so the real, actionable
+// Pending queue isn't cluttered with dead projects nothing will ever come
+// of reviewing.
+export function listCancelledSubmissions() {
+  return apiFetch("/api/admin/submissions/cancelled");
+}
+
 export function reviewSubmission(id, { approved, rejectionReason }) {
   return apiFetch(`/api/admin/submissions/${id}`, {
     method: "PATCH",

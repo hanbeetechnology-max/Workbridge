@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, Clock3, ExternalLink, Image as ImageIcon, Link2, Loader2, XCircle } from "lucide-react";
-import { listPendingSubmissions, listReviewedSubmissions, reviewSubmission } from "../../lib/submissionsApi";
+import { AlertCircle, Ban, CheckCircle2, Clock3, ExternalLink, Image as ImageIcon, Link2, Loader2, XCircle } from "lucide-react";
+import { listPendingSubmissions, listReviewedSubmissions, listCancelledSubmissions, reviewSubmission } from "../../lib/submissionsApi";
 import { ApiError } from "../../lib/apiClient";
 import ImageLightbox from "../shared/ImageLightbox";
 import brandLogo from "../../assets/logo.png";
@@ -95,7 +95,8 @@ export default function AdminContentReviewTab() {
   const load = () => {
     setLoading(true);
     setLoadError("");
-    const fetcher = viewMode === "pending" ? listPendingSubmissions : listReviewedSubmissions;
+    const fetcher =
+      viewMode === "pending" ? listPendingSubmissions : viewMode === "cancelled" ? listCancelledSubmissions : listReviewedSubmissions;
     fetcher()
       .then(setItems)
       .catch((err) => setLoadError(err instanceof ApiError ? err.message : "Could not load this list."))
@@ -142,7 +143,9 @@ export default function AdminContentReviewTab() {
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
             {viewMode === "pending"
               ? `${items.length} submission${items.length === 1 ? "" : "s"} awaiting review — nothing reaches the other side until approved here.`
-              : `${items.length} submission${items.length === 1 ? "" : "s"} already decided.`}
+              : viewMode === "cancelled"
+                ? `${items.length} submission${items.length === 1 ? "" : "s"} left unreviewed because the project was cancelled — nothing to action.`
+                : `${items.length} submission${items.length === 1 ? "" : "s"} already decided.`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -150,6 +153,7 @@ export default function AdminContentReviewTab() {
             {[
               { id: "pending", label: "Pending" },
               { id: "reviewed", label: "Reviewed" },
+              { id: "cancelled", label: "Cancelled" },
             ].map(({ id, label }) => (
               <button
                 key={id}
@@ -189,7 +193,11 @@ export default function AdminContentReviewTab() {
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white/40 py-16 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500">
-          {viewMode === "pending" ? "Nothing waiting for review." : "Nothing has been reviewed yet."}
+          {viewMode === "pending"
+            ? "Nothing waiting for review."
+            : viewMode === "cancelled"
+              ? "No unreviewed submissions on cancelled projects."
+              : "Nothing has been reviewed yet."}
         </div>
       ) : (
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/70 overflow-hidden shadow-lg shadow-slate-200/40 dark:bg-slate-900/60 dark:border-slate-800">
@@ -223,6 +231,11 @@ export default function AdminContentReviewTab() {
                           <p className="mt-1 max-w-[220px] text-[11px] text-red-500 dark:text-red-400">Reason: {item.rejection_reason}</p>
                         )}
                       </div>
+                    ) : viewMode === "cancelled" ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <Ban className="h-3 w-3" />
+                        Project Cancelled
+                      </span>
                     ) : rejectingId === item.id ? (
                       <div className="flex items-center gap-2">
                         <input
