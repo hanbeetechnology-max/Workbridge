@@ -70,7 +70,18 @@ function RatingBar({ label, value, total = 28 }) {
 // ── Profile view ─────────────────────────────────────────────────────────────
 
 function ProfileView({ profile, isVerified, stats, openProjects, reviews, reviewsLoading, avgRating, reviewsCount, onEdit, onCoverUpload, coverUploading, coverError }) {
-  const shareUrl = typeof window !== "undefined" ? window.location.href : undefined;
+  // Real bug fix: this used to be window.location.href — the CURRENT page's
+  // URL, which on this tab is the logged-in-only dashboard route
+  // (/business-dashboard?tab=company), not a shareable link. Sharing that
+  // gave anyone who opened it a dead end (ProtectedRoute bounces a visitor
+  // with no session straight to /auth — nothing was ever actually exposed
+  // to a stranger), but it also meant the button never did what it claimed
+  // to. The real public, unauthenticated destination is
+  // PublicProfilePage.jsx's /profiles/:id route (public_user_profiles view,
+  // no PII, no session) — same pattern WorkerProfile.jsx's Share Profile
+  // button already uses correctly.
+  const { currentUser } = useAuth();
+  const shareUrl = currentUser?.id ? `${window.location.origin}/profiles/${currentUser.id}` : undefined;
   const ratingCounts = [5, 4, 3, 2, 1].map((n) => reviews.filter((r) => Math.round(r.rating) === n).length);
 
   return (
